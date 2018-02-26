@@ -4,6 +4,7 @@ Motorola 68k chip definition
 
 from .memory import Memory
 
+
 class M68K:
 
     def __init__(self):
