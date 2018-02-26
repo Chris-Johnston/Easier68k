@@ -5,12 +5,12 @@ and accessed completely
 """
 
 # import enums
-from src.core.enum.register import Register
-from src.core.enum.condition_status_code import ConditionStatusCode
-from src.core.enum.system_status_code import SystemStatusCode
-from src.core.enum.floating_point_exception import FloatingPointException
-from src.core.enum.floating_point_condition_code import FloatingPointConditionCode
-from src.core.enum.floating_point_accured_exception import FloatingPointAccuredException
+from easier68k.core.enum.register import Register
+from easier68k.core.enum.condition_status_code import ConditionStatusCode
+from easier68k.core.enum.system_status_code import SystemStatusCode
+from easier68k.core.enum.floating_point_exception import FloatingPointException
+from easier68k.core.enum.floating_point_condition_code import FloatingPointConditionCode
+from easier68k.core.enum.floating_point_accured_exception import FloatingPointAccuredException
 
 class Memory:
 

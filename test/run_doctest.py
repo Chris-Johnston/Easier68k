@@ -7,7 +7,7 @@ import doctest, unittest, sys
 # import all of the modules that need testing
 import unittest
 
-from src import core, simulator
+from easier68k import core, simulator
 
 # build a list of all modules that contain doctests
 test_modules = [
