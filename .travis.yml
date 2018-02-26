@@ -6,4 +6,4 @@ install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
 script:
-  - if python src/test.py; then ((find . -iname "*.py" | xargs python -m pylint) || exit 0); else ((find . -iname "*.py" | xargs python -m pylint) || exit 1)
+  - if python src/run_doctest.py; then ((find . -iname "*.py" | xargs python -m pylint) || exit 0); else ((find . -iname "*.py" | xargs python -m pylint) || exit 1)

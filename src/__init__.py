@@ -10,5 +10,5 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2018 Chris Johnston et al'
 __version__ = '0.0.1'
 
-from .core import *
+from .core import enum, models, util
 from .simulator import *
