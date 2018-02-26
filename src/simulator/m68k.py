@@ -12,12 +12,25 @@ class M68K:
         """
         self.memory = Memory()
 
+        # todo how would we specify that we print from
+        # stdin and stdout or a file, or whatever else
+        # unsure of the best way to this currently
+        # may resort to console output
+        self.input_stream = 'todo???'
+        self.output_stream = 'todo???'
+
         self.clock_auto_cycle = True
         self._clock_cycles = 0
 
         #todo add events for each clock cycle
         # this is necessary for implementing breakpoints
         # and watches for value changes
+
+    def run(self):
+        """
+        Starts the automatic exeuction
+        :return:
+        """
 
     def step_clock(self):
         """
