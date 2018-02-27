@@ -5,6 +5,7 @@ python:
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
+  - python setup.py install
 script:
   - python test/run_doctest.py
   - if $?; then ((find . -iname "*.py" | xargs python -m pylint) || exit 0); else ((find . -iname "*.py" | xargs python -m pylint) || exit 1); fi;

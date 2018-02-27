@@ -7,6 +7,6 @@ setup(
     author='Chris Johnston et al',
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
-    packagegs=['easier68k'],
+    packages=['easier68k'],
     zip_safe=False
 )
