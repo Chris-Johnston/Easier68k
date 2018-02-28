@@ -23,7 +23,24 @@ Please ensure that your tests cover most cases of expected execution, but also u
 Tests are run automatically by Travis CI, but to minimize clutter, please try running locally
 before you push.
 
-Doctests are run with `python3 tests/run_doctest.py`.
+You must build the package first before tests can be run. To do this, either run the following to
+build and test:
+```bash
+cd src
+# may require root
+python3 setup.py test
+```
+
+Or, just to build:
+
+```bash
+cd src
+# may require root
+python3 setup.py install
+```
+
+Doctests are run with `python3 tests/run_doctest.py`, pytests with `python3 tests/run_pytest.py`.
+Both can be run with `python3 tests/run_test_suite.py`.
 
 Travis CI will run all code against `pylint`, but will not make any changes to your
 code. Each build execution log will include the score and output from `pylint`.
@@ -39,6 +56,14 @@ list, like the others in the list.
 
 ### Adding a pytest
 
-TODO - pytests are not implemented yet
+See `src/easier68k/core/util/conversions.py` and `tests/easier68k/core/util/test_conversions.py` 
+for a working example. Pytest will locate any package under the `tests` directory that
+starts with the word `test`.
+
+Verify that your test runs by running the following:
+```bash
+cd tests
+python3 run_pytest.py
+```
 
 [doctest-guide]: https://pymotw.com/2/doctest/ 
