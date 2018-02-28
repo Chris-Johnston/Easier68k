@@ -1,4 +1,4 @@
-# Easier68k
+# Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k)
 
 A python package based assmebler, disassembler and simulator of the Motorola 68k CPU Architecture.
 
