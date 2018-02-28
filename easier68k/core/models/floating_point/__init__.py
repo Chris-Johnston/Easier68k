@@ -4,3 +4,5 @@ __all__ = [
     'ExtendedReal',
     'FloatingPoint'
 ]
+
+from .FloatingPoint import FloatingPoint

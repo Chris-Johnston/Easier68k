@@ -5,12 +5,19 @@ and accessed completely
 """
 
 # import enums
-from easier68k.core.enum.register import Register
-from easier68k.core.enum.condition_status_code import ConditionStatusCode
-from easier68k.core.enum.system_status_code import SystemStatusCode
-from easier68k.core.enum.floating_point_exception import FloatingPointException
-from easier68k.core.enum.floating_point_condition_code import FloatingPointConditionCode
-from easier68k.core.enum.floating_point_accured_exception import FloatingPointAccuredException
+
+from ..core.enum.register import Register
+from ..core.enum.condition import Condition
+from ..core.enum.condition_status_code import ConditionStatusCode
+from ..core.enum.system_status_code import SystemStatusCode
+from ..core.enum.floating_point_exception import FloatingPointException
+from ..core.enum.floating_point_condition_code import FloatingPointConditionCode
+from ..core.enum.floating_point_accured_exception import FloatingPointAccuredException
+
+
+# import easier68k.core.enum.register, easier68k.core.enum.condition_status_code, easier68k.core.enum.system_status_code
+# import easier68k.core.enum.floating_point_exception, easier68k.core.enum.floating_point_condition_code
+# import easier68k.core.enum.floating_point_accured_exception
 
 class Memory:
 
@@ -106,7 +113,7 @@ class Memory:
         """
         return self.get_status_register() & 0xFF
 
-    def get_condition_code(self, code: ConditionStatusCode):
+    def get_condition_code(self, code: Condition):
         return (self.get_condition_code_register() & code) > 0
 
     def get_system_status_code(self, code: SystemStatusCode):
