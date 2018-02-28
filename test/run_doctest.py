@@ -8,12 +8,6 @@ import doctest, unittest, sys
 # import all of the modules that need testing
 import unittest
 
-#import
-from easier68k.simulator.memory import Memory
-
-print(Memory())
-
-
 # build a list of all modules that contain doctests
 test_modules = [
     'easier68k.core.util.conversions'
