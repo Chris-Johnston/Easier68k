@@ -2,4 +2,4 @@ __all__ = [
     'conversions'
 ]
 
-from .conversions import word_to_byte, word_to_long
+from .conversions import to_byte, to_word
