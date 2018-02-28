@@ -13,12 +13,12 @@ Easier68k is not available as a pip package (yet?) so it must be built from sour
    
    ```bash
     python -m pip install -r requirements.txt
-    python setup.py install
     ```
     
 2. Install the package (may require root):
    
    ```bash
+    cd src
     python setup.py install
     ```
     
