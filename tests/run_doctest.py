@@ -23,10 +23,10 @@ def load_tests(tests):
         tests.addTests(doctest.DocTestSuite(mod))
     return tests
 
-if __name__ == '__main__':
+def run_tests():
     """
-    Evaluate all of the tests that were loaded.
-    """
+        Evaluate all of the tests that were loaded.
+        """
 
     tests = unittest.TestSuite()
     test = load_tests(tests)
@@ -35,3 +35,6 @@ if __name__ == '__main__':
     # get the exit code and return it when failed
     ret = not runner.run(tests).wasSuccessful()
     sys.exit(ret)
+
+if __name__ == '__main__':
+    run_tests()

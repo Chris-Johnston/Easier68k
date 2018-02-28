@@ -1,7 +1,7 @@
 # Conversion utils
 
 
-def word_to_long(word: int):
+def word_to_long(word: int) -> int:
     """
     >>> hex(word_to_long(0x12341234))
     '0x1234'
@@ -22,7 +22,7 @@ def word_to_long(word: int):
     return word & 0x0000FFFF
 
 
-def word_to_byte(word: int):
+def word_to_byte(word: int) -> int:
     """
     >>> hex(word_to_byte(0x12341234))
     '0x34'

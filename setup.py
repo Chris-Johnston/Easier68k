@@ -8,8 +8,8 @@ setup(
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
     packages=['src.easier68k', 'src.easier68k.core', 'src.easier68k.simulator', 'src.easier68k.core.enum', 'src.easier68k.core.util', 'src.easier68k.core.models'],
-    zip_safe=False,
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'python tests/run_doctest.py'],
-    install_requires=['pytest']
+    test_suite='tests.run_test_suite',
+    install_requires=['pytest'],
+    python_requires='>=3'
 )
