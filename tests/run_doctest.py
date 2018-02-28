@@ -7,6 +7,9 @@ import doctest, unittest, sys
 # import all of the modules that need testing
 import unittest
 
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 # build a list of all modules that contain doctests
 test_modules = [
     'easier68k.core.util.conversions'
@@ -33,9 +36,9 @@ def run_tests():
 
     # get the exit code and return it when failed
     ret = not runner.run(tests).wasSuccessful()
-    sys.exit(ret)
+    return ret
 
 
 if __name__ == '__main__':
-
-    run_tests()
+    status = run_tests()
+    sys.exit(status)
