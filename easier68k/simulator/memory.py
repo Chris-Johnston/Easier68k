@@ -4,8 +4,6 @@ This should be able to be serialized/deserialized
 and accessed completely
 """
 
-# import enums
-
 from ..core.enum.register import Register
 from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
@@ -14,24 +12,30 @@ from ..core.enum.floating_point_exception import FloatingPointException
 from ..core.enum.floating_point_condition_code import FloatingPointConditionCode
 from ..core.enum.floating_point_accured_exception import FloatingPointAccuredException
 
-
-# import easier68k.core.enum.register, easier68k.core.enum.condition_status_code, easier68k.core.enum.system_status_code
-# import easier68k.core.enum.floating_point_exception, easier68k.core.enum.floating_point_condition_code
-# import easier68k.core.enum.floating_point_accured_exception
-
 class Memory:
+	Byte = 1
+	Word = 2
+	Long = 4
+	
+	def __validateLocation(self, size, location):
+		"""
+		Helper function which throws an error if the location is either
+		not aligned or out of bounds
+		"""
+		if(location % size != 0):
+			raise UnalignedMemoryAccessError
+		if(location < 0 or location+size > len(self.memory)):
+			raise OutOfBoundsMemoryError
 
     def __init__(self):
         """
         Constructor
         """
 
-        # how many bytes of memory to keep track of
-        self.memory_size = 68000
-
-        # all of the memory that is stored by the device
-        # each location should represent a byte and no more
-        self.memory = [ 0 for i in range(self.memory_size) ]
+        # all of the memory that is stored by the device		
+		# 16777216 = 2^24
+		# it is the number of bytes easy68K uses.
+		self.memory = bytearray(16777216)
 
     def dump_memory(self):
         """
@@ -49,63 +53,11 @@ class Memory:
         """
         pass
 
-    def get_memory_value(self, location):
+    def get(self, size location):
         """
-        returns the word contained at the given
-        memory location
-
-        can convert these using the util conversion
-        :param location:
-        :return:
+        gets the memory at the given location index of size
         """
-        pass
-
-    def set_memory_value_word(self, location, value):
-        """
-        sets the word value at the given location
-        :param location:
-        :param value:
-        :return:
-        """
-        pass
-
-    def set_memory_value_long(self, location, value):
-        """
-        sets the long value at the given location
-        :param location:
-        :param value:
-        :return:
-        """
-        pass
-
-    def set_memory_value_byte(self, location, value):
-        """
-        sets the byte value at the given location
-        :param location:
-        :param value:
-        :return:
-        """
-        pass
-
-    def get_register(self, register_number: Register):
-        """
-        Returns the contents of the given register D0-D7 A0-A7
-        :param register_number:
-        :return: The entire word contained inside the register
-        """
-        return 0
-
-    def get_user_stack_pointer(self):
-        return -1
-
-    def get_program_counter(self):
-        return -1
-
-    def get_status_register(self):
-        return -1
-
-    def get_condition_code_register(self):
-        """
+<<<<<<< HEAD:easier68k/simulator/memory.py
         The condition code register is
         just the first byte of the status
         register
@@ -140,12 +92,18 @@ class Memory:
     def get_floating_point_status_register_quotient(self):
         """ See figure 1-5 FPSR Quotient Code Byte """
         return self.get_floating_point_status_register() & (0b1111111 << 16)
+=======
+>>>>>>> master:src/simulator/memory.py
 
-    def get_floating_point_status_register_quotient_sign(self):
-        return (self.get_floating_point_status_register() & (1 << 23)) >> 23
+		self.__validateLocation(size, location)
+		return self.memory[location:location+size]
 
-    def get_floating_point_status_register_accured_exception(self, code: FloatingPointAccuredException):
-        return (self.get_floating_point_status_register() & code) > 0
+	def set(self, size, location, value):
+		"""
+		sets the memory at the given location index of size
+		"""
+		self.__validateLocation(size, location)
+		if(len(value) != size):
+			raise AssignWrongMemorySizeError
+		self.memory[location:location+size] = value
 
-    def get_floating_point_instruction_address_register(self):
-        return -1

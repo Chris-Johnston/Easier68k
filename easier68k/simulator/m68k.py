@@ -5,7 +5,6 @@ Motorola 68k chip definition
 from . import *
 
 class M68K:
-
     def __init__(self):
         """
         Constructor
@@ -22,13 +21,13 @@ class M68K:
         self.clock_auto_cycle = True
         self._clock_cycles = 0
 
-        #todo add events for each clock cycle
+        # todo add events for each clock cycle
         # this is necessary for implementing breakpoints
         # and watches for value changes
 
     def run(self):
         """
-        Starts the automatic exeuction
+        Starts the automatic execution
         :return:
         """
 

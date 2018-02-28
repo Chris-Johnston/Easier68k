@@ -1,5 +1,6 @@
 # Conversion utils
 
+
 def word_to_long(word: int):
     """
     >>> hex(word_to_long(0x12341234))
@@ -18,6 +19,7 @@ def word_to_long(word: int):
     :return:
     """
     return word & 0x0000FFFF
+
 
 def word_to_byte(word: int):
     """
