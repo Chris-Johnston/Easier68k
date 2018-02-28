@@ -6,11 +6,12 @@ import run_pytest
 import unittest
 
 class TestSuite(unittest.TestCase):
-    def run_doctest(self):
-        self.assertTrue(run_doctest.run_tests())
 
-    def run_pytest(self):
-        self.assertTrue(run_pytest.run_tests())
+    def test_doctest(self):
+        self.assertTrue(0 == run_doctest.run_tests())
+
+    def test_pytest(self):
+        self.assertTrue(0 == run_pytest.run_tests())
 
 def run():
     unittest.main()
