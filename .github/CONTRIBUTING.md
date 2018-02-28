@@ -23,7 +23,7 @@ Please ensure that your tests cover most cases of expected execution, but also u
 Tests are run automatically by Travis CI, but to minimize clutter, please try running locally
 before you push.
 
-Doctests are run with `python3 test/run_doctest.py`.
+Doctests are run with `python3 tests/run_doctest.py`.
 
 Travis CI will run all code against `pylint`, but will not make any changes to your
 code. Each build execution log will include the score and output from `pylint`.
@@ -32,7 +32,7 @@ code. Each build execution log will include the score and output from `pylint`.
 
 If you are unfamiliar with doctests, [please see this guide.][doctest-guide]
 
-`test/run_doctest.py` contains a list of all the modules that contain doctests. These
+`tests/run_doctest.py` contains a list of all the modules that contain doctests. These
 are all then loaded on testing and run one after another. If the package you are
 working on is new or didn't contain tests before, please add the package to the 
 list, like the others in the list.
