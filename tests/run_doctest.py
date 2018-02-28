@@ -4,14 +4,16 @@ Testing
 
 import doctest, unittest, sys
 
-import easier68k.core.util.conversions as conversions
+from ..src.easier68k.core.util import conversions as conversions
+
+# import  easier68k.core.util.conversions as conversions
 
 # import all of the modules that need testing
 import unittest
 
 # build a list of all modules that contain doctests
 test_modules = [
-    conversions 
+    conversions
 ]
 
 def load_tests(tests):
