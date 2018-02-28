@@ -7,6 +7,6 @@ setup(
     author='Chris Johnston et al',
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
-    packages=['easier68k', 'easier68k.core', 'easier68k.simulator', 'easier68k.core.enum', 'easier68k.core.util', 'easier68k.core.models'],
+    packages=['src.easier68k', 'src.easier68k.core', 'src.easier68k.simulator', 'src.easier68k.core.enum', 'src.easier68k.core.util', 'src.easier68k.core.models'],
     zip_safe=False
 )
