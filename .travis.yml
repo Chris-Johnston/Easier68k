@@ -8,4 +8,4 @@ install:
   - python setup.py install
 script:
   - chmod +x /test/travis.sh
-  - /test/travis.sh
+  - test/travis.sh
