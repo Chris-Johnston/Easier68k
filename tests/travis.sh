@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 find . -iname "*.py" | xargs python -m pylint
 python tests/run_doctest.py
+pytest
 if [ $? -eq 0 ]
 then
     exit 0
