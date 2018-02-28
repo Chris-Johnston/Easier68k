@@ -18,6 +18,7 @@ def word_to_long(word: int):
     :param word:
     :return:
     """
+    assert isinstance(word, int), 'Argument is not of type int'
     return word & 0x0000FFFF
 
 
@@ -36,4 +37,6 @@ def word_to_byte(word: int):
     :param word:
     :return:
     """
+    assert isinstance(word, int), 'Argument is not of type int'
+
     return word & 0xFF
