@@ -2,6 +2,7 @@
 Used by m68k to handle stepping through actions
 """
 
+
 class Clock():
     def __init__(self):
         """

@@ -3,10 +3,11 @@ Represents the different condition codes
 that are stored in the condition code register
 """
 
+
 class ConditionStatusCode:
     """
     X - Extend - Set to the value of the C-bit for
-    arithmetic operations; otyherwise not affected or set
+    arithmetic operations; otherwise not affected or set
     to a specified result.
 
     N - Negative - Set if the most significant bit of the

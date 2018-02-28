@@ -3,6 +3,7 @@ Register Enum
 Represents the different types of registers
 """
 
+
 class Register:
     D0 = 0
     D1 = 1
@@ -20,12 +21,3 @@ class Register:
     A5 = 13
     A6 = 14
     A7 = 15
-    # 8 bit floating point data registers
-    FP0 = 16
-    FP1 = 17
-    FP2 = 18
-    FP3 = 19
-    FP4 = 20
-    FP5 = 21
-    FP6 = 22
-    FP7 = 23

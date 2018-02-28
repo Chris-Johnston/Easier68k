@@ -12,6 +12,7 @@ from src.core.enum.floating_point_exception import FloatingPointException
 from src.core.enum.floating_point_condition_code import FloatingPointConditionCode
 from src.core.enum.floating_point_accured_exception import FloatingPointAccuredException
 
+
 class Memory:
 
     def __init__(self):

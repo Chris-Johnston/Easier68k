@@ -3,7 +3,8 @@ Represents the upper byte of the Status Register
 See Fig 1-8
 """
 
-class SystemStatusCode():
+
+class SystemStatusCode:
     # individual bytes
     I0 = 1 << 8
     I1 = 1 << 9
@@ -24,5 +25,3 @@ class SystemStatusCode():
     T0 = 1 << 14
     T1 = 1 << 15
     TRACE_ENABLE = T0 | T1
-
-
