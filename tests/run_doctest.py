@@ -10,7 +10,7 @@ import unittest
 
 # build a list of all modules that contain doctests
 test_modules = [
-    'src.easier68k.core.util.conversions'
+    'easier68k.core.util.conversions'
 ]
 
 def load_tests(tests):
