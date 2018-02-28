@@ -4,16 +4,12 @@ Testing
 
 import doctest, unittest, sys
 
-from ..src.easier68k.core.util import conversions as conversions
-
-# import  easier68k.core.util.conversions as conversions
-
 # import all of the modules that need testing
 import unittest
 
 # build a list of all modules that contain doctests
 test_modules = [
-    conversions
+    'easier68k.core.util.conversions'
 ]
 
 def load_tests(tests):
@@ -30,7 +26,7 @@ def run_tests():
     """
         Evaluate all of the tests that were loaded.
         """
-
+    print('running doctests...')
     tests = unittest.TestSuite()
     test = load_tests(tests)
     runner = unittest.TextTestRunner()
@@ -39,5 +35,7 @@ def run_tests():
     ret = not runner.run(tests).wasSuccessful()
     sys.exit(ret)
 
+
 if __name__ == '__main__':
+
     run_tests()
