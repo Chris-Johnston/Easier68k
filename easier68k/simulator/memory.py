@@ -53,48 +53,10 @@ class Memory:
         """
         pass
 
-    def get(self, size location):
+    def get(self, size, location):
         """
         gets the memory at the given location index of size
         """
-<<<<<<< HEAD:easier68k/simulator/memory.py
-        The condition code register is
-        just the first byte of the status
-        register
-        :return:
-        """
-        return self.get_status_register() & 0xFF
-
-    def get_condition_code(self, code: Condition):
-        return (self.get_condition_code_register() & code) > 0
-
-    def get_system_status_code(self, code: SystemStatusCode):
-        return self.get_condition_code_register() & code
-
-    # see page 1-4 of the M68000PRM
-    def get_floating_point_control_register(self):
-        # 16 bit
-        return -1
-
-    # consider making a floating point status
-    # register class for all of this?
-
-    # utils for the floating point control register
-    def get_floating_point_exception_status(self, exception: FloatingPointException):
-        return (self.get_floating_point_control_register() & exception) > 0
-
-    def get_floating_point_status_register(self):
-        return -1
-
-    def get_floating_point_condition_code(self, code: FloatingPointConditionCode):
-        return (self.get_floating_point_status_register() & code) > 0
-
-    def get_floating_point_status_register_quotient(self):
-        """ See figure 1-5 FPSR Quotient Code Byte """
-        return self.get_floating_point_status_register() & (0b1111111 << 16)
-=======
->>>>>>> master:src/simulator/memory.py
-
 		self.__validateLocation(size, location)
 		return self.memory[location:location+size]
 
