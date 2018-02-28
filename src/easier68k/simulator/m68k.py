@@ -2,14 +2,14 @@
 Motorola 68k chip definition
 """
 
-from . import *
+from .memory import Memory
 
 class M68K:
     def __init__(self):
         """
         Constructor
         """
-        self.memory = easier68k.simulator.memory.Memory()
+        self.memory = Memory()
 
         # todo how would we specify that we print from
         # stdin and stdout or a file, or whatever else

@@ -5,7 +5,11 @@ python:
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
+  - cd src
+  - python setup.py test
   - python setup.py install
 script:
-  - chmod +x test/travis.sh
-  - test/travis.sh
+  - pwd
+  - cd ../tests
+  - python run_doctest.py
+  - python run_pytest.py

@@ -4,9 +4,11 @@ Testing
 
 import doctest, unittest, sys
 
-
 # import all of the modules that need testing
 import unittest
+
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # build a list of all modules that contain doctests
 test_modules = [
@@ -23,15 +25,20 @@ def load_tests(tests):
         tests.addTests(doctest.DocTestSuite(mod))
     return tests
 
-if __name__ == '__main__':
+def run_tests():
     """
-    Evaluate all of the tests that were loaded.
-    """
-
+        Evaluate all of the tests that were loaded.
+        """
+    print('running doctests...')
     tests = unittest.TestSuite()
     test = load_tests(tests)
     runner = unittest.TextTestRunner()
 
     # get the exit code and return it when failed
     ret = not runner.run(tests).wasSuccessful()
-    sys.exit(ret)
+    return ret
+
+
+if __name__ == '__main__':
+    status = run_tests()
+    sys.exit(status)
