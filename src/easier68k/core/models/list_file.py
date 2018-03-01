@@ -22,6 +22,15 @@ class ListFile:
         """
         self.content = bytes
 
+    def load_from_str(self, bytestr: str) -> str:
+        """
+        Loads the contents of a string into the contents
+        of this list file.
+        :param bytestr:
+        :return:
+        """
+        self.content = bytestr.encode('ascii')
+
     def load_easy68k_list_file(self, contents):
         """
         Populates the contents of this list file
