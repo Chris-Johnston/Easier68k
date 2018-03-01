@@ -13,7 +13,7 @@ class ListFile:
         """
         self.content = bytearray([0x00])
 
-    def load_bytes(self, bytes):
+    def load_bytes(self, bytes: bytearray) -> bytearray:
         """
         Loads the contents of a byte array
         into the contents of this list file
@@ -31,7 +31,7 @@ class ListFile:
         """
         self.content = bytestr.encode('ascii')
 
-    def load_easy68k_list_file(self, contents):
+    def load_easy68k_list_file(self, contents: str) -> str:
         """
         Populates the contents of this list file
         from an easy68k list file, and loads the
@@ -43,7 +43,7 @@ class ListFile:
         # TODO implement the load_easy68k_list_file
         pass
 
-    def load_raw_list_file(self, contents):
+    def load_raw_list_file(self, contents: str) -> str:
         """
         Populates the contents of this list file
         from a raw list file (without all the additions
