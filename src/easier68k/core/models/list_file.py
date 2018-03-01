@@ -54,3 +54,23 @@ class ListFile:
         """
         # TODO implement load_raw_list_file
         pass
+
+    def _load_data_at_location(self, location: int, data) -> int:
+        """
+        Loads data into the location specified
+        :param location:
+        :param data:
+        :return:
+        """
+
+        # convert the input into immutable bytes
+        input_data = bytes(data)
+
+        # offset from the starting location
+        offset = 0
+
+        # iterate through the input data
+        for value in input_data:
+            self.content[location + offset] = value
+            # increment the offset
+            offset += 1

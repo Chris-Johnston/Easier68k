@@ -8,6 +8,7 @@ from ..core.enum.register import Register
 from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
+from ..core.models.list_file import ListFile
 
 class Memory:
     Byte = 1
@@ -48,6 +49,18 @@ class Memory:
 
         This includes programs
         """
+        pass
+
+    def load_list_file(self, list_file: ListFile) -> ListFile:
+        """
+        Load List File
+
+        load the contents of a list file into memory
+        :param list_file:
+        :return:
+        """
+
+
         pass
 
     def get(self, size, location):
