@@ -4,14 +4,14 @@
 def to_word(word: int) -> int:
     """
     >>> hex(to_word(0x1234ABCD))
-    '0xABCD'
+    '0xabcd'
 
     >>> hex(to_word(0))
     '0x0'
 
     This size should never happen!
     >>> hex(to_word(0x12345678ABCD))
-    '0xABCD'
+    '0xabcd'
 
     Masks the given value to the size of a word (16 bits)
     :param word:
