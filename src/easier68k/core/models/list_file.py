@@ -72,6 +72,10 @@ class ListFile:
 
         # iterate through the input data
         for value in input_data:
+            # determine if len has to be expanded
+            if len(self.content) > (location + offset):
+                self.content.extend([0] * (location + offset - len(self.content)))
+
             self.content[location + offset] = value
             # increment the offset
             offset += 1
