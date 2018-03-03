@@ -3,7 +3,7 @@ List File
 
 Represents the output from the assembler that contains all of the instructions
 """
-MAX_MEMORY_LOCATION = 16777216 # 2^24
+MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 class ListFile:
     def __init__(self):
@@ -56,22 +56,22 @@ class ListFile:
         # TODO implement load_raw_list_file
         pass
 
-    def _expand_content_to_size(self, new_size: int) -> int:
+    def _expand_content_to_size(self, new_location: int) -> int:
         """
         Expands the length of the content byte array to the new size required,
         up to the maximum size supported
-        :param new_size:
+        :param new_location:
         :return: The number of elements to increase the length of the array by
         """
 
         # if size is beyond the number of address lines that the 68k supports
-        if new_size > MAX_MEMORY_LOCATION:
+        if new_location > MAX_MEMORY_LOCATION:
             raise OutOfBoundsMemoryError
 
         # determine if len has to be expanded
-        if len(self.content) > new_size:
+        if len(self.content) < (new_location + 1):
             # expand the size of the byte array by the difference in size
-            self.content.extend([0] * (new_size - len(self.content)))
+            self.content.extend([0] * (new_location - len(self.content)))
 
     def _load_data_at_location(self, location: int, data) -> (int, bytearray):
         """

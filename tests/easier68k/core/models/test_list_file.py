@@ -23,3 +23,7 @@ def test_load_data_at_location():
     assert lf.content[location + 2] == 0x03
     assert lf.content[location + 3] == 0x04
     assert lf.content[location + 4] == 0x05
+
+    # check that the length of the list file is only as long as it has to be
+    with pytest.raises(IndexError):
+        print(lf.content[location + 5])
