@@ -3,6 +3,13 @@ import pytest
 from easier68k.core.models.list_file import ListFile
 
 def test_load_data_at_location():
+    """
+    Try to load the data
+    01 02 03 04 05
+    into the location starting at 0x0001000
+    :return:
+    """
+
     data = [0x01, 0x02, 0x03, 0x04, 0x05]
     location = 0x0001000
 
