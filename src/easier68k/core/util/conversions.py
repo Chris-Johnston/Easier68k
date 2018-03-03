@@ -1,39 +1,38 @@
 # Conversion utils
 
 
-def word_to_long(word: int) -> int:
+def to_word(word: int) -> int:
     """
-    >>> hex(word_to_long(0x12341234))
-    '0x1234'
+    >>> hex(to_word(0x1234ABCD))
+    '0xabcd'
 
-    >>> hex(word_to_long(0))
+    >>> hex(to_word(0))
     '0x0'
 
     This size should never happen!
-    >>> hex(word_to_long(0x123412341))
-    '0x2341'
+    >>> hex(to_word(0x12345678ABCD))
+    '0xabcd'
 
-    Masks the given word value to a long
-    Also will work with bytes and words
+    Masks the given value to the size of a word (16 bits)
     :param word:
     :return:
     """
     assert isinstance(word, int), 'Argument is not of type int'
-    return word & 0x0000FFFF
+    return word & 0xFFFF
 
 
-def word_to_byte(word: int) -> int:
+def to_byte(word: int) -> int:
     """
-    >>> hex(word_to_byte(0x12341234))
-    '0x34'
+    >>> hex(to_byte(0x12345678))
+    '0x78'
 
-    >>> word_to_byte(257)
+    >>> to_byte(257)
     1
 
-    >>> hex(word_to_byte(0x00001111))
-    '0x11'
+    >>> hex(to_byte(0x00001101))
+    '0x1'
 
-    Masks the given word, long or byte value into a byte
+    Masks the given value to the size of a byte (8 bits)
     :param word:
     :return:
     """
