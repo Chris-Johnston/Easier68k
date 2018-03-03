@@ -56,6 +56,9 @@ class ListFile:
         # TODO implement load_raw_list_file
         pass
 
+    def _get_len_to_expand(self, new_size):
+        pass
+
     def _load_data_at_location(self, location: int, data) -> int:
         """
         Loads data into the location specified
@@ -74,6 +77,7 @@ class ListFile:
         for value in input_data:
             # determine if len has to be expanded
             if len(self.content) > (location + offset):
+                # extend the length with 0 values for all values that it short by
                 self.content.extend([0] * (location + offset - len(self.content)))
 
             self.content[location + offset] = value
