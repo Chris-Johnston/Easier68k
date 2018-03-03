@@ -59,7 +59,7 @@ class ListFile:
     def _get_len_to_expand(self, new_size):
         pass
 
-    def _load_data_at_location(self, location: int, data) -> int:
+    def _load_data_at_location(self, location: int, data) -> (int, bytearray):
         """
         Loads data into the location specified
         :param location:
