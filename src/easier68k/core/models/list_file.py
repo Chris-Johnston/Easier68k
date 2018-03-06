@@ -1,3 +1,5 @@
+import json
+
 """
 List File
 
@@ -8,92 +10,28 @@ MAX_MEMORY_LOCATION = 16777216  # 2^24
 class ListFile:
     def __init__(self):
         """
-        Construcctor
+        Constructor
+        """
+        self.data = {}
+        self.labels = {}
 
-        The raw assembly instructions
+    def insert_data(self, location: int, data: str) -> (int, str):
         """
-        self.content = bytearray([0x00])
-
-    def load_bytes(self, bytes: bytearray) -> bytearray:
-        """
-        Loads the contents of a byte array
-        into the contents of this list file
-        :param bytes:
-        :return:
-        """
-        self.content = bytes
-
-    def load_from_str(self, bytestr: str) -> str:
-        """
-        Loads the contents of a string into the contents
-        of this list file.
-        :param bytestr:
-        :return:
-        """
-        self.content = bytestr.encode('ascii')
-
-    def load_easy68k_list_file(self, contents: str) -> str:
-        """
-        Populates the contents of this list file
-        from an easy68k list file, and loads the
-        raw assembly instructions into the content
-        byte array.
-        :param contents:
-        :return:
-        """
-        # TODO implement the load_easy68k_list_file
-        pass
-
-    def load_raw_list_file(self, contents: str) -> str:
-        """
-        Populates the contents of this list file
-        from a raw list file (without all the additions
-        that easy68k adds), and loads the asembly instructions
-        into the content of the byte array.
-        :param contents:
-        :return:
-        """
-        # TODO implement load_raw_list_file
-        pass
-
-    def _expand_content_to_size(self, new_location: int) -> int:
-        """
-        Expands the length of the content byte array to the new size required,
-        up to the maximum size supported
-        :param new_location:
-        :return: The number of elements to increase the length of the array by
-        """
-
-        # if size is beyond the number of address lines that the 68k supports
-        if new_location > MAX_MEMORY_LOCATION:
-            raise OutOfBoundsMemoryError
-
-        # determine if len has to be expanded
-        if len(self.content) < (new_location + 1):
-            # expand the size of the byte array by the difference in size
-            self.content.extend([0] * (new_location - len(self.content)))
-
-    def _load_data_at_location(self, location: int, data) -> (int, bytearray):
-        """
-        Loads data into the location specified
-        Starts at the MSB to the LSB
+        Inserts the data at the given location into the list file
+        This data should be a string of hexadecimal data
         :param location:
         :param data:
         :return:
         """
+        assert location >= 0
+        assert location < MAX_MEMORY_LOCATION
 
-        # convert the input into immutable bytes
-        input_data = bytes(data)
+        self.data[location] = data
 
-        # offset from the starting location
-        offset = 0
-
-        # iterate through the input data
-        for value in input_data:
-            # expand content if needed
-            self._expand_content_to_size(location + offset)
-
-            # set the value
-            self.content[location + offset] = value
-            # increment the offset
-            offset += 1
+    def clear_location(self, location: int) -> int:
+        """
+        Clears the data at the given location
+        :param location:
+        :return:
+        """
+        self.data[location] = None
