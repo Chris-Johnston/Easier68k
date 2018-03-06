@@ -36,17 +36,17 @@ class EAMode:
 
     # Instance Values
     # Which mode this represents
-    _mode = ERR
+    mode = ERR
 
     # Data value (could be register number, immediate data, or absolute address
-    _data = -1
+    data = -1
 
     def __init__(self, mode=ERR, data=-1):
-        self._mode = mode
-        self._data = data
+        self.mode = mode
+        self.data = data
 
     def __str__(self):
-        return "Mode: {}, Data: {}".format(self._mode, self._data)
+        return "Mode: {}, Data: {}".format(self.mode, self.data)
 
     @staticmethod
     def parse_ea(addr: str):
@@ -91,11 +91,11 @@ class EAMode:
 
         if addr[0] == 'D':
             assert len(addr) == 2
-            assert 0 < int(addr[1]) <= 7
+            assert 0 <= int(addr[1]) <= 7
             return EAMode(EAMode.DRD, int(addr[1]))
         if addr[0] == 'A':
             assert len(addr) == 2
-            assert 0 < int(addr[1]) <= 7
+            assert 0 <= int(addr[1]) <= 7
             return EAMode(EAMode.ARD, int(addr[1]))
         if addr[0] == '(':  # ARI, ARIPI, ALA, or AWA
             # Parse the inside of the parentheses
@@ -116,7 +116,7 @@ class EAMode:
             if addr[1] == 'A':  # ARI or ARIPI
                 assert nested[0] == 'A'
                 assert nested[1].isnumeric()
-                assert 0 < int(nested[1]) <= 7
+                assert 0 <= int(nested[1]) <= 7
 
                 if i == len(addr) - 1:
                     return EAMode(EAMode.ARI, int(nested[1]))
@@ -136,7 +136,7 @@ class EAMode:
             assert addr[1] == '('
             assert addr[2] == 'A'
             assert addr[3].isnumeric()
-            assert 0 < int(addr[3]) <= 7
+            assert 0 <= int(addr[3]) <= 7
             assert addr[4] == ')'
 
             return EAMode(EAMode.ARIPD, int(addr[3]))
