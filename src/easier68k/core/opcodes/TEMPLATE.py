@@ -1,7 +1,22 @@
+from ...simulator.m68k import M68K
+
 # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
 # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
 # it can't operate on byte-sized data
 allowed_sizes = 'BWL'
+
+
+class TEMPLATE:
+    # Include parameters here
+
+    def get_byte_length(self):
+        pass
+
+    def assemble(self) -> bytearray:
+        pass
+
+    def execute(self, simulator: M68K):
+        pass
 
 
 def get_byte_length(command: str, parameters: str) -> (int, list):
@@ -14,7 +29,7 @@ def get_byte_length(command: str, parameters: str) -> (int, list):
     pass
 
 
-def assemble(command: str, parameters: str) -> (bytearray, list):
+def assemble(command: str, parameters: str) -> (TEMPLATE, list):
     """
     Assembles the given parameters into binary suitable for writing to memory
     :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
