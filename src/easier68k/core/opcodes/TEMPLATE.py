@@ -1,4 +1,4 @@
-from ...simulator.m68k import M68K
+from src.easier68k.simulator.m68k import M68K
 
 # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
 # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
@@ -8,9 +8,6 @@ allowed_sizes = 'BWL'
 
 class TEMPLATE:
     # Include parameters here
-
-    def get_byte_length(self):
-        pass
 
     def assemble(self) -> bytearray:
         pass

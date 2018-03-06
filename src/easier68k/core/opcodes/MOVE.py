@@ -1,12 +1,42 @@
 from src.easier68k.core.enum.ea_mode import EAMode
 from src.easier68k.core.enum.op_size import BigSSize
 from src.easier68k.core.enum.ea_mode_bin import EAModeBinary
+from src.easier68k.simulator.m68k import M68K
 import binascii
 
 # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
 # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
 # it can't operate on byte-sized data
 allowed_sizes = 'BWL'
+
+
+class MOVE:
+    # Include parameters here
+    def __init__(self, src: EAMode, dest: EAMode, size='B'):
+        assert src.mode != EAMode.ARD  # Only invalid src is address register direct
+        self.src = src
+
+        assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM  # Can't take address register direct or immediates
+        self.dest = dest
+
+        assert size in allowed_sizes
+        self.size = size
+
+    def assemble(self) -> bytearray:
+        tr = ''
+        tr += '00'
+        tr += '{0:02d}'.format(BigSSize.parse(self.size))
+        tr += EAModeBinary.parse_from_ea_mode_xnfirst(self.dest)
+        tr += EAModeBinary.parse_from_ea_mode_mfirst(self.src)
+
+        to_return = bytearray.fromhex(hex(int(tr, 2))[2:])
+        print(binascii.hexlify(to_return))
+
+    def execute(self, simulator: M68K):
+        pass
+
+    def __str__(self):
+        return 'Move command: Size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
 
 
 def get_byte_length(command: str, parameters: str) -> (int, list):
@@ -78,20 +108,18 @@ def get_byte_length(command: str, parameters: str) -> (int, list):
     return length, issues
 
 
-def assemble(command: str, parameters: str) -> (bytearray, list):
+def assemble(command: str, parameters: str) -> (MOVE, list):
     """
     Assembles the given parameters into binary suitable for writing to memory
 
-    >>> assemble('MOVE.B', '-(A0), D1')
-
+    >>> str(assemble('MOVE.B', '-(A0), D1')[0])
+    'Move command: Size B, src Mode: 4, Data: 0, dest Mode: 0, Data: 1'
 
     :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
     :param parameters: The parameters after the command
     :return: The bytes to write, as well as a list of warnings or errors encountered
     """
     issues = []
-    to_return = bytearray()
-    tr = ''
     parts = command.split('.')
     assert len(parts) <= 2
     if len(parts) == 1:
@@ -120,13 +148,6 @@ def assemble(command: str, parameters: str) -> (bytearray, list):
         issues.append(('Error parsing destination', 'ERROR'))
         return 0, issues
 
-    tr += '00'
-    tr += '{0:02d}'.format(BigSSize.parse(size))
-    tr += EAModeBinary.parse_from_ea_mode_xnfirst(dest)
-    tr += EAModeBinary.parse_from_ea_mode_mfirst(src)
-
-    to_return = bytearray.fromhex(hex(int(tr, 2))[2:])
-    print(binascii.hexlify(to_return))
-    return()
+    return MOVE(src, dest, size), issues
 
 
