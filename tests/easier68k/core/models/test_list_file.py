@@ -114,6 +114,28 @@ def test_symbols():
     a.define_symbol('valid', 1234)
     a.define_symbol('valid', 1234)
     a.define_symbol('VALID', 1234)
+    a.define_symbol('_valid', 1234)
+    a.define_symbol('valid_', 1234)
+    a.define_symbol('v_a_l_i_d', 1234)
+
+    # check what types of symbols are valid and invalid
+
+    a.define_symbol('VaLiD', 1234)
+    a.define_symbol('valid3', 1234)
+    a.define_symbol('VALIIIID', 1234)
+
+    # invalid
+    with pytest.raises(AssertionError):
+        a.define_symbol('1234', 1234)
+
+    # invalid
+    with pytest.raises(AssertionError):
+        a.define_symbol('1nvalid', 1234)
+
+    # invalid
+    with pytest.raises(AssertionError):
+        a.define_symbol('invalid!', 1234)
+
     a.define_symbol('AnotherOne', 0x3100)
 
     assert a.get_symbol_location('valid') == 1234

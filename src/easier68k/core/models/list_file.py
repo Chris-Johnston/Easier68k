@@ -76,7 +76,7 @@ class ListFile:
         assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
 
         # check that the symbol name is a single word
-        assert re.match(r'\A[\w-]+\Z', name), 'Symbol name was not a single word!'
+        assert re.match(r'^(([A-z])+([A-z]*[0-9]*))\w$', name), 'Symbol name was not a single word!'
 
         self.symbols[name] = location
 
