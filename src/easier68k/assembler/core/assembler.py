@@ -1,8 +1,8 @@
-from src.easier68k.core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, parse_literal
+from ...core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, parse_literal
 import binascii
 import sys
-import src.easier68k.core.opcodes
-from src.easier68k.core.opcodes import *
+from ...core import opcodes
+from ...core.opcodes import *
 
 
 def parse(text: str):  # should return a ListFile and errors/warnings eventually
@@ -42,10 +42,10 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
     for e in equates.items():
         print('{} = {}'.format(e[0], binascii.hexlify(e[1])))
 
-    for m in src.easier68k.core.opcodes.__all__:
+    for m in opcodes.__all__:
         module = sys.modules['src.easier68k.core.opcodes.{}'.format(m)]
         print(module)
-        print(module.name)
+        # print(module.name)
 
 
 # Test
