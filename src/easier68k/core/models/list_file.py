@@ -19,7 +19,7 @@ class ListFile:
         self.data = {}
         self.symbols = {}
 
-    def insert_data(self, location: int, data: str) -> (int, str):
+    def insert_data(self, location: int, data: str):
         """
         Inserts the data at the given location into the list file
         This data should be a string of hexadecimal data
@@ -39,7 +39,7 @@ class ListFile:
 
         self.data[location] = data
 
-    def insert_data_at_symbol(self, name: str, data: str) -> (str, str):
+    def insert_data_at_symbol(self, name: str, data: str):
         """
         Inserts the data at the location for the given symbol
         :param name:
@@ -48,7 +48,7 @@ class ListFile:
         """
         self.insert_data(self.get_symbol_location(name), data)
 
-    def clear_location(self, location: int) -> int:
+    def clear_location(self, location: int):
         """
         Clears the data at the given location
         :param location:
@@ -60,7 +60,7 @@ class ListFile:
 
         self.data.pop(location, None)
 
-    def define_symbol(self, name, location):
+    def define_symbol(self, name: str, location: int):
         """
         Defines a label and it's associated location
         :param name:
@@ -69,9 +69,13 @@ class ListFile:
         """
         assert location >= 0, 'Location is out of bounds!'
         assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
+
+        # check that the symbol name is a single word
+        assert re.match(r'\A[\w-]+\Z', name), 'Symbol name was not a single word!'
+
         self.symbols[name] = location
 
-    def clear_symbol(self, name):
+    def clear_symbol(self, name: str):
         """
         Clears a label
         :param name:
@@ -80,7 +84,7 @@ class ListFile:
         assert name in self.symbols, 'Symbol was not defined!'
         self.symbols.pop(name, None)
 
-    def get_symbol_location(self, name):
+    def get_symbol_location(self, name: str) -> int:
         """
         Gets the associated location for a label
         :param name:
@@ -89,7 +93,7 @@ class ListFile:
         assert name in self.symbols
         return self.symbols[name]
 
-    def get_symbol_data(self, name):
+    def get_symbol_data(self, name: str) -> str:
         """
         Get the data for the given label
         Only works for the start of data
@@ -111,7 +115,7 @@ class ListFile:
         assert location in self.data, 'Location data not defined!'
         return self.data[location]
 
-    def to_json(self):
+    def to_json(self) -> str:
         """
         Dumps the current object into a JSON string
         :return:
@@ -119,9 +123,9 @@ class ListFile:
         ret = {}
         ret['data'] = self.data
         ret['symbols'] = self.symbols
-        return json.dumps(ret)
+        return json.dumps(ret, sort_keys=True)
 
-    def load_from_json(self, json_str: str) -> (str):
+    def load_from_json(self, json_str: str):
         """
         Populates this object from a json str
         :param json_str:
@@ -130,3 +134,19 @@ class ListFile:
         loaded = json.loads(json_str)
         self.symbols = loaded['symbols']
         self.data = loaded['data']
+
+    def __eq__(self, other) -> bool:
+        """
+        Equals operator
+        :param other:
+        :return:
+        """
+        return self.symbols == other.symbols and self.data == other.data
+
+    def __ne__(self, other) -> bool:
+        """
+        Not equals operator
+        :param other:
+        :return:
+        """
+        return self.symbols != other.symbols or self.data != other.data
