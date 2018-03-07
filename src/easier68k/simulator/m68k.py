@@ -3,6 +3,7 @@ Motorola 68k chip definition
 """
 
 from .memory import Memory
+import typing
 
 class M68K:
     def __init__(self):
@@ -68,14 +69,14 @@ class M68K:
         """
         self._clock_cycles = 0
 
-    def load_memory(self, file : File):
+    def load_memory(self, file : typing.BinaryIO):
         """
         saves the raw memory into the designated file
         NOTE: file must be opened as binary or this won't work
         """
         self.memory.load_memory(file)
 
-    def save_memory(self, file : File):
+    def save_memory(self, file : typing.BinaryIO):
         """
         Loads the raw memory from the designated file
         This includes programs

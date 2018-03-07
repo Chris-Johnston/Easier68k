@@ -9,6 +9,7 @@ from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
 from ..core.models.list_file import ListFile
+import typing
 
 class UnalignedMemoryAccessError(Exception):
     pass
@@ -41,14 +42,14 @@ class Memory:
         # it is the number of bytes easy68K uses.
         self.memory = bytearray(16777216)
 
-    def save_memory(self, file : File):
+    def save_memory(self, file : typing.BinaryIO):
         """
         saves the raw memory into the designated file
         NOTE: file must be opened as binary or this won't work
         """
         file.write(self.memory)
 
-    def load_memory(self, file : File):
+    def load_memory(self, file : typing.BinaryIO):
         """
         Loads the raw memory from the designated file
         This includes programs
