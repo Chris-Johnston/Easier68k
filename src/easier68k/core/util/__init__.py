@@ -1,5 +1,6 @@
 __all__ = [
-    'conversions'
+    'conversions',
+    'parsing'
 ]
 
 from .conversions import to_byte, to_word

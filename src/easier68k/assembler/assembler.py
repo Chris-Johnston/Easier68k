@@ -1,8 +1,8 @@
-from ...core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, parse_literal
+from ..core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, parse_literal
 import binascii
 import sys
-from ...core import opcodes
-from ...core.opcodes import *
+from ..core import opcodes
+from ..core.opcodes import *
 
 
 def parse(text: str):  # should return a ListFile and errors/warnings eventually
@@ -49,5 +49,5 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
 
 
 # Test
-f = open('temptests/temptest.txt')
+f = open('../../../tests/easier68k/assembler/temptest.txt')
 parse(f.read(-1))
