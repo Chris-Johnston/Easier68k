@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from easier68k.core.models.list_file import ListFile
 
@@ -158,12 +159,23 @@ def test_list_file_json():
     a.insert_data(0x3000, 'AAAAAAAAAAAAAAAAAAAAAAAA')
     a.insert_data(0x3500, 'AAAAAAAAAAAAAAAAAAAAAAAB')
 
-    assert a.to_json() == '{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}'
+    # dump a to json and then encode it back
+    # this is done because json dumps would not correctly order the sub dictionaries sometimes
+    # so instead this just compares the values of the two
+    a_val = json.loads(a.to_json())
+    expected_val = json.loads('{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}')
+
+    assert a_val == expected_val
 
     b = ListFile()
     b.load_from_json('{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}')
     print(b.data)
     print(b.symbols)
-    assert b.to_json() == '{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}'
+    print(a.data)
+    print(a.symbols)
+
+    b_val = json.loads(b.to_json())
+
+    assert b_val == expected_val
 
     assert a == b

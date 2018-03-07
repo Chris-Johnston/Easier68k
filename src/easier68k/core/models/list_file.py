@@ -16,6 +16,10 @@ class ListFile:
         """
         Constructor
         """
+        # the keys of data must be strings so that they will work with JSON
+        # but when working with it, integers are a lot cleaner and make more sense
+        # so all of the interfaces that work with it are going to use ints
+        # but internally it will use strings
         self.data = {}
         self.symbols = {}
 
@@ -37,7 +41,7 @@ class ListFile:
             # just to ensure that it is valid
             int(data, 16)
 
-        self.data[location] = data
+        self.data[str(location)] = data
 
     def insert_data_at_symbol(self, name: str, data: str):
         """
@@ -56,9 +60,9 @@ class ListFile:
         """
         assert location >= 0, 'Location is out of bounds!'
         assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
-        assert location in self.data, 'Location not defined in data!'
+        assert str(location) in self.data, 'Location not defined in data!'
 
-        self.data.pop(location, None)
+        self.data.pop(str(location), None)
 
     def define_symbol(self, name: str, location: int):
         """
@@ -112,8 +116,8 @@ class ListFile:
         """
         assert location >= 0, 'Location is out of bounds!'
         assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
-        assert location in self.data, 'Location data not defined!'
-        return self.data[location]
+        assert str(location) in self.data, 'Location data not defined!'
+        return self.data[str(location)]
 
     def to_json(self) -> str:
         """
