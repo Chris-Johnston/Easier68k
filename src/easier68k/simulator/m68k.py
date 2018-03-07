@@ -67,3 +67,9 @@ class M68K:
         :return:
         """
         self._clock_cycles = 0
+
+    def load_memory(self, file):
+        self.memory.load_memory(file)
+
+    def save_memory(self, file):
+        self.memory.save_memory(file)

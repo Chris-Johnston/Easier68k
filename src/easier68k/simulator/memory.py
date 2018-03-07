@@ -34,21 +34,18 @@ class Memory:
         # it is the number of bytes easy68K uses.
         self.memory = bytearray(16777216)
 
-    def dump_memory(self):
+    def save_memory(self, file):
         """
-        Dumps the contents of the memory to a binary blob
-        :return:
+        saves the raw memory into the designated file
         """
-        pass
+        file.write(self.memory)
 
-    def load_memory(self, binblob):
+    def load_memory(self, file):
         """
-        Loads the contents of the memory from a
-        binary blob
-
+        Loads the raw memory from the designated file
         This includes programs
         """
-        pass
+        self.memory = bytearray(file.read())
 
     def get(self, size: int, location: int) -> bytearray:
         """
