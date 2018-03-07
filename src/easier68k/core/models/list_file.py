@@ -4,7 +4,8 @@ import re
 """
 List File
 
-Represents the output from the assembler that contains all of the instructions
+Represents the output from the assembler that contains all of the instructions and where in the
+destination memory they should end up.
 """
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
