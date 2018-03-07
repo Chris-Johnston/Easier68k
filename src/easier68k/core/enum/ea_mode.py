@@ -2,7 +2,7 @@
 Represents an effective addressing mode
 and methods associated with it
 """
-from src.easier68k.core.util.parsing import parse_literal
+from ..util.parsing import parse_literal
 
 
 class EAMode:
