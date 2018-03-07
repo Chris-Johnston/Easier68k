@@ -86,7 +86,6 @@ class ListFile:
         :param name:
         :return:
         """
-        assert name in self.symbols, 'Symbol was not defined!'
         self.symbols.pop(name, None)
 
     def get_symbol_location(self, name: str) -> int:

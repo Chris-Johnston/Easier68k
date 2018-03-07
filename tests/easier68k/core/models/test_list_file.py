@@ -152,12 +152,11 @@ def test_symbols():
 
     # clear symbol
     a.clear_symbol('valid')
+    # doing more than once should not give errors
+    a.clear_symbol('valid')
 
-    with pytest.raises(AssertionError):
-        a.clear_symbol('valid')
-
-    with pytest.raises(AssertionError):
-        a.clear_symbol('b o g u s')
+    # nor should clearing ones that did not exist
+    a.clear_symbol('b o g u s')
 
     # get symbol location
 
