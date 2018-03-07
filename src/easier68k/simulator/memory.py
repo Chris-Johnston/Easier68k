@@ -60,8 +60,19 @@ class Memory:
         :return:
         """
 
+        # for all of the locations, load the contents into memory
+        for key, value in list_file.data:
+            # internally stored as a string for json compatibility
+            # so convert back into an integer to represent the index
+            location = int(key)
 
-        pass
+            # decode the data into a ByteArray
+            # and then set it
+            values = bytearray.fromhex(value)
+
+            for i in range(0, len(values), 1):
+                # set one byte at a time
+                set(2, location + i, values[i])
 
 
     def get(self, size: int, location: int) -> bytearray:
