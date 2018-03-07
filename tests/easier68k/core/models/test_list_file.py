@@ -2,28 +2,25 @@ import pytest
 
 from easier68k.core.models.list_file import ListFile
 
-def test_load_data_at_location():
+def test_insert_data():
     """
-    Try to load the data
-    01 02 03 04 05
-    into the location starting at 0x0001000
+    General tests of the list file operation
     :return:
     """
 
-    data = [0x01, 0x02, 0x03, 0x04, 0x05]
-    location = 0x0001000
+    # create a new ListFile
+    a = ListFile()
 
-    lf = ListFile()
+    # try to insert in bounds
+    a.insert_data(0x3100, '1234ABCD')
 
-    lf._load_data_at_location(location, data)
+    # try to insert out of bounds
+    with pytest.raises(AssertionError):
+        a.insert_data(-1, 'aaaa')
 
-    # check that the data is loaded proper
-    assert lf.content[location] == 0x01
-    assert lf.content[location + 1] == 0x02
-    assert lf.content[location + 2] == 0x03
-    assert lf.content[location + 3] == 0x04
-    assert lf.content[location + 4] == 0x05
+    with pytest.raises(AssertionError):
+        a.insert_data(16777217, 'aaaa')
 
-    # check that the length of the list file is only as long as it has to be
-    with pytest.raises(IndexError):
-        print(lf.content[location + 5])
+    # try to insert bogus data
+    with pytest.raises(ValueError):
+        a.insert_data(123, 'ABCDEFG')
