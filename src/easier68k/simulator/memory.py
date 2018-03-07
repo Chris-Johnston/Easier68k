@@ -15,7 +15,7 @@ class Memory:
     Word = 2
     Long = 4
 
-    def __validateLocation(self, size, location):
+    def __validateLocation(self, size: int, location: int):
         """
         Helper function which throws an error if the location is either
         not aligned or out of bounds
@@ -30,7 +30,7 @@ class Memory:
         Constructor
         """
 
-        # all of the memory that is stored by the device		
+        # all of the memory that is stored by the device
         # 16777216 = 2^24
         # it is the number of bytes easy68K uses.
         self.memory = bytearray(16777216)
@@ -51,7 +51,7 @@ class Memory:
         """
         pass
 
-    def load_list_file(self, list_file: ListFile) -> ListFile:
+    def load_list_file(self, list_file: ListFile):
         """
         Load List File
 
@@ -63,14 +63,16 @@ class Memory:
 
         pass
 
-    def get(self, size, location):
+
+    def get(self, size: int, location: int) -> bytearray:
+
         """
         gets the memory at the given location index of size
         """
         self.__validateLocation(size, location)
         return self.memory[location:location+size]
 
-    def set(self, size, location, value):
+    def set(self, size: int, location: int, value: bytearray):
         """
         sets the memory at the given location index of size
         """
@@ -78,4 +80,3 @@ class Memory:
         if(len(value) != size):
             raise AssignWrongMemorySizeError
         self.memory[location:location+size] = value
-
