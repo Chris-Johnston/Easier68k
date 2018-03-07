@@ -179,3 +179,7 @@ def test_list_file_json():
     assert b_val == expected_val
 
     assert a == b
+
+    # try not equals
+    b.define_symbol('DataB', 0x1201)
+    assert a != b
