@@ -56,6 +56,7 @@ class Memory:
         Load List File
 
         load the contents of a list file into memory
+        using the locations specified inside of the list file
         :param list_file:
         :return:
         """
