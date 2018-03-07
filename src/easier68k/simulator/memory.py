@@ -9,6 +9,12 @@ from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
 
+class UnalignedMemoryAccessError(Exception):
+    pass
+
+class OutOfBoundsMemoryError(Exception):
+    pass
+
 class Memory:
     Byte = 1
     Word = 2
@@ -37,6 +43,7 @@ class Memory:
     def save_memory(self, file):
         """
         saves the raw memory into the designated file
+        NOTE: file must be opened as binary or this won't work
         """
         file.write(self.memory)
 
@@ -44,6 +51,7 @@ class Memory:
         """
         Loads the raw memory from the designated file
         This includes programs
+        NOTE: file must be opened as binary or this won't work
         """
         self.memory = bytearray(file.read())
 

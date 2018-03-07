@@ -69,7 +69,16 @@ class M68K:
         self._clock_cycles = 0
 
     def load_memory(self, file):
+        """
+        saves the raw memory into the designated file
+        NOTE: file must be opened as binary or this won't work
+        """
         self.memory.load_memory(file)
 
     def save_memory(self, file):
+        """
+        Loads the raw memory from the designated file
+        This includes programs
+        NOTE: file must be opened as binary or this won't work
+        """
         self.memory.save_memory(file)
