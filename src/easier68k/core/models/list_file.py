@@ -32,8 +32,8 @@ class ListFile:
         :param data:
         :return:
         """
-        assert location >= 0, 'Location is out of bounds!'
-        assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
+        assert location >= 0, 'Location is invalid!'
+        assert location < MAX_MEMORY_LOCATION, 'Location is beyond possible bounds!'
 
         # ensure that the data is valid
         # loop through every 2 or 1 characters
@@ -59,8 +59,8 @@ class ListFile:
         :param location:
         :return:
         """
-        assert location >= 0, 'Location is out of bounds!'
-        assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
+        assert location >= 0, 'Location is invalid!'
+        assert location < MAX_MEMORY_LOCATION, 'Location is beyond possible bounds!'
         assert str(location) in self.data, 'Location not defined in data!'
 
         self.data.pop(str(location), None)
@@ -72,8 +72,8 @@ class ListFile:
         :param location:
         :return:
         """
-        assert location >= 0, 'Location is out of bounds!'
-        assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
+        assert location >= 0, 'Location is invalid!'
+        assert location < MAX_MEMORY_LOCATION, 'Location is beyond possible bounds!'
 
         # check that the symbol name is a single word
         assert re.match(r'^(([A-z])+([A-z]*[0-9]*))\w$', name), 'Symbol name was not a single word!'
@@ -114,8 +114,8 @@ class ListFile:
         :param location:
         :return:
         """
-        assert location >= 0, 'Location is out of bounds!'
-        assert location < MAX_MEMORY_LOCATION, 'Location is out of bounds!'
+        assert location >= 0, 'Location is invalid!'
+        assert location < MAX_MEMORY_LOCATION, 'Location is beyond possible bounds!'
         assert str(location) in self.data, 'Location data not defined!'
         return self.data[str(location)]
 
