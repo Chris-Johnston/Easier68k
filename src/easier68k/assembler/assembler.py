@@ -46,8 +46,3 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
         module = sys.modules['src.easier68k.core.opcodes.{}'.format(m)]
         print(module)
         # print(module.name)
-
-
-# Test
-f = open('../../../tests/easier68k/assembler/temptest.txt')
-parse(f.read(-1))
