@@ -8,6 +8,7 @@ from ..core.enum.register import Register
 from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
+from ..core.models.list_file import ListFile
 
 class UnalignedMemoryAccessError(Exception):
     pass
@@ -54,6 +55,32 @@ class Memory:
         NOTE: file must be opened as binary or this won't work
         """
         self.memory = bytearray(file.read())
+
+
+    def load_list_file(self, list_file: ListFile):
+        """
+        Load List File
+
+        load the contents of a list file into memory
+        using the locations specified inside of the list file
+        :param list_file:
+        :return:
+        """
+
+        # for all of the locations, load the contents into memory
+        for key, value in list_file.data:
+            # internally stored as a string for json compatibility
+            # so convert back into an integer to represent the index
+            location = int(key)
+
+            # decode the data into a ByteArray
+            # and then set it
+            values = bytearray.fromhex(value)
+
+            for i in range(0, len(values), 1):
+                # set one byte at a time
+                set(2, location + i, values[i])
+
 
     def get(self, size: int, location: int) -> bytearray:
         """
