@@ -1,1 +1,1 @@
-__all__ = [ 'test_list_file' ]
+__all__ = ['test_list_file']
