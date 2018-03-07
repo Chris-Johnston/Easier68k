@@ -41,14 +41,14 @@ class Memory:
         # it is the number of bytes easy68K uses.
         self.memory = bytearray(16777216)
 
-    def save_memory(self, file):
+    def save_memory(self, file : File):
         """
         saves the raw memory into the designated file
         NOTE: file must be opened as binary or this won't work
         """
         file.write(self.memory)
 
-    def load_memory(self, file):
+    def load_memory(self, file : File):
         """
         Loads the raw memory from the designated file
         This includes programs

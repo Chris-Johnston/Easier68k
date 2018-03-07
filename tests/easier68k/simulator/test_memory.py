@@ -2,7 +2,7 @@ import pytest
 
 from easier68k.simulator.memory import Memory, UnalignedMemoryAccessError, OutOfBoundsMemoryError
 
-def test_memory(tmpdir):
+def test_memory_set_get():
     memory = Memory()
 
     # should start all zeroed out
@@ -49,15 +49,21 @@ def test_memory(tmpdir):
     memory.get(Memory.Long, 0xFFFFFC)
 
 
-    # test saving and loading (finally!)
+def test_memory_save_load(tmpdir):
+    # test saving and loading
+    memory = Memory()
     path = tmpdir.join('memoryDump.raw').strpath
+
+    memory.set(Memory.Long, 0x00, b'\xFF\x00\xBE\xEF')
+    memory.set(Memory.Long, 0x001000, b'\x01\x23\x00\x00')
+    memory.set(Memory.Long, 0x100000, b'\x45\x67\x89\xAB')
+
     memory.save_memory(open(path, 'wb'))
+
 
     load_test = Memory()
     load_test.load_memory(open(path, 'rb'))
 
-    # several get tests from above should work here too
-    # being as it has loaded the file
     assert load_test.get(Memory.Long, 0x00) == b'\xFF\x00\xBE\xEF'
     assert load_test.get(Memory.Long, 0x001000) == b'\x01\x23\x00\x00'
     assert load_test.get(Memory.Long, 0x100000) == b'\x45\x67\x89\xAB'
