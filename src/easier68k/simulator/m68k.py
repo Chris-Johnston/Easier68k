@@ -4,6 +4,7 @@ Motorola 68k chip definition
 
 from .memory import Memory
 from ..core.enum.register import Register
+from ..core.enum.condition_status_code import ConditionStatusCode
 
 class M68K:
     def __init__(self):
@@ -47,6 +48,24 @@ class M68K:
         # set up all of the odd registers (in this case, just the Condition Code Register)
         # which just uses 5 bits out of the lowermost byte (do we want to allocate it an entire word instead?)
         self.registers[Register.ConditionCodeRegister] = bytearray(1)
+
+    def get_register(self, register: Register) -> bytearray:
+        """
+        Gets the entire value of a register
+        :param register:
+        :return:
+        """
+        return self.registers[register]
+
+    def get_condition_status_code(self, code: ConditionStatusCode) -> bool:
+        """
+        Gets the status of a code from the Condition Code Register
+        :param code:
+        :return:
+        """
+        ccr = self.get_register(Register.CCR)
+        # ccr is only 1 byte, bit mask away the bit being looked for
+        return (ccr[0] & code) > 0
 
 
     def run(self):
