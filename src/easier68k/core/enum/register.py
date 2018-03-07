@@ -3,8 +3,9 @@ Register Enum
 Represents the different types of registers
 """
 
-
 class Register:
+    # General-Purpose 32-Bit registers
+    # Data Registers
     D0 = 0
     D1 = 1
     D2 = 2
@@ -13,6 +14,7 @@ class Register:
     D5 = 5
     D6 = 6
     D7 = 7
+    # Address registers
     A0 = 8
     A1 = 9
     A2 = 10
@@ -20,4 +22,11 @@ class Register:
     A4 = 12
     A5 = 13
     A6 = 14
+    # User stack pointer
     A7 = 15
+    # Program Counter
+    PC = 16
+    ProgramCounter = 16
+    # Condition Code Register (5 bits in the lower byte)
+    CCR = 17
+    ConditionCodeRegister = 17
