@@ -43,6 +43,6 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
         print('{} = {}'.format(e[0], binascii.hexlify(e[1])))
 
     for m in opcodes.__all__:
-        module = sys.modules['src.easier68k.core.opcodes.{}'.format(m)]
+        module = sys.modules['easier68k.core.opcodes.{}'.format(m)]
         print(module)
         # print(module.name)

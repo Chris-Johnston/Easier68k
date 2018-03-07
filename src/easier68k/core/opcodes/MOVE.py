@@ -1,7 +1,7 @@
-from src.easier68k.core.enum.ea_mode import EAMode
-from src.easier68k.core.enum.op_size import BigSSize
-from src.easier68k.core.enum.ea_mode_bin import EAModeBinary
-from src.easier68k.simulator.m68k import M68K
+from ...core.enum.ea_mode import EAMode
+from ...core.enum.op_size import BigSSize
+from ...core.enum.ea_mode_bin import EAModeBinary
+from ...simulator.m68k import M68K
 import binascii
 
 # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
