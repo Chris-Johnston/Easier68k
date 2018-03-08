@@ -6,6 +6,8 @@ from .memory import Memory
 from ..core.enum.register import Register
 from ..core.enum.condition_status_code import ConditionStatusCode
 
+MAX_MEMORY_LOCATION = 16777216  # 2^24
+
 class M68K:
     def __init__(self):
         """
@@ -48,6 +50,28 @@ class M68K:
         :return:
         """
         return self.registers[register]
+
+    def get_program_counter_value(self) -> int:
+        """
+        Gets the 32-bit integer value for the program counter value
+        :return:
+        """
+        # convert the contents of the byte array to hex, and then convert
+        # that into an int
+        return int(self.registers[Register.PC].encode('hex'), 16)
+
+    def set_program_counter_value(self, new_value: int):
+        """
+        Sets the value of the program counter
+        Must be a non negative integer that is less than the maximum location size
+        :param new_value:
+        :return:
+        """
+        assert 0 <= new_value < MAX_MEMORY_LOCATION, 'The value of the program counter must be non-negative and less than the maximum bound.'
+
+        # convert the new value into a byte array of len 4, then update the PC
+        # register to that new value
+        self.registers[Register.PC] = bytearray(new_value.to_bytes(4, 'big'))
 
     def get_condition_status_code(self, code: ConditionStatusCode) -> bool:
         """
