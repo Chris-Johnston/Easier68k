@@ -14,7 +14,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 test_modules = [
     'easier68k.core.util.conversions',
     'easier68k.assembler.assembler',
-    'easier68k.core.opcodes.MOVE'
+    'easier68k.core.opcodes.MOVE',
+    'easier68k.core.models.list_file'
 ]
 
 def load_tests(tests):
