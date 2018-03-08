@@ -5,11 +5,18 @@ from ..core import opcodes
 from ..core.opcodes import *
 
 
-def parse(text: str):  # should return a ListFile and errors/warnings eventually
+def parse(text: str):  # should return a list file and errors/warnings eventually
+    """
+    Parses an assembly file and returns a list file, along with errors/warnings from the parsing process.
+    :param text: The assembly file text to parse
+    :return: The parsed list file
+    """
+
     # --- PART 1: process for labels and equates ---
 
     labels = {}
     equates = {}
+    issues = []
 
     line_index = 0
     for line in text.splitlines():
@@ -17,8 +24,6 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
         stripped = strip_comments(line)
         if not stripped.strip():
             continue
-
-        print(strip_comments(line))
 
         if has_label(stripped):
             label = get_label(stripped)
@@ -28,21 +33,14 @@ def parse(text: str):  # should return a ListFile and errors/warnings eventually
             label_contents = strip_label(stripped).strip()
 
             if label in labels.keys():
-                print('ERROR: label already declared')
+                issues.append(('Label {} already declared'.format(label), 'ERROR'))
             else:
                 labels[label] = (line_index, label_contents)
                 if get_opcode(stripped) == 'EQU':
                     equates[label] = parse_literal(strip_opcode(stripped))
 
-    print('----- LABELS -----')
-    for l in labels.items():
-        print('Label {} at line {}: {}'.format(l[0], l[1][0], l[1][1]))
-
-    print('----- EQUATES -----')
-    for e in equates.items():
-        print('{} = {}'.format(e[0], binascii.hexlify(e[1])))
+    # --- PART 2: process operations for sizing and lay out memory ---
 
     for m in opcodes.__all__:
         module = sys.modules['easier68k.core.opcodes.{}'.format(m)]
-        print(module)
-        # print(module.name)
+        # print(module)

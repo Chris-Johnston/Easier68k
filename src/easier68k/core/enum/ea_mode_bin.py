@@ -35,6 +35,11 @@ class EAModeBinary:
 
     @staticmethod
     def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
+        """
+        Parses binary EA mode text from an EAMode class, returning the mode data first.
+        :param mode: The EAMode to produce binary from
+        :return: The parsed binary
+        """
         if mode.mode == EAMode.DRD:
             return "{0:03b}{1:03b}".format(EAModeBinary.M_DRD, mode.data)
         if mode.mode == EAMode.ARD:
@@ -54,6 +59,11 @@ class EAModeBinary:
 
     @staticmethod
     def parse_from_ea_mode_xnfirst(mode: EAMode) -> str:
+        """
+        Parses binary EA mode text from an EAMode class, returning the Xn data first.
+        :param mode: The EAMode to produce binary from
+        :return: The parsed binary
+        """
         if mode.mode == EAMode.DRD:
             return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.M_DRD)
         if mode.mode == EAMode.ARD:

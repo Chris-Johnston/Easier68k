@@ -3,7 +3,8 @@ Op Size Enum
 Holds the values for various binary translations of size codes
 """
 
-class BigSSize:
+
+class MoveSize:
     """
     Represents the "Big S" sizes (dark purple on this chart: http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf)
     """
@@ -14,13 +15,14 @@ class BigSSize:
     @staticmethod
     def parse(code: chr) -> int:
         if code == 'B':
-            return BigSSize.BYTE
+            return MoveSize.BYTE
         if code == 'W':
-            return BigSSize.WORD
+            return MoveSize.WORD
         if code == 'L':
-            return BigSSize.LONG
+            return MoveSize.LONG
 
-class SmallSSize:
+
+class Size:
     """
     Represents the "Small S" sizes (light purple on this chart: http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf)
     """
@@ -31,11 +33,12 @@ class SmallSSize:
     @staticmethod
     def parse(code: chr) -> int:
         if code == 'B':
-            return SmallSSize.BYTE
+            return Size.BYTE
         if code == 'W':
-            return SmallSSize.WORD
+            return Size.WORD
         if code == 'L':
-            return SmallSSize.LONG
+            return Size.LONG
+
 
 class SingleBitSize:
     """
