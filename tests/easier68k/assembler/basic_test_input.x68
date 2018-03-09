@@ -1,5 +1,5 @@
 * Equates section
-start       EQU 400
+start       EQU $400
 testData    EQU $ABCD
 
 * Code section
