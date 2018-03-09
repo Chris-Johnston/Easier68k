@@ -100,3 +100,24 @@ def test_condition_code_register():
     Also check that the status bits are set and read properly
     :return:
     """
+
+    # the condition code register is a single byte so it cannot be tested like the other
+    # registers
+    a = M68K()
+
+    # test initial value
+    assert a.get_register_value(Register.ConditionCodeRegister) == 0
+    assert a.get_register_value(Register.CCR) == 0
+
+    # test setting a value in bounds
+    a.set_register_value(Register.CCR, 0xAF)
+
+    # after this can assume that the enums are correctly equal to each other
+    assert a.get_register_value(Register.ConditionCodeRegister) == 0xAF
+    assert a.get_register_value(Register.CCR) == 0xAF
+
+    # now test invalid input
+    with pytest.raises(AssertionError):
+        a.set_register_value(Register.CCR, -1)
+    with pytest.raises(AssertionError):
+        a.set_register_value(Register.CCR, 0xFF + 1)
