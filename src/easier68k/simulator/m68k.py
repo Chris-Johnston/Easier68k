@@ -58,7 +58,7 @@ class M68K:
         """
         # convert the contents of the byte array to hex, and then convert
         # that into an int
-        return int(self.registers[Register.PC].encode('hex'), 16)
+        return int(self.registers[Register.PC].hex(), 16)
 
     def set_program_counter_value(self, new_value: int):
         """
