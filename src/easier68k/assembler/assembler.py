@@ -58,7 +58,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         module = sys.modules['easier68k.core.opcodes.{}'.format(m)]
 
     for line_index, stripped in for_line_stripped_comments(text):
-        no_label = strip_label(stripped)
         opcode = get_opcode(stripped).upper()
 
         # Equates have already been processed, skip them
@@ -67,6 +66,8 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
             continue
 
         contents = strip_opcode(stripped)
+
+        # Replace all substitutions in the current line with their corresponding values
         for equate in equates.items():
             contents = contents.replace(equate[0], equate[1])
 
@@ -74,9 +75,13 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
             parsed = parse_literal(contents)
             # TODO: Max/min memory location?
             current_memory_location = int.from_bytes(parsed, 'big')
-            out_test.write(hex(current_memory_location) + " | ORGed at " + str(parsed) + "\r\n")
             continue
 
+        if has_label(stripped):
+            label = get_label(stripped)
+            label_addresses[label] = current_memory_location
+
+        # We don't know this opcode, there's no module for it
         if opcode.lower() not in opcodes.__all__:
             issues.append(('Opcode {} not known, but continuing and dropping it.', 'ERROR'))
             continue
@@ -86,3 +91,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         length, issues = op_class.get_word_length(opcode, contents)
 
         current_memory_location += length * 2
+
+    for l in label_addresses.items():
+        out_test.write(l[0] + ": " + hex(l[1]) + "\r\n")
