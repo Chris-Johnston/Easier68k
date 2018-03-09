@@ -51,14 +51,64 @@ class M68K:
         """
         return self.registers[register]
 
+    def get_register_value(self, register: Register) -> int:
+        """
+        Return the value contained in a register as a 32-bit unsigned integer
+        :param register:
+        :return:
+        """
+        # convert the contents of the byte array to hex, and then convert
+        # that into an int
+        return int(self.get_register(register).hex(), 16)
+
+    def set_register_value(self, register: Register, val: int):
+        """
+        Sets the value of a register using a 32-bit int
+        :param register:
+        :param val:
+        :return:
+        """
+        # if the register is the CCR, use that method to handle setting it
+        # because of its different size
+        if register == Register.ConditionCodeRegister:
+            self._set_condition_code_register_value(val)
+            return
+
+        # and if the register is the PC, use its own method to set and handle assertion
+        # of input values
+        if register == Register.ProgramCounter:
+            self.set_program_counter_value(val)
+            return
+
+        # now for all other registers
+        # ensure that the value is within bounds
+        # actual negative numbers will need to be converted into 32-bit numbers
+        assert 0 <= val <= 0xFF_FF_FF_FF, 'The value for registers must fit into 4 bytes!'
+
+        # set the value
+        self.registers[register] = bytearray(val.to_bytes(4, 'big'))
+
+    def _set_condition_code_register_value(self, val: int):
+        """
+        Sets the value for the condition code register
+        :param val:
+        :return:
+        """
+        # ensure that the value is within bounds
+        # since the CCR is just a single byte
+        assert 0 <= val <= 0xFF, 'The value for the CCR must fit in a single byte!'
+
+        # now set the value
+        self.registers[Register.ConditionCodeRegister] = bytearray(val.to_bytes(1, 'big'))
+
+
     def get_program_counter_value(self) -> int:
         """
         Gets the 32-bit integer value for the program counter value
         :return:
         """
-        # convert the contents of the byte array to hex, and then convert
-        # that into an int
-        return int(self.registers[Register.PC].hex(), 16)
+        return self.get_register_value(Register.ProgramCounter)
+
 
     def set_program_counter_value(self, new_value: int):
         """
