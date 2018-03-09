@@ -24,14 +24,16 @@ class ConditionStatusCode:
     bit of the operand occurs for an addition, or if a
     borrow occurs in a subtraction; otherwise clear.
     """
-    X = 0
-    N = 1
-    Z = 2
-    V = 3
-    C = 4
+
+    # these are the masks for the bits in the CCR for each of these values
+    X = 0b10000
+    N = 0b01000
+    Z = 0b00100
+    V = 0b00010
+    C = 0b00001
     # duplicate human readable names
-    Extend = 0
-    Negative = 1
-    Zero = 2
-    Overflow = 3
-    Carry = 4
+    Extend = X
+    Negative = N
+    Zero = Z
+    Overflow = V
+    Carry = C
