@@ -197,8 +197,4 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         # Increment our memory counter
         current_memory_location += length * 2
 
-    out = open('temp_output_file.txt', 'w')
-    out.write(to_return.to_json())
-
     return to_return
-
