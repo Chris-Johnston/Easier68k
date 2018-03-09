@@ -2,11 +2,8 @@ from ...simulator.m68k import M68K
 
 
 class Opcode:
-    pass
-
-
-class Opcode:
-    def __init__(self, command: str, parameters: str):
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
         """
         Parses a command string into an instance of the opcode class
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
