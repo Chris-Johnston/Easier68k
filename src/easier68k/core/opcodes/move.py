@@ -70,6 +70,10 @@ class Move(Opcode):
         self.size = size
 
     def assemble(self) -> bytearray:
+        """
+        Assembles this opcode into hex to be inserted into memory
+        :return: The hex version of this opcode
+        """
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
         tr += '{0:02d}'.format(MoveSize.parse(self.size))  # Size bits
@@ -152,8 +156,6 @@ class Move(Opcode):
             issues.append((e.args[0], 'ERROR'))
             return False, issues
 
-        return True, issues
-
     @staticmethod
     def get_word_length(command: str, parameters: str) -> (int, list):
         """
@@ -205,22 +207,8 @@ class Move(Opcode):
             issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
             return 0, issues
 
-        try:
-            src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
-            assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
-        except AssertionError:
-            issues.append(('Error parsing source', 'ERROR'))
-            return 0, issues
-
-        try:
-            dest = EAMode.parse_ea(params[1].strip())
-            assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
-            # Can't take address register direct or immediates
-            assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
-        except AssertionError:
-            issues.append(('Error parsing destination', 'ERROR'))
-            return 0, issues
+        src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
+        dest = EAMode.parse_ea(params[1].strip())
 
         length = 1  # Always 1 word not counting additions to end
 
