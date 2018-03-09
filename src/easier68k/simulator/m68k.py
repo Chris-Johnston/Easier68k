@@ -34,8 +34,8 @@ class M68K:
 
         # loop through all of the 'normal' registers which are just 32 bits / 4 bytes long
         normal_registers = [Register.D0, Register.D1, Register.D2, Register.D3, Register.D4, Register.D5, Register.D6,
-                            Register.D6, Register.D7, Register.A0, Register.A1, Register.A2, Register.A3, Register.A4,
-                            Register.A5, Register.A6, Register.A7, Register.PC]
+                            Register.D7, Register.A0, Register.A1, Register.A2, Register.A3, Register.A4, Register.A5,
+                            Register.A6, Register.A7, Register.PC]
         for register in normal_registers:
             self.registers[register] = bytearray(4)
 
@@ -83,7 +83,7 @@ class M68K:
         # now for all other registers
         # ensure that the value is within bounds
         # actual negative numbers will need to be converted into 32-bit numbers
-        assert 0 <= val <= 0xFF_FF_FF_FF, 'The value for registers must fit into 4 bytes!'
+        assert 0 <= val <= 0xFFFFFFFF, 'The value for registers must fit into 4 bytes!'
 
         # set the value
         self.registers[register] = bytearray(val.to_bytes(4, 'big'))
