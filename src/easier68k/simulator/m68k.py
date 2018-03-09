@@ -5,6 +5,7 @@ Motorola 68k chip definition
 from .memory import Memory
 from ..core.enum.register import Register
 from ..core.enum.condition_status_code import ConditionStatusCode
+import typing
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -183,3 +184,18 @@ class M68K:
         :return:
         """
         self._clock_cycles = 0
+
+    def load_memory(self, file : typing.BinaryIO):
+        """
+        saves the raw memory into the designated file
+        NOTE: file must be opened as binary or this won't work
+        """
+        self.memory.load_memory(file)
+
+    def save_memory(self, file : typing.BinaryIO):
+        """
+        Loads the raw memory from the designated file
+        This includes programs
+        NOTE: file must be opened as binary or this won't work
+        """
+        self.memory.save_memory(file)

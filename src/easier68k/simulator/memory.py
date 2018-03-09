@@ -9,6 +9,13 @@ from ..core.enum.condition import Condition
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
 from ..core.models.list_file import ListFile
+import typing
+
+class UnalignedMemoryAccessError(Exception):
+    pass
+
+class OutOfBoundsMemoryError(Exception):
+    pass
 
 class Memory:
     Byte = 1
@@ -35,21 +42,21 @@ class Memory:
         # it is the number of bytes easy68K uses.
         self.memory = bytearray(16777216)
 
-    def dump_memory(self):
+    def save_memory(self, file : typing.BinaryIO):
         """
-        Dumps the contents of the memory to a binary blob
-        :return:
+        saves the raw memory into the designated file
+        NOTE: file must be opened as binary or this won't work
         """
-        pass
+        file.write(self.memory)
 
-    def load_memory(self, binblob):
+    def load_memory(self, file : typing.BinaryIO):
         """
-        Loads the contents of the memory from a
-        binary blob
-
+        Loads the raw memory from the designated file
         This includes programs
+        NOTE: file must be opened as binary or this won't work
         """
-        pass
+        self.memory = bytearray(file.read())
+
 
     def load_list_file(self, list_file: ListFile):
         """
@@ -77,7 +84,6 @@ class Memory:
 
 
     def get(self, size: int, location: int) -> bytearray:
-
         """
         gets the memory at the given location index of size
         """
