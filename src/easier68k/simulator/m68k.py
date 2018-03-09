@@ -67,7 +67,7 @@ class M68K:
         :param new_value:
         :return:
         """
-        assert 0 <= new_value < MAX_MEMORY_LOCATION, 'The value of the program counter must be non-negative and less than the maximum bound.'
+        assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of the program counter must be non-negative and less than the maximum bound.'
 
         # convert the new value into a byte array of len 4, then update the PC
         # register to that new value
