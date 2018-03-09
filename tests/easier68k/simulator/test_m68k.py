@@ -17,6 +17,34 @@ def test_address_registers():
     for reg in normal_registers:
         _test_single_address_register(a, reg)
 
+
+def test_program_counter():
+    """
+    Do the test single address register tests with the program counter interface
+    :return:
+    """
+    a = M68K()
+
+    # ensure that its value defaults to zero
+    assert a.get_program_counter_value() == 0
+
+    # try setting w/o errors
+    a.set_program_counter_value(0x3200)
+
+    # ensure that this value can be retrieved without error
+    assert a.get_program_counter_value() == 0x3200
+
+    # test of invalid input
+    with pytest.raises(AssertionError):
+        a.set_program_counter_value(-1)
+
+    a.set_program_counter_value(16777216)
+
+    with pytest.raises(AssertionError):
+        # 1 beyond the max value
+        a.set_program_counter_value(16777216 + 1)
+
+
 def _test_single_address_register(a :M68K, reg: Register):
     """
     Tests for the address registers that are limited by the size of memory
@@ -36,7 +64,7 @@ def _test_single_address_register(a :M68K, reg: Register):
     with pytest.raises(AssertionError):
         a.set_register_value(reg, -1)
 
-        a.set_register_value(reg, 16777216)
+    a.set_register_value(reg, 16777216)
 
     with pytest.raises(AssertionError):
         # 1 beyond the max value
