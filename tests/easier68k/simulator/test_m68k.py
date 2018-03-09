@@ -3,34 +3,7 @@ import pytest
 from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register
 
-def test_program_counter():
-    """
-    Tests for the m68k Program Counter register
-    :return:
-    """
-
-    a = M68K()
-
-    # ensure that its value defaults to zero
-    assert a.get_program_counter_value() == 0
-
-    # try setting w/o errors
-    a.set_program_counter_value(0x3200)
-
-    # ensure that this value can be retrieved without error
-    assert a.get_program_counter_value() == 0x3200
-
-    # test of invalid input
-    with pytest.raises(AssertionError):
-        a.set_program_counter_value(-1)
-
-    a.set_program_counter_value(16777216)
-
-    with pytest.raises(AssertionError):
-        # 1 beyond the max value
-        a.set_program_counter_value(16777216 + 1)
-
-def test_other_registers():
+def test_address_registers():
     """
     Test the other registers to ensure that they can read and write properly
     :return:
@@ -40,14 +13,50 @@ def test_other_registers():
 
     # test all of the 4 byte registers (32 bit)
     # exclude the program counter due to its restrictions
-    normal_registers = [Register.D0, Register.D1, Register.D2, Register.D3, Register.D4, Register.D5, Register.D6,
-                        Register.D7, Register.A0, Register.A1, Register.A2, Register.A3, Register.A4, Register.A5,
-                        Register.A6, Register.A7]
+    normal_registers = Register.MEMORY_LIMITED_ADDRESS_REGISTERS
     for reg in normal_registers:
-        _test_single_register(a, reg)
+        _test_single_address_register(a, reg)
+
+def _test_single_address_register(a :M68K, reg: Register):
+    """
+    Tests for the address registers that are limited by the size of memory
+    :return:
+    """
+
+    # ensure that its value defaults to zero
+    assert a.get_register_value(reg) == 0
+
+    # try setting w/o errors
+    a.set_register_value(reg, 0x3200)
+
+    # ensure that this value can be retrieved without error
+    assert a.get_register_value(reg) == 0x3200
+
+    # test of invalid input
+    with pytest.raises(AssertionError):
+        a.set_register_value(reg, -1)
+
+        a.set_register_value(reg, 16777216)
+
+    with pytest.raises(AssertionError):
+        # 1 beyond the max value
+        a.set_register_value(reg, 16777216 + 1)
+
+def test_data_registers():
+    """
+    Test the other registers to ensure that they can read and write properly
+    :return:
+    """
+
+    a = M68K()
+
+    # test all of the 4 byte DATA registers that can have any value without issues
+    normal_registers = Register.DATA_REGISTERS
+    for reg in normal_registers:
+        _test_single_data_register(a, reg)
 
 
-def _test_single_register(sim: M68K, reg: Register):
+def _test_single_data_register(sim: M68K, reg: Register):
     """
     Tests a single register
     :param sim:
@@ -93,6 +102,7 @@ def _test_single_register(sim: M68K, reg: Register):
 
     # ensure that the resulting value is still accurate after errors
     assert sim.get_register_value(reg) == 0xFFFFFFFF
+
 
 def test_condition_code_register():
     """

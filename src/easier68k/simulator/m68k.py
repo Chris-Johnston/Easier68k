@@ -32,11 +32,8 @@ class M68K:
         :return:
         """
 
-        # loop through all of the 'normal' registers which are just 32 bits / 4 bytes long
-        normal_registers = [Register.D0, Register.D1, Register.D2, Register.D3, Register.D4, Register.D5, Register.D6,
-                            Register.D7, Register.A0, Register.A1, Register.A2, Register.A3, Register.A4, Register.A5,
-                            Register.A6, Register.A7, Register.PC]
-        for register in normal_registers:
+        # loop through all of the full size registers which are just 32 bits / 4 bytes long
+        for register in Register.FULL_SIZE_REGISTERS:
             self.registers[register] = bytearray(4)
 
         # set up all of the odd registers (in this case, just the Condition Code Register)
@@ -74,10 +71,9 @@ class M68K:
             self._set_condition_code_register_value(val)
             return
 
-        # and if the register is the PC, use its own method to set and handle assertion
-        # of input values
-        if register == Register.ProgramCounter:
-            self.set_program_counter_value(val)
+        # if the register is an address register that is limited to fit in the bounds of memory
+        if register in Register.MEMORY_LIMITED_ADDRESS_REGISTERS:
+            self.set_address_register_value(register, val)
             return
 
         # now for all other registers
@@ -110,6 +106,20 @@ class M68K:
         return self.get_register_value(Register.ProgramCounter)
 
 
+    def set_address_register_value(self, reg: Register, new_value: int):
+        """
+        Sets the value of an address register, so the PC or A0-A7
+        :param reg:
+        :param new_value:
+        :return:
+        """
+        assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
+        assert reg in Register.MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
+
+        # now set the value of the register
+        self.registers[reg] = bytearray(new_value.to_bytes(4, 'big'))
+
+
     def set_program_counter_value(self, new_value: int):
         """
         Sets the value of the program counter
@@ -117,11 +127,7 @@ class M68K:
         :param new_value:
         :return:
         """
-        assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of the program counter must be non-negative and less than the maximum bound.'
-
-        # convert the new value into a byte array of len 4, then update the PC
-        # register to that new value
-        self.registers[Register.PC] = bytearray(new_value.to_bytes(4, 'big'))
+        self.set_address_register_value(Register.ProgramCounter, new_value)
 
     def get_condition_status_code(self, code: ConditionStatusCode) -> bool:
         """
