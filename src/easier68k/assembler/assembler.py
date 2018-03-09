@@ -43,4 +43,4 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
 
     for m in opcodes.__all__:
         module = sys.modules['easier68k.core.opcodes.{}'.format(m)]
-        # print(module)
+        print(module)
