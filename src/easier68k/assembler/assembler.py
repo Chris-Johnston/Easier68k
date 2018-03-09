@@ -185,7 +185,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
 
         if op_module is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
-            continue
 
         # Get the actual constructed opcode
         data, issues = op_class.from_str(opcode, contents)
