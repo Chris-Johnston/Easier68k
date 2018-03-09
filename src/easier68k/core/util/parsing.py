@@ -3,6 +3,7 @@
 from ..enum.ea_mode import EAMode
 from ..models.assembly_parameter import AssemblyParameter
 
+
 def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     """
     Parses an effective addressing mode (such as D0, (A1), #$01)

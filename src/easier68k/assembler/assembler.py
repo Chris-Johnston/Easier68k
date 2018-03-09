@@ -9,7 +9,6 @@ from ..core.models.list_file import ListFile
 # noinspection PyUnresolvedReferences
 from ..core.opcodes import *
 
-
 valid_opcodes = [
     'easier68k.core.opcodes.move'
 ]
