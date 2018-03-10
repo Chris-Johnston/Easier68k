@@ -73,17 +73,45 @@ class Move(Opcode):
         1
         
         
-        MOVE.L A4,(A7)
-        >>> op, used = Move.from_binary(b'\x2E\x8C')
+        MOVE.L (A4),(A7)
+        >>> op, used = Move.from_binary(bytearray.fromhex('2E94'))
         
         >>> str(op.src)
-        'Mode: 1, Data: 4'
+        'Mode: 2, Data: 4'
         
         >>> str(op.dest)
         'Mode: 2, Data: 7'
         
         >>> used
         1
+        
+        
+        MOVE.W #$DEAF,(A2)+
+        >>> op, used = Move.from_binary(bytearray.fromhex('34FCDEAF'))
+        
+        >>> str(op.src)
+        'Mode: 5, Data: 57007'
+        
+        >>> str(op.dest)
+        'Mode: 3, Data: 2'
+        
+        >>> used
+        2
+
+
+
+        MOVE.L ($1000).W,($200000).L
+        >>> op, used = Move.from_binary(bytearray.fromhex('23F8100000200000'))
+
+        >>> str(op.src)
+        'Mode: 7, Data: 4096'
+
+        >>> str(op.dest)
+        'Mode: 6, Data: 2097152'
+
+        >>> used
+        4
+
 
         Parses some raw data into an instance of the opcode class
         :param data: The data used to convert into an opcode instance
@@ -92,7 +120,7 @@ class Move(Opcode):
             data) or 0 for not a match
         """
         assert len(data) >= 2, 'opcode size is at least 1 word'
-        wordsUsed = 1
+        bytesUsed = 2
         
         # 'big' endian byte order
         first_word = int.from_bytes(data[0:2], 'big')
@@ -100,8 +128,8 @@ class Move(Opcode):
         [opcode,
         size,
         destination_register,
-        destination_mode,
-        source_mode,
+        destination_mode_bin,
+        source_mode_bin,
         source_register] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
         
         # check opcode
@@ -116,56 +144,73 @@ class Move(Opcode):
         
         
         
+        
         # check source mode
-        if not source_mode in EAModeBinary.VALID_SRC_EA_MODES:
+        if not source_mode_bin in EAModeBinary.VALID_SRC_EA_MODES:
             return (None, 0)
         
         source_data = source_register
+        
+        # these only differ when source_mode_bin is 0b111
+        source_mode = source_mode_bin
+        
         # check source register
-        if source_mode == 0b111:
+        if source_mode_bin == 0b111:
             if not source_register in EAModeBinary.VALID_SRC_EA_111_REGISTERS:
                 return (None, 0)
                 
             if source_register == EAModeBinary.REGISTER_AWA:
-                source_data =  int.from_bytes(data[wordsUsed], 'big')
-                wordsUsed += 1
+                source_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
+                bytesUsed += 2
+                source_mode = 7
                 
             if source_register == EAModeBinary.REGISTER_ALA:
-                source_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
-                wordsUsed += 2
+                source_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
+                bytesUsed += 4
+                source_mode = 6
                 
-            if source_register == EAModeBinary.REGISTER_ALA:
+            if source_register == EAModeBinary.REGISTER_IMM:
                 if size_char in 'BW':
-                    source_data =  int.from_bytes(data[wordsUsed], 'big')
-                    wordsUsed += 1
+                    # TODO: Do we check for bytes that the left byte is all
+                    # zeros, or do we do this where we assume the assembler is right
+                    source_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
+                    bytesUsed += 2
                 else: #must be L
-                    source_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
-                    wordsUsed += 2
+                    source_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
+                    bytesUsed += 4
+                source_mode = 5
+        
         
         
         
         # check destination mode
-        if not destination_mode in EAModeBinary.VALID_DEST_EA_MODES:
+        if not destination_mode_bin in EAModeBinary.VALID_DEST_EA_MODES:
             return (None, 0)
         
         destination_data = destination_register
+        
+        # these only differ when destination_mode_bin is 0b111
+        destination_mode = destination_mode_bin
+        
         # check destination register
-        if destination_mode == 0b111:
+        if destination_mode_bin == 0b111:
             if not destination_register in EAModeBinary.VALID_DEST_EA_111_REGISTERS:
                 return (None, 0)
                 
             if destination_register == EAModeBinary.REGISTER_AWA:
-                destination_data =  int.from_bytes(data[wordsUsed], 'big')
-                wordsUsed += 1
+                destination_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
+                bytesUsed += 2
+                destination_mode = 7
                 
             if destination_register == EAModeBinary.REGISTER_ALA:
-                destination_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
-                wordsUsed += 2
+                destination_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
+                bytesUsed += 4
+                destination_mode = 6
         
         
         src_EA = EAMode(source_mode, source_data)
         dest_EA = EAMode(destination_mode, destination_data)
-        return (cls(src_EA, dest_EA, size_char), 1)
+        return (cls(src_EA, dest_EA, size_char), bytesUsed//2)
         
 
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
