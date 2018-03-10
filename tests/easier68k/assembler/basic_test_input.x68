@@ -4,7 +4,7 @@ testData    EQU $ABCD
 
 * Code section
             ORG start
-            MOVE #testData, D0
+            MOVE #testData, ($DCBAAAAA).L
             LEA magic, A0
 
             SIMHALT

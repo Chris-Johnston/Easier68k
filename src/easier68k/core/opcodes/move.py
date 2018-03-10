@@ -80,6 +80,28 @@ class Move(Opcode):
         tr += EAModeBinary.parse_from_ea_mode_regfirst(self.dest)  # Destination first
         tr += EAModeBinary.parse_from_ea_mode_modefirst(self.src)  # Source second
 
+        if self.src.mode == EAMode.IMM:
+            if self.size.upper() == 'L':
+                tr += '{0:032b}'.format(int.from_bytes(self.src.data, 'big'))
+            else:
+                tr += '{0:016b}'.format(int.from_bytes(self.src.data, 'big'))
+
+        if self.src.mode == EAMode.AWA:
+            tr += '{0:016b}'.format(int.from_bytes(self.src.data, 'big'))
+        if self.src.mode == EAMode.ALA:
+            tr += '{0:032b}'.format(int.from_bytes(self.src.data, 'big'))
+
+        if self.dest.mode == EAMode.IMM:
+            if self.size.upper() == 'L':
+                tr += '{0:032b}'.format(int.from_bytes(self.dest.data, 'big'))
+            else:
+                tr += '{0:016b}'.format(int.from_bytes(self.dest.data, 'big'))
+
+        if self.dest.mode == EAMode.AWA:
+            tr += '{0:016b}'.format(int.from_bytes(self.dest.data, 'big'))
+        if self.dest.mode == EAMode.ALA:
+            tr += '{0:032b}'.format(int.from_bytes(self.dest.data, 'big'))
+
         to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
         return to_return
 
@@ -200,15 +222,12 @@ class Move(Opcode):
         # Split the parameters into EA modes
         params = parameters.split(',')
 
-        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
-        dest = parse_assembly_parameter(params[1].strip())
-
         if len(params) != 2:  # We need exactly 2 parameters
             issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
             return 0, issues
 
-        src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-        dest = EAMode.parse_ea(params[1].strip())
+        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+        dest = parse_assembly_parameter(params[1].strip())
 
         length = 1  # Always 1 word not counting additions to end
 
