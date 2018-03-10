@@ -8,6 +8,7 @@ from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 
 def test_move():
+
     # make a simulator class
     a = M68K()
 

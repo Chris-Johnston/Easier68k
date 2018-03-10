@@ -33,12 +33,19 @@ class Register(Enum):
     CCR = 17
     ConditionCodeRegister = 17
 
-    # constants that group together the registers
-    DATA_REGISTERS = [D0, D1, D2, D3, D4, D5, D6, D7]
-    ADDRESS_REGISTERS = [A0, A1, A2, A3, A4, A5, A6, A7]
+# constants that group together the registers
+DATA_REGISTERS = [Register.D0, Register.D1, Register.D2, Register.D3,
+                  Register.D4, Register.D5, Register.D6, Register.D7]
+ADDRESS_REGISTERS = [Register.A0, Register.A1, Register.A2, Register.A3,
+                     Register.A4, Register.A5, Register.A6, Register.A7]
 
-    # all of the address registers that are limited to fit within the bounds of memory 2^24
-    MEMORY_LIMITED_ADDRESS_REGISTERS = [A0, A1, A2, A3, A4, A5, A6, A7, PC]
+# all of the address registers that are limited to fit within the bounds of memory 2^24
+MEMORY_LIMITED_ADDRESS_REGISTERS = [Register.A0, Register.A1, Register.A2, Register.A3,
+                                    Register.A4, Register.A5, Register.A6, Register.A7,
+                                    Register.PC]
 
-    # all of the 32 bit registers
-    FULL_SIZE_REGISTERS = [D0, D1, D2, D3, D4, D5, D6, D7, A0, A1, A2, A3, A4, A5, A6, A7, PC]
+# all of the 32 bit registers
+FULL_SIZE_REGISTERS = [Register.D0, Register.D1, Register.D2, Register.D3, Register.D4,
+                       Register.D5, Register.D6, Register.D7, Register.A0, Register.A1,
+                       Register.A2, Register.A3, Register.A4, Register.A5, Register.A6,
+                       Register.A7, Register.PC]
