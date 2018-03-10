@@ -77,11 +77,14 @@ class EAMode:
         :param value:
         :return:
         """
+        print(self.mode)
+
         if self.mode is EAMode.DRD:
             # set the value for the data register
             assert 0 <= self.data <= 7
             data_register = Register(self.data)
             simulator.set_register_value(data_register, value)
+
         if self.mode is EAMode.ARD:
             # set the value for the address register
             assert 0 <= self.data <= 7

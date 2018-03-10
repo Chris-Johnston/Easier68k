@@ -89,7 +89,7 @@ class Move(Opcode):
         src_val = self.src.get_value(simulator)
 
         # and set the value
-        self.src.set_value(simulator, src_val)
+        self.dest.set_value(simulator, src_val)
 
 
 
