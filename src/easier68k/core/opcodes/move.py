@@ -1,11 +1,11 @@
 """
->>> str(Move.from_str('MOVE.B', '-(A0), D1'))
+>>> str(from_str('MOVE.B', '-(A0), D1'))
 'Move command: Size B, src Mode: 4, Data: 0, dest Mode: 0, Data: 1'
 
->>> str(Move.from_str('MOVE.L', 'D3, (A0)'))
+>>> str(from_str('MOVE.L', 'D3, (A0)'))
 'Move command: Size L, src Mode: 0, Data: 3, dest Mode: 2, Data: 0'
 
->>> Move.from_str('MOVE.W', 'D3, A3')[1]
+>>> from_str('MOVE.W', 'D3, A3')[1]
 [('Invalid addressing mode', 'ERROR')]
 """
 from ...core.enum.ea_mode import EAMode
