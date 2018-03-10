@@ -1,5 +1,10 @@
 """
+<<<<<<< 6dbc4e879427374bddda73a92cc7771cc1c5c0da
 >>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
+=======
+<<<<<<< 2d6ea7cab68fbdedabbb096d9d755f1eae7d7112
+>>> str(Move.from_str('MOVE.B', '-(A0), D1'))
+>>>>>>> Completed phase 3 of the assembler
 'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
@@ -136,7 +141,11 @@ class Move(Opcode):
         src_val = self.src.get_value(simulator, val_length)
 
         # and set the value
+<<<<<<< 6dbc4e879427374bddda73a92cc7771cc1c5c0da
         self.dest.set_value(simulator, src_val, val_length)
+=======
+        self.dest.set_value(simulator, src_val)
+>>>>>>> Completed phase 3 of the assembler
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
