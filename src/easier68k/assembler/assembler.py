@@ -4,6 +4,9 @@ import sys
 from ..core import opcodes
 from ..core.opcodes import *
 
+valid_opcodes = [
+    'easier68k.core.opcodes.move'
+]
 
 def parse(text: str):  # should return a list file and errors/warnings eventually
     """
@@ -40,7 +43,5 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
                     equates[label] = parse_literal(strip_opcode(stripped))
 
     # --- PART 2: process operations for sizing and lay out memory ---
-
-    for m in opcodes.__all__:
-        module = sys.modules['easier68k.core.opcodes.{}'.format(m)]
-        # print(module)
+    for m in valid_opcodes:
+        module = sys.modules[m]

@@ -1,6 +1,5 @@
 from ...simulator.m68k import M68K
 
-
 class Opcode:
     @classmethod
     def from_str(cls, command: str, parameters: str):
