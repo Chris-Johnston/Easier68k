@@ -20,6 +20,15 @@ class MoveSize:
             return MoveSize.WORD
         if code == 'L':
             return MoveSize.LONG
+    
+    @staticmethod
+    def parse_binary(code: int) -> chr:
+        if code == MoveSize.BYTE:
+            return 'B'
+        if code == MoveSize.WORD:
+            return 'W'
+        if code == MoveSize.LONG:
+            return 'L'
 
 
 class Size:
@@ -39,6 +48,15 @@ class Size:
         if code == 'L':
             return Size.LONG
 
+    @staticmethod
+    def parse_binary(code: int) -> chr:
+        if code == Size.BYTE:
+            return 'B'
+        if code == Size.WORD:
+            return 'W'
+        if code == Size.LONG:
+            return 'L'
+
 
 class SingleBitSize:
     """
@@ -53,3 +71,10 @@ class SingleBitSize:
             return SingleBitSize.WORD
         if code == 'L':
             return SingleBitSize.LONG
+    
+    @staticmethod
+    def parse_binary(code: int) -> chr:
+        if code == SingleBitSize.WORD:
+            return 'W'
+        if code == SingleBitSize.LONG:
+            return 'L'

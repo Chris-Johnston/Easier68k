@@ -13,6 +13,8 @@ from ...core.enum.op_size import MoveSize
 from ...core.enum.ea_mode_bin import EAModeBinary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
+from ...core.util.parsing import split_bits
+from ...core.enum.ea_mode_bin import EAModeBinary
 
 
 class Move(Opcode):
@@ -20,6 +22,9 @@ class Move(Opcode):
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
     allowed_sizes = 'BWL'
+    
+    # same as above, but for dissassembly
+    allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
@@ -47,6 +52,121 @@ class Move(Opcode):
         dest = EAMode.parse_ea(params[1].strip())
 
         return cls(src, dest, size)
+
+    @classmethod
+    def from_binary(cls, data: bytearray):
+        """
+        This has a non-move opcode
+        >>> Move.from_binary(b'\x5E\x01')
+        (None, 0)
+        
+        MOVE.B D1,D7
+        >>> op, used = Move.from_binary(b'\x1E\x01')
+        
+        >>> str(op.src)
+        'Mode: 0, Data: 1'
+        
+        >>> str(op.dest)
+        'Mode: 0, Data: 7'
+        
+        >>> used
+        1
+        
+        
+        MOVE.L A4,(A7)
+        >>> op, used = Move.from_binary(b'\x2E\x8C')
+        
+        >>> str(op.src)
+        'Mode: 1, Data: 4'
+        
+        >>> str(op.dest)
+        'Mode: 2, Data: 7'
+        
+        >>> used
+        1
+
+        Parses some raw data into an instance of the opcode class
+        :param data: The data used to convert into an opcode instance
+        :return: The constructed instance or none if there was an error and
+            the amount of data in words that was used (e.g. extra for immediate
+            data) or 0 for not a match
+        """
+        assert len(data) >= 2, 'opcode size is at least 1 word'
+        wordsUsed = 1
+        
+        # 'big' endian byte order
+        first_word = int.from_bytes(data[0:2], 'big')
+        
+        [opcode,
+        size,
+        destination_register,
+        destination_mode,
+        source_mode,
+        source_register] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
+        
+        # check opcode
+        if opcode != 0b00:
+            return (None, 0)
+        
+        # check size
+        if not size in Move.allowed_sizes_binary:
+            return (None, 0)
+        
+        size_char = MoveSize.parse_binary(size)
+        
+        
+        
+        # check source mode
+        if not source_mode in EAModeBinary.VALID_SRC_EA_MODES:
+            return (None, 0)
+        
+        source_data = source_register
+        # check source register
+        if source_mode == 0b111:
+            if not source_register in EAModeBinary.VALID_SRC_EA_111_REGISTERS:
+                return (None, 0)
+                
+            if source_register == EAModeBinary.REGISTER_AWA:
+                source_data =  int.from_bytes(data[wordsUsed], 'big')
+                wordsUsed += 1
+                
+            if source_register == EAModeBinary.REGISTER_ALA:
+                source_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
+                wordsUsed += 2
+                
+            if source_register == EAModeBinary.REGISTER_ALA:
+                if size_char in 'BW':
+                    source_data =  int.from_bytes(data[wordsUsed], 'big')
+                    wordsUsed += 1
+                else: #must be L
+                    source_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
+                    wordsUsed += 2
+        
+        
+        
+        # check destination mode
+        if not destination_mode in EAModeBinary.VALID_DEST_EA_MODES:
+            return (None, 0)
+        
+        destination_data = destination_register
+        # check destination register
+        if destination_mode == 0b111:
+            if not destination_register in EAModeBinary.VALID_DEST_EA_111_REGISTERS:
+                return (None, 0)
+                
+            if destination_register == EAModeBinary.REGISTER_AWA:
+                destination_data =  int.from_bytes(data[wordsUsed], 'big')
+                wordsUsed += 1
+                
+            if destination_register == EAModeBinary.REGISTER_ALA:
+                destination_data =  int.from_bytes(data[wordsUsed:wordsUsed+2], 'big')
+                wordsUsed += 2
+        
+        
+        src_EA = EAMode(source_mode, source_data)
+        dest_EA = EAMode(destination_mode, destination_data)
+        return (cls(src_EA, dest_EA, size_char), 1)
+        
 
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)

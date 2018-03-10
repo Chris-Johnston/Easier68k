@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # build a list of all modules that contain doctests
 test_modules = [
     'easier68k.core.util.conversions',
+    'easier68k.core.util.parsing',
     'easier68k.assembler.assembler',
     'easier68k.core.opcodes.move',
     'easier68k.core.models.list_file'
