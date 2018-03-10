@@ -13,40 +13,88 @@ from ...core.enum.op_size import MoveSize
 from ...core.enum.ea_mode_bin import EAModeBinary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
+from ..util.parsing import from_str_util
 
+
+def is_valid(command: str, parameters: str) -> (bool, list):
+    """
+    Tests whether the given command is valid
+
+    >>> is_valid('MOVE.B', 'D0, D1')[0]
+    True
+
+    >>> is_valid('MOVE.W', 'D0')[0]
+    False
+
+    >>> is_valid('MOVE.G', 'D0, D1')[0]
+    False
+
+    >>> is_valid('MOVE.L', 'D0, A2')[0]
+    False
+
+    >>> is_valid('MOV.L', 'D0, D1')[0]
+    False
+
+    >>> is_valid('MOVE.', 'D0, D1')[0]
+    False
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    :return: Whether the given command is valid and a list of issues/warnings encountered
+    """
+    issues = []
+    try:
+        parts = command.split('.')  # Split the command by period to get the size of the command
+        assert len(
+            parts) <= 2, 'Unknown error (more than 1 period in command)'  # If we have more than 2 parts something is seriously wrong
+        assert parts[0].upper() == 'MOVE', 'Incorrect command passed in'
+        if len(parts) != 1:  # Has a size specifier
+            assert len(parts[1]) == 1, 'Size specifier must be 1 character'
+            assert parts[1] in Move.allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
+
+        # Split the parameters into EA modes
+        params = parameters.split(',')
+        assert len(params) == 2, 'Must have two parameters'
+
+        src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
+        assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
+
+        dest = EAMode.parse_ea(params[1].strip())
+        assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
+
+        assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
+        assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
+
+        return True, issues
+    except AssertionError as e:
+        issues.append((e.args[0], 'ERROR'))
+        return False, issues
+
+
+def from_str(command: str, parameters: str):
+    """
+    Parses a MOVE command from memory.
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    """
+    valid, issues = is_valid(command, parameters)
+    if not valid:
+        return None, issues
+    # We can forego asserts in here because we've now confirmed this is valid assembly code
+
+    size, params = from_str_util(command, parameters)
+
+    src = EAMode.parse_ea(params[0].strip())
+    dest = EAMode.parse_ea(params[1].strip())
+
+    return Move(dest, size)
 
 class Move(Opcode):
     # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
     allowed_sizes = 'BWL'
-
-    @classmethod
-    def from_str(cls, command: str, parameters: str):
-        """
-        Parses a MOVE command from memory.
-
-        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
-        :param parameters: The parameters after the command (such as the source and destination of a move)
-        """
-        valid, issues = Move.is_valid(command, parameters)
-        if not valid:
-            return None, issues
-        # We can forego asserts in here because we've now confirmed this is valid assembly code
-
-        parts = command.split('.')  # Split the command by period to get the size of the command
-        if len(parts) == 1:  # Use the default size
-            size = 'W'
-        else:
-            size = parts[1].upper()
-
-        # Split the parameters into EA modes
-        params = parameters.split(',')
-
-        src = EAMode.parse_ea(params[0].strip())
-        dest = EAMode.parse_ea(params[1].strip())
-
-        return cls(src, dest, size)
 
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
@@ -86,60 +134,6 @@ class Move(Opcode):
     def __str__(self):
         # Makes this a bit easier to read in doctest output
         return 'Move command: Size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
-
-    @staticmethod
-    def is_valid(command: str, parameters: str) -> (bool, list):
-        """
-        Tests whether the given command is valid
-
-        >>> Move.is_valid('MOVE.B', 'D0, D1')[0]
-        True
-
-        >>> Move.is_valid('MOVE.W', 'D0')[0]
-        False
-
-        >>> Move.is_valid('MOVE.G', 'D0, D1')[0]
-        False
-
-        >>> Move.is_valid('MOVE.L', 'D0, A2')[0]
-        False
-
-        >>> Move.is_valid('MOV.L', 'D0, D1')[0]
-        False
-
-        >>> Move.is_valid('MOVE.', 'D0, D1')[0]
-        False
-
-        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
-        :param parameters: The parameters after the command (such as the source and destination of a move)
-        :return: Whether the given command is valid and a list of issues/warnings encountered
-        """
-        issues = []
-        try:
-            parts = command.split('.')  # Split the command by period to get the size of the command
-            assert len(parts) <= 2, 'Unknown error (more than 1 period in command)'  # If we have more than 2 parts something is seriously wrong
-            assert parts[0].upper() == 'MOVE', 'Incorrect command passed in'
-            if len(parts) != 1:  # Has a size specifier
-                assert len(parts[1]) == 1, 'Size specifier must be 1 character'
-                assert parts[1] in Move.allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
-
-            # Split the parameters into EA modes
-            params = parameters.split(',')
-            assert len(params) == 2, 'Must have two parameters'
-
-            src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
-
-            dest = EAMode.parse_ea(params[1].strip())
-            assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
-
-            assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
-            assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
-
-            return True, issues
-        except AssertionError as e:
-            issues.append((e.args[0], 'ERROR'))
-            return False, issues
 
     @staticmethod
     def get_word_length(command: str, parameters: str) -> (int, list):

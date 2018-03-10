@@ -1,5 +1,22 @@
 # Parsing utils
 
+def from_str_util(command: str, parameters: str) -> (str, list):
+    """
+    util method for from_str
+    :param command:
+    :param parameters:
+    :return:
+    """
+    parts = command.split('.') # split the command by . if specified
+    if len(parts) == 1:
+        size = 'W' # default size
+    else:
+        size = parts[1].upper()
+
+    # split parameters
+    params = parameters.split(',')
+
+    return size, params
 
 def parse_literal(literal: str):
     """
