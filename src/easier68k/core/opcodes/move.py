@@ -13,6 +13,7 @@ from ...core.enum.op_size import MoveSize
 from ...core.enum.ea_mode_bin import EAModeBinary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
+from ...core.util.conversions import get_number_of_bytes
 
 
 class Move(Opcode):
@@ -81,7 +82,14 @@ class Move(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
-        pass
+        # get the length
+        val_length = get_number_of_bytes(self.size)
+
+        # get the value of the source
+        src_val = simulator.memory.get(val_length, self.src.data)
+
+        # and move it to the dest
+        simulator.memory.set(val_length, self.dest.data, src_val)
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
