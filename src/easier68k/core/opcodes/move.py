@@ -15,6 +15,10 @@ from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ..util.parsing import from_str_util
 
+# Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
+# For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
+# it can't operate on byte-sized data
+allowed_sizes = 'BWL'
 
 def is_valid(command: str, parameters: str) -> (bool, list):
     """
@@ -50,7 +54,7 @@ def is_valid(command: str, parameters: str) -> (bool, list):
         assert parts[0].upper() == 'MOVE', 'Incorrect command passed in'
         if len(parts) != 1:  # Has a size specifier
             assert len(parts[1]) == 1, 'Size specifier must be 1 character'
-            assert parts[1] in Move.allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
+            assert parts[1] in allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
 
         # Split the parameters into EA modes
         params = parameters.split(',')
@@ -88,15 +92,13 @@ def from_str(command: str, parameters: str):
     src = EAMode.parse_ea(params[0].strip())
     dest = EAMode.parse_ea(params[1].strip())
 
-    return Move(dest, size)
+    return Move(src, dest, size)
 
 class Move(Opcode):
-    # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
-    # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
-    # it can't operate on byte-sized data
-    allowed_sizes = 'BWL'
 
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
+        assert isinstance(src, EAMode)
+        assert isinstance(dest, EAMode)
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
         assert src.mode != EAMode.ARD  # Only invalid src is address register direct
         self.src = src
@@ -106,7 +108,7 @@ class Move(Opcode):
         self.dest = dest
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-        assert size.upper() in Move.allowed_sizes
+        assert size.upper() in allowed_sizes
         self.size = size
 
     def assemble(self) -> bytearray:
@@ -165,7 +167,7 @@ class Move(Opcode):
         :param parameters: The parameters after the command
         :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
         """
-        valid, issues = Move.is_valid(command, parameters)
+        valid, issues = is_valid(command, parameters)
         if not valid:
             return 0, issues
         # We can forego asserts in here because we've now confirmed this is valid assembly code

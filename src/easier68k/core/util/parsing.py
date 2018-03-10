@@ -7,9 +7,9 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     :param parameters:
     :return:
     """
-    parts = command.split('.') # split the command by . if specified
+    parts = command.split('.')  # split the command by . if specified
     if len(parts) == 1:
-        size = 'W' # default size
+        size = 'W'  # default size
     else:
         size = parts[1].upper()
 
