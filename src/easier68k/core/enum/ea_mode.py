@@ -3,6 +3,8 @@ Represents an effective addressing mode
 and methods associated with it
 """
 from ..util.parsing import parse_literal
+from ...simulator.m68k import M68K
+from ..enum.register import Register
 
 
 class EAMode:
@@ -47,6 +49,45 @@ class EAMode:
 
     def __str__(self):
         return "Mode: {}, Data: {}".format(self.mode, self.data)
+
+    def get_value(self, simulator: M68K) -> int:
+        """
+        Gets the value for this EAMode
+        :param simulator:
+        :return:
+        """
+        if self.mode is EAMode.IMM:
+            return self.data
+        if self.mode is EAMode.DRD:
+            # convert the data into the register value
+            assert 0 <= self.data <= 7
+            data_register = Register(self.data)
+            return simulator.get_register_value(data_register)
+        if self.mode is EAMode.ARD:
+            assert 0 <= self.data <= 7
+            # offset the value to compensate for the enum offset
+            addr_register = Register(self.data - Register.A0)
+            return simulator.get_register_value(addr_register)
+        #todo incomplete, other modes need implementation
+
+    def set_value(self, simulator: M68K, value: int):
+        """
+        Sets the value for the
+        :param simulator:
+        :param value:
+        :return:
+        """
+        if self.mode is EAMode.DRD:
+            # set the value for the data register
+            assert 0 <= self.data <= 7
+            data_register = Register(self.data)
+            simulator.set_register_value(data_register, value)
+        if self.mode is EAMode.ARD:
+            # set the value for the address register
+            assert 0 <= self.data <= 7
+            addr_register = Register(self.data - Register.A0)
+            simulator.set_register_value(addr_register, value)
+        #todo implement the other modes
 
     @staticmethod
     def parse_ea(addr: str):

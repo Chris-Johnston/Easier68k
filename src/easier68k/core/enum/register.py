@@ -3,7 +3,9 @@ Register Enum
 Represents the different types of registers
 """
 
-class Register:
+from enum import Enum
+
+class Register(Enum):
     # General-Purpose 32-Bit registers
     # Data Registers
     D0 = 0

@@ -85,11 +85,13 @@ class Move(Opcode):
         # get the length
         val_length = get_number_of_bytes(self.size)
 
-        # get the value of the source
-        src_val = simulator.memory.get(val_length, self.src.data)
+        # get the value of src from the simulator
+        src_val = self.src.get_value(simulator)
 
-        # and move it to the dest
-        simulator.memory.set(val_length, self.dest.data, src_val)
+        # and set the value
+        self.src.set_value(simulator, src_val)
+
+
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
