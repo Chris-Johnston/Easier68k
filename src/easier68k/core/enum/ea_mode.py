@@ -5,36 +5,49 @@ and methods associated with it
 from ..util.parsing import parse_literal
 from ...simulator.m68k import M68K
 from ..enum.register import Register
+from ..util.conversions import to_word
 
+
+# should try to make this a constant only defined once
+MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 class EAMode:
     # Enum Values
     # Error value
     ERR = -1
+    Error = ERR
 
     # Data register direct
     DRD = 0
+    DataRegisterDirect = DRD
 
     # Address register direct
     ARD = 1
+    AddressRegisterDirect = ARD
 
     # Address register indirect
     ARI = 2
+    AddressRegisterIndirect = ARI
 
     # Address register indirect + post increment
     ARIPI = 3
+    AddressRegisterIndirectPostIncrement = ARIPI
 
     # Address register indirect + pre decrement
     ARIPD = 4
+    AddressRegisterIndirectPreDecrement = ARIPD
 
     # Immediate
     IMM = 5
+    Immediate = IMM
 
     # Absolute long address
     ALA = 6
+    AbsoluteLongAddress = ALA
 
     # Absolute word address
     AWA = 7
+    AbsoluteWordAddress = AWA
 
     # Instance Values
     # Which mode this represents
@@ -58,17 +71,85 @@ class EAMode:
         """
         if self.mode is EAMode.IMM:
             return self.data
+
         if self.mode is EAMode.DRD:
             # convert the data into the register value
             assert 0 <= self.data <= 7
             data_register = Register(self.data)
             return simulator.get_register_value(data_register)
-        if self.mode is EAMode.ARD:
-            assert 0 <= self.data <= 7
+
+        if self.mode is EAMode.AddressRegisterDirect:
+            # address register direct gets the value of the register
+            assert Register.A0 <= self.data <= Register.A7
             # offset the value to compensate for the enum offset
             addr_register = Register(self.data - Register.A0)
+            # get the value of the register, that's it
             return simulator.get_register_value(addr_register)
-        #todo incomplete, other modes need implementation
+
+        if self.mode is EAMode.AddressRegisterIndirect:
+            # address register indirect gets the value that the register points to
+            # check that the register number is valid
+            assert Register.A0 <= self.data <= Register.A7
+            # offset the value to compensate for the enum offset
+            addr_register = Register(self.data - Register.A0)
+            # this gets the value of the register, which points to a location
+            # in memory where the target value is
+            register_value = simulator.get_register_value(addr_register)
+            # now get the value in memory of that register
+            return simulator.memory.get(2, register_value)
+
+        if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
+            # address register indirect gets the value that the register points to
+            # check that the register number is valid
+            assert Register.A0 <= self.data <= Register.A7
+            # offset the value to compensate for the enum offset
+            addr_register = Register(self.data - Register.A0)
+            # this gets the value of the register, which points to a location
+            # in memory where the target value is
+            register_value = simulator.get_register_value(addr_register)
+            # now get the value in memory of that register
+            val = simulator.memory.get(2, register_value)
+            # do the post increment
+            simulator.set_register_value(addr_register, register_value + 1)
+            # return the value
+            return val
+
+        if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
+            # address register indirect gets the value that the register points to
+            # check that the register number is valid
+            assert Register.A0 <= self.data <= Register.A7
+            # offset the value to compensate for the enum offset
+            addr_register = Register(self.data - Register.A0)
+            # this gets the value of the register, which points to a location
+            # in memory where the target value is
+            register_value = simulator.get_register_value(addr_register)
+
+            # do the pre decrement (this does not update the value of register_value)
+            simulator.set_register_value(addr_register, register_value - 1)
+
+            # now get the value in memory of that register
+            # and return that value
+            return simulator.memory.get(2, register_value - 1)
+
+        if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
+            # if mode is absolute long or word address
+            # then get the value in memory for that value
+
+            # ensure that the data is valid
+            assert 0 <= self.data <= MAX_MEMORY_LOCATION, 'The address must be in the range [0, 2^24]!'
+
+            # get the address being looked for
+            addr = self.data
+
+            # if word address, mask out extra bits
+            if self.mode is EAMode.AbsoluteWordAddress:
+                addr = to_word(addr)
+
+            # now get the value at that memory location
+            return simulator.memory.get(4, addr)
+
+        # if nothing was done by now, surely something must be wrong
+        assert False, 'Invalid effective addressing mode!'
 
     def set_value(self, simulator: M68K, value: int):
         """
@@ -77,7 +158,6 @@ class EAMode:
         :param value:
         :return:
         """
-        print(self.mode)
 
         if self.mode is EAMode.DRD:
             # set the value for the data register
