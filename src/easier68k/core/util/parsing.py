@@ -11,7 +11,7 @@ def from_str_util(command: str, parameters: str) -> (str, list):
 
     :param command: the command str
     :param parameters: the parameters str
-    :return: size {str}, params {list} of str
+    :return: size {str}, params {list} of str, parts - both sides of the command after split
     """
     parts = command.split('.')  # split the command by . if specified
     if len(parts) == 1:
@@ -26,7 +26,7 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     for x in range(len(params)):
         params[x] = params[x].strip()
 
-    return size, params
+    return size, params, parts
 
 def parse_literal(literal: str):
     """

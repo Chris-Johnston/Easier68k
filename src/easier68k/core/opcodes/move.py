@@ -48,22 +48,23 @@ def is_valid(command: str, parameters: str) -> (bool, list):
     """
     issues = []
     try:
-        parts = command.split('.')  # Split the command by period to get the size of the command
+        # split command and parmeters using from_str_util
+        size, params, parts = from_str_util(command, parameters)
+
         assert len(
             parts) <= 2, 'Unknown error (more than 1 period in command)'  # If we have more than 2 parts something is seriously wrong
-        assert parts[0].upper() == 'MOVE', 'Incorrect command passed in'
+        assert parts[0].upper() == 'MOVE', 'Command is not a MOVE.'
         if len(parts) != 1:  # Has a size specifier
             assert len(parts[1]) == 1, 'Size specifier must be 1 character'
             assert parts[1] in allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
 
         # Split the parameters into EA modes
-        params = parameters.split(',')
         assert len(params) == 2, 'Must have two parameters'
 
-        src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
+        src = EAMode.parse_ea(params[0])  # Parse the source and make sure it parsed right
         assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
 
-        dest = EAMode.parse_ea(params[1].strip())
+        dest = EAMode.parse_ea(params[1])
         assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
 
         assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
@@ -87,7 +88,7 @@ def from_str(command: str, parameters: str):
         return None, issues
     # We can forego asserts in here because we've now confirmed this is valid assembly code
 
-    size, params = from_str_util(command, parameters)
+    size, params, parts = from_str_util(command, parameters)
 
     src = EAMode.parse_ea(params[0].strip())
     dest = EAMode.parse_ea(params[1].strip())
