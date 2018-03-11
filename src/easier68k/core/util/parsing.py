@@ -7,7 +7,7 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     and splits the parameters
 
     >>> from_str_util('MOVE.B', '#123, D0')
-    ('B', ['#123', 'D0'])
+    ('B', ['#123', 'D0'], ['MOVE', 'B'])
 
     :param command: the command str
     :param parameters: the parameters str
