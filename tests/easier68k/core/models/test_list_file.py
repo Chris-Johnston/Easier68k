@@ -185,17 +185,12 @@ def test_list_file_json():
     # this is done because json dumps would not correctly order the sub dictionaries sometimes
     # so instead this just compares the values of the two
     a_val = json.loads(a.to_json())
-    print(a.to_json())
 
     expected_val = json.loads('{"data": {"12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB", "4096": "010203040506", "4608": "DEADBEEF"}, "startingExecutionAddress": 1280, "symbols": {"DataA": 4096, "DataB": 4608}}')
     assert a_val == expected_val
 
     b = ListFile()
     b.load_from_json('{"data": {"12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB", "4096": "010203040506", "4608": "DEADBEEF"}, "startingExecutionAddress": 1280, "symbols": {"DataA": 4096, "DataB": 4608}}')
-    print(b.data)
-    print(b.symbols)
-    print(a.data)
-    print(a.symbols)
 
     b_val = json.loads(b.to_json())
 
