@@ -3,10 +3,10 @@ EA Mode Binary Enum
 Represents binary translations for various EA modes
 """
 from .ea_mode import EAMode
-from enum import Enum
+from enum import IntEnum
 
 
-class EAModeBinary:
+class EAModeBinary(IntEnum):
     # Data register direct
     MODE_DRD = 0b000
 
@@ -34,21 +34,23 @@ class EAModeBinary:
     MODE_AWA = 0b111
     REGISTER_AWA = 0b000
 
-    # currently missing the offset modes
-    VALID_DEST_EA_MODES = [MODE_DRD, MODE_ARI, MODE_ARIPI, MODE_ARIPD, MODE_ALA, MODE_AWA]
-    
-    # currently missing the offset modes
-    VALID_SRC_EA_MODES = VALID_DEST_EA_MODES + [MODE_ARD, MODE_IMM]
-    
-    # what the hell should I name this?
-    # it's the valid destination registers for the 111 mode
-    # currently missing the offset modes
-    VALID_DEST_EA_111_REGISTERS = [REGISTER_ALA, REGISTER_AWA]
-    
-    # what the hell should I name this?
-    # it's the valid source registers for the 111 mode
-    # currently missing the offset modes
-    VALID_SRC_EA_111_REGISTERS = VALID_DEST_EA_111_REGISTERS + [REGISTER_IMM]
+# currently missing the offset modes
+VALID_DEST_EA_MODES = [EAModeBinary.MODE_DRD, EAModeBinary.MODE_ARI,
+                       EAModeBinary.MODE_ARIPI, EAModeBinary.MODE_ARIPD,
+                       EAModeBinary.MODE_ALA, EAModeBinary.MODE_AWA]
+
+# currently missing the offset modes
+VALID_SRC_EA_MODES = VALID_DEST_EA_MODES + [EAModeBinary.MODE_ARD, EAModeBinary.MODE_IMM]
+
+# what the hell should I name this?
+# it's the valid destination registers for the 111 mode
+# currently missing the offset modes
+VALID_DEST_EA_111_REGISTERS = [EAModeBinary.REGISTER_ALA, EAModeBinary.REGISTER_AWA]
+
+# what the hell should I name this?
+# it's the valid source registers for the 111 mode
+# currently missing the offset modes
+VALID_SRC_EA_111_REGISTERS = VALID_DEST_EA_111_REGISTERS + [EAModeBinary.REGISTER_IMM]
 
 
 def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
@@ -144,10 +146,10 @@ def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, d
     bytesUsed = 0
     
     # check source mode
-    if is_source and not mode in EAModeBinary.VALID_SRC_EA_MODES:
+    if is_source and not mode in VALID_SRC_EA_MODES:
         return (None, 0)
     
-    if not is_source and not mode in EAModeBinary.VALID_DEST_EA_MODES:
+    if not is_source and not mode in VALID_DEST_EA_MODES:
         return (None, 0)
     
     ea_data = register
@@ -158,10 +160,10 @@ def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, d
     
     # check source register
     if mode == 0b111:
-        if is_source and not register in EAModeBinary.VALID_SRC_EA_111_REGISTERS:
+        if is_source and not register in VALID_SRC_EA_111_REGISTERS:
             return (None, 0)
         
-        if not is_source and not register in EAModeBinary.VALID_DEST_EA_111_REGISTERS:
+        if not is_source and not register in VALID_DEST_EA_111_REGISTERS:
             return (None, 0)
         
         # handle the three special cases for when mode is 7
