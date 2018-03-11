@@ -4,4 +4,5 @@ __all__ = ['condition',
            'ea_mode_bin',
            'op_size',
            'register',
+           'srecordtype',
            'system_status_code']

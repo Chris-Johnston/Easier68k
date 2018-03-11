@@ -1,6 +1,8 @@
 import json
 import re
 
+from ..enum.srecordtype import SRecordType
+
 """
 List File
 
@@ -23,6 +25,23 @@ class ListFile:
         # but internally it will use strings
         self.data = {}
         self.symbols = {}
+        self.starting_execution_address = 0
+
+    def set_starting_execution_address(self, location: int):
+        """
+        Sets the starting execution address
+        :param location:
+        :return:
+        """
+        assert 0 <= location <= MAX_MEMORY_LOCATION, 'The starting execution address must be within the bounds [0, 2^24]!'
+        self.starting_execution_address = location
+
+    def get_starting_execution_address(self):
+        """
+        Gets the starting execution address
+        :return:
+        """
+        return self.starting_execution_address
 
     def insert_data(self, location: int, data: str):
         """
@@ -127,6 +146,7 @@ class ListFile:
         ret = {}
         ret['data'] = self.data
         ret['symbols'] = self.symbols
+        ret['startingExecutionAddress'] = self.starting_execution_address
         return json.dumps(ret, sort_keys=True)
 
     def load_from_json(self, json_str: str):
@@ -138,6 +158,86 @@ class ListFile:
         loaded = json.loads(json_str)
         self.symbols = loaded['symbols']
         self.data = loaded['data']
+        self.starting_execution_address = loaded['startingExecutionAddress']
+
+    def read_s_record_filename(self, filepath: str):
+        """
+        Read the S record at the given file path, builds the content of this list
+        file from it
+        :param filepath: {str} Path to an S record
+        :return: None
+        """
+        with open(filepath, 'r') as f:
+            for line in f:
+                # process the line in the file
+                self.__process_s_record_line(line)
+
+    def __process_s_record_line(self, line: str):
+        """
+        Process a single line of the S record
+        This is defined here: http://www.easy68k.com/easy68ksrecord.htm
+        :param line: {str} a single line of an S record file
+        :return: None
+        """
+        # type of record
+        record_type = SRecordType.parse(line[:2])
+        # count of remaining character pairs in the record
+        count = int(line[2:4], 16)
+        # address 2 3 or 4 bytes as hex
+        address_val_len = 0
+
+        if record_type is SRecordType.S0:
+            # address field is unused
+            address_val_len = 4
+        elif record_type is SRecordType.S1:
+            # 2 bytes
+            address_val_len = 4
+        elif record_type is SRecordType.S2:
+            # 3 bytes
+            address_val_len = 6
+        elif record_type is SRecordType.S3:
+            # 4 bytes
+            address_val_len = 8
+        elif record_type is SRecordType.S5:
+            # the address field is interpreted as a 2 byte value
+            # and contains the counts of S1 2 and 3 records prev
+            # transmitted
+            address_val_len = 4
+        elif record_type is SRecordType.S7:
+            # termination record
+            # contains the starting execution address
+            # as 4 bytes
+            address_val_len = 8
+        elif record_type is SRecordType.S8:
+            # termination record
+            # contains the starting execution address
+            # as 3 bytes
+            address_val_len = 6
+        elif record_type is SRecordType.S9:
+            # termination record
+            # contains the starting execution address
+            # as 2 bytes
+            address_val_len = 4
+
+        # get the address for the data
+        address = int(line[4:4+address_val_len], 16)
+
+        # get the data that should be between 0-64 characters
+        data = line[4+address_val_len:-2]
+
+        # the last two characters as a hexadecimal value
+        # with the least significant byte of the ones complement of the sum
+        # of the byte values represented by the pairs of characters
+        # making up the count, address and data pairs
+
+        # for now, I don't care about the checksum
+        checksum = line[-2:]
+
+        if record_type in [SRecordType.S1, SRecordType.S2, SRecordType.S3]:
+            self.insert_data(address, data)
+
+        if record_type in [SRecordType.S7, SRecordType.S8, SRecordType.S9]:
+            self.starting_execution_address = address
 
     def __eq__(self, other) -> bool:
         """
@@ -145,7 +245,7 @@ class ListFile:
         :param other:
         :return:
         """
-        return self.symbols == other.symbols and self.data == other.data
+        return self.symbols == other.symbols and self.data == other.data and self.starting_execution_address == other.starting_execution_address
 
     def __ne__(self, other) -> bool:
         """

@@ -169,10 +169,11 @@ def test_list_file_json():
 
     a = ListFile()
 
-    assert a.to_json() == '{"data": {}, "symbols": {}}'
+    assert a.to_json() == '{"data": {}, "startingExecutionAddress": 0, "symbols": {}}'
 
     a.define_symbol('DataA', 0x1000)
     a.define_symbol('DataB', 0x1200)
+    a.set_starting_execution_address(0x500)
 
     a.insert_data_at_symbol('DataA', '010203040506')
     a.insert_data_at_symbol('DataB', 'DEADBEEF')
@@ -184,16 +185,12 @@ def test_list_file_json():
     # this is done because json dumps would not correctly order the sub dictionaries sometimes
     # so instead this just compares the values of the two
     a_val = json.loads(a.to_json())
-    expected_val = json.loads('{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}')
 
+    expected_val = json.loads('{"data": {"12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB", "4096": "010203040506", "4608": "DEADBEEF"}, "startingExecutionAddress": 1280, "symbols": {"DataA": 4096, "DataB": 4608}}')
     assert a_val == expected_val
 
     b = ListFile()
-    b.load_from_json('{"data": {"4096": "010203040506", "4608": "DEADBEEF", "12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB"}, "symbols": {"DataA": 4096, "DataB": 4608}}')
-    print(b.data)
-    print(b.symbols)
-    print(a.data)
-    print(a.symbols)
+    b.load_from_json('{"data": {"12288": "AAAAAAAAAAAAAAAAAAAAAAAA", "13568": "AAAAAAAAAAAAAAAAAAAAAAAB", "4096": "010203040506", "4608": "DEADBEEF"}, "startingExecutionAddress": 1280, "symbols": {"DataA": 4096, "DataB": 4608}}')
 
     b_val = json.loads(b.to_json())
 
