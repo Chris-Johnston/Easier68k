@@ -301,7 +301,7 @@ def get_opcode(line: str) -> str:
 
         opcode += c
 
-    return opcode
+    return opcode.upper()
 
 
 def strip_opcode(line: str) -> str:

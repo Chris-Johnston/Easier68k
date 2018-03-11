@@ -10,15 +10,21 @@ from ..core.models.list_file import ListFile
 from ..core.opcodes import *
 
 
+valid_opcodes = [
+    'easier68k.core.opcodes.move'
+]
+
+MAX_MEMORY_LOCATION = 16777216  # 2^24
+
+
 def for_line_stripped_comments(full_text: str):
-    line_index = 0
-    for line in full_text.splitlines():
-        line_index += 1
+    for line_index, line in enumerate(full_text.splitlines()):
         stripped = strip_comments(line)
         if not stripped.strip():
             continue
 
-        yield line_index, stripped
+        yield line_index + 1, stripped  # line_index + 1 because here the line indices are zero-based
+
 
 
 def parse(text: str):  # should return a list file and errors/warnings eventually
@@ -93,7 +99,7 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
 
     # --- PART 3: actually create the list file ---
     for line_index, stripped in for_line_stripped_comments(text):
-        opcode = get_opcode(stripped).upper()
+        opcode = get_opcode(stripped)
 
         # Equates have already been processed, skip them
         # (this idea could be expanded for more preprocessor directives)
@@ -111,21 +117,32 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
             contents = contents.replace(label[0], '$' + hex(label[1])[2:])
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
+<<<<<<< f4fbfcf933e13d5a4e22f5f86c7470c7ca7134c1
             new_memory_location = parse_literal(contents)
             assert 0 <= new_memory_location < 16777216, 'ORG address must be between 0 and 2^24!'
+=======
+            parsed = parse_literal(contents)
+            new_memory_location = int.from_bytes(parsed, 'big')
+            assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
+>>>>>>> Implemented PR feedback
             current_memory_location = new_memory_location
             continue
 
-        # We don't know this opcode, there's no module for it
-        if opcode.lower() not in opcodes.__all__:
-            issues.append(('Opcode {} not known, but continuing and dropping it.', 'ERROR'))
-            continue
+        op_module = None
 
         # Get the module of this opcode
-        op_module = sys.modules['easier68k.core.opcodes.{}'.format(opcode.lower())]
+        for m in valid_opcodes:
+            mod = sys.modules[m]
+            if mod.command_matches(opcode):
+                op_module = mod
+                break
+
+        if op_module is None:
+            issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
+            continue
 
         # Get the class of this opcode from inside the module
-        op_class = getattr(op_module, opcode.capitalize())
+        op_class = getattr(op_module, op_module.class_name)
 
         # Get the actual constructed opcode
         data, issues = op_class.from_str(opcode, contents)
@@ -135,4 +152,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
 
         # Increment our memory counter
         current_memory_location += length * 2
+
+    return to_return
 
