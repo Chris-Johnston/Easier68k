@@ -162,9 +162,10 @@ class ListFile:
 
     def read_s_record_filename(self, filepath: str):
         """
-        Read the S record at the given file path
-        :param filepath: Path to an S record
-        :return:
+        Read the S record at the given file path, builds the content of this list
+        file from it
+        :param filepath: {str} Path to an S record
+        :return: None
         """
         with open(filepath, 'r') as f:
             for line in f:
@@ -175,8 +176,8 @@ class ListFile:
         """
         Process a single line of the S record
         This is defined here: http://www.easy68k.com/easy68ksrecord.htm
-        :param line:
-        :return:
+        :param line: {str} a single line of an S record file
+        :return: None
         """
         # type of record
         record_type = SRecordType.parse(line[:2])
