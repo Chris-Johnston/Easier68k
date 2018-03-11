@@ -16,6 +16,13 @@ valid_opcodes = [
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 
+valid_opcodes = [
+    'easier68k.core.opcodes.move'
+]
+
+MAX_MEMORY_LOCATION = 16777216  # 2^24
+
+
 def for_line_stripped_comments(full_text: str):
     for line_index, line in enumerate(full_text.splitlines()):
         stripped = strip_comments(line)
@@ -185,11 +192,10 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
 
         if op_module is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
-
-        # We don't know this opcode, there's no module for it
-        if op_module is None:
-            issues.append(('Opcode {} not known, but continuing and dropping it.', 'ERROR'))
             continue
+
+        # Get the class of this opcode from inside the module
+        op_class = getattr(op_module, op_module.class_name)
 
         # Get the actual constructed opcode
         data, issues = op_class.from_str(opcode, contents)

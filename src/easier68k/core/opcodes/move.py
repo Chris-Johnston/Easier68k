@@ -41,6 +41,24 @@ def command_matches(command: str) -> bool:
 class_name = 'Move'
 
 
+def command_matches(command: str) -> bool:
+    """
+    Checks whether a command string is an instance of this command type
+    :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
+    :return: Whether the string is an instance of this command type
+    """
+    spl = command.split('.')
+    if len(spl) == 1:
+        return command == 'MOVE'
+    else:
+        # Don't check for other things past this, like size: error handling for this will be done in other methods
+        # For now all we're concerned with is if this is a MOVE command, not if the size is valid or anything else
+        return spl[0] == 'MOVE'
+
+
+class_name = 'Move'
+
+
 class Move(Opcode):
     # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
