@@ -8,9 +8,15 @@ from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 
 def test_move():
+    """
+    Test to see that move works as intended
+    :return:
+    """
 
     # make a simulator class
     a = M68K()
+
+    # test immediate -> data register
 
     # move 123 to D2
     src = EAMode(EAMode.IMM, 123)
@@ -22,3 +28,13 @@ def test_move():
     mv.execute(a)
 
     assert a.get_register_value(Register.D2) == 123
+
+def test_move_invalid_behavior():
+    """
+    Test invalid behavior for move
+    :return:
+    """
+
+    a = M68K()
+
+    src = EAMode()
