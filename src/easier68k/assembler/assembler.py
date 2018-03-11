@@ -114,7 +114,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
     :param text: The assembly file text to parse
     :return: The parsed list file
     """
-
     # --- PART 1: process for labels and equates ---
     labels, equates, issues = find_labels(text)
 
@@ -193,9 +192,6 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         if op_module is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
-
-        # Get the class of this opcode from inside the module
-        op_class = getattr(op_module, op_module.class_name)
 
         # Get the actual constructed opcode
         data, issues = op_class.from_str(opcode, contents)
