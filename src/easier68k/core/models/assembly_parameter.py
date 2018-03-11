@@ -73,35 +73,35 @@ class AssemblyParameter:
 
         if self.mode is EAMode.AddressRegisterDirect:
             # address register direct gets the value of the register
-            assert Register.A0 <= self.data <= Register.A7
+            assert Register.A0 <= self.data + Register.A0 <= Register.A7
             # offset the value to compensate for the enum offset
-            addr_register = Register(self.data - Register.A0)
+            addr_register = Register(self.data + Register.A0)
             # get the value of the register, that's it
             return simulator.get_register_value(addr_register)
 
         if self.mode is EAMode.AddressRegisterIndirect:
             # address register indirect gets the value that the register points to
             # check that the register number is valid
-            assert Register.A0 <= self.data <= Register.A7
+            assert Register.A0 <= self.data + Register.A0 <= Register.A7
             # offset the value to compensate for the enum offset
-            addr_register = Register(self.data - Register.A0)
+            addr_register = Register(self.data + Register.A0)
             # this gets the value of the register, which points to a location
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
             # now get the value in memory of that register
-            return simulator.memory.get(2, register_value)
+            return simulator.memory.get(4, register_value)
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
             # address register indirect gets the value that the register points to
             # check that the register number is valid
-            assert Register.A0 <= self.data <= Register.A7
+            assert Register.A0 <= self.data + Register.A0 <= Register.A7
             # offset the value to compensate for the enum offset
-            addr_register = Register(self.data - Register.A0)
+            addr_register = Register(self.data + Register.A0)
             # this gets the value of the register, which points to a location
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
             # now get the value in memory of that register
-            val = simulator.memory.get(2, register_value)
+            val = simulator.memory.get(4, register_value)
             # do the post increment
             simulator.set_register_value(addr_register, register_value + 1)
             # return the value
@@ -110,9 +110,9 @@ class AssemblyParameter:
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
             # address register indirect gets the value that the register points to
             # check that the register number is valid
-            assert Register.A0 <= self.data <= Register.A7
+            assert Register.A0 <= self.data + Register.A0 <= Register.A7
             # offset the value to compensate for the enum offset
-            addr_register = Register(self.data - Register.A0)
+            addr_register = Register(self.data + Register.A0)
             # this gets the value of the register, which points to a location
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
@@ -122,7 +122,7 @@ class AssemblyParameter:
 
             # now get the value in memory of that register
             # and return that value
-            return simulator.memory.get(2, register_value - 1)
+            return simulator.memory.get(4, register_value - 1)
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # if mode is absolute long or word address
