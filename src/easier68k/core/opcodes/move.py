@@ -1,9 +1,9 @@
 """
 >>> str(Move.from_str('MOVE.B', '-(A0), D1'))
-'Move command: Size B, src Mode: 4, Data: 0, dest Mode: 0, Data: 1'
+'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(Move.from_str('MOVE.L', 'D3, (A0)'))
-'Move command: Size L, src Mode: 0, Data: 3, dest Mode: 2, Data: 0'
+'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> Move.from_str('MOVE.W', 'D3, A3')[1]
 [('Invalid addressing mode', 'ERROR')]
@@ -14,6 +14,7 @@ from ...core.enum.ea_mode_bin import EAModeBinary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.conversions import get_number_of_bytes
+from ..util.parsing import parse_assembly_parameter
 
 
 class Move(Opcode):
@@ -44,8 +45,8 @@ class Move(Opcode):
         # Split the parameters into EA modes
         params = parameters.split(',')
 
-        src = EAMode.parse_ea(params[0].strip())
-        dest = EAMode.parse_ea(params[1].strip())
+        src = parse_assembly_parameter(params[0].strip())
+        dest = parse_assembly_parameter(params[1].strip())
 
         return cls(src, dest, size)
 
@@ -137,11 +138,11 @@ class Move(Opcode):
             params = parameters.split(',')
             assert len(params) == 2, 'Must have two parameters'
 
-            src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
+            src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+            assert src.mode is not EAMode.ERR, 'Error parsing src'  # -1 means error
 
-            dest = EAMode.parse_ea(params[1].strip())
-            assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
+            dest = parse_assembly_parameter(params[1].strip())
+            assert dest.mode is not EAMode.ERR, 'Error parsing dest'  # -1 means error
 
             assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
             assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
@@ -196,8 +197,8 @@ class Move(Opcode):
         # Split the parameters into EA modes
         params = parameters.split(',')
 
-        src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-        dest = EAMode.parse_ea(params[1].strip())
+        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+        dest = parse_assembly_parameter(params[1].strip())
 
         length = 1  # Always 1 word not counting additions to end
 
