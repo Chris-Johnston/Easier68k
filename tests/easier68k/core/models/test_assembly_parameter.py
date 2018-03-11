@@ -129,7 +129,7 @@ def test_get_value():
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 0)
     assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
 
-    assert sim.get_register_value(Register.A0) == 0x1001
+    assert sim.get_register_value(Register.A0) == 0x1000 + 4
 
     # pre decrement
 
