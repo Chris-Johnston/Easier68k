@@ -138,6 +138,13 @@ def test_get_value():
 
     assert sim.get_register_value(Register.A0) == 0x1000
 
+    # test absolute long / word address
+    ap = AssemblyParameter(EAMode.AbsoluteWordAddress, 0x1000)
+    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+
+    ap = AssemblyParameter(EAMode.AbsoluteLongAddress, 0x1000)
+    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+
 
 
 
