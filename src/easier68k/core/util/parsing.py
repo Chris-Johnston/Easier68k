@@ -2,10 +2,16 @@
 
 def from_str_util(command: str, parameters: str) -> (str, list):
     """
-    util method for from_str
-    :param command:
-    :param parameters:
-    :return:
+    Util method for from_str
+    Splits the command into both parts, gets the normalized size
+    and splits the parameters
+
+    >>> from_str_util('MOVE.B', '#123, D0')
+    ('B', ['#123', 'D0'])
+
+    :param command: the command str
+    :param parameters: the parameters str
+    :return: size {str}, params {list} of str
     """
     parts = command.split('.')  # split the command by . if specified
     if len(parts) == 1:
@@ -15,6 +21,10 @@ def from_str_util(command: str, parameters: str) -> (str, list):
 
     # split parameters
     params = parameters.split(',')
+
+    # strip away whitespace for the params
+    for x in range(len(params)):
+        params[x] = params[x].strip()
 
     return size, params
 
