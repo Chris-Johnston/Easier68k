@@ -10,10 +10,10 @@
 """
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize
-from ...core.enum.ea_mode_bin import EAModeBinary
+from ...core.enum.ea_mode_bin import EAModeBinary, parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
-from ...core.util.parsing import split_bits
+from ...core.util.split_bits import split_bits
 
 
 class Move(Opcode):
@@ -307,10 +307,10 @@ def from_binary(data: bytearray):
     
     wordsUsed = 1
     
-    src_EA = EAModeBinary.parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
+    src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
     wordsUsed += src_EA[1]
     
-    dest_EA = EAModeBinary.parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
+    dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
     wordsUsed += dest_EA[1]
     
     return (Move(src_EA[0], dest_EA[0], size), wordsUsed)

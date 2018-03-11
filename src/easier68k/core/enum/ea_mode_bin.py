@@ -3,6 +3,7 @@ EA Mode Binary Enum
 Represents binary translations for various EA modes
 """
 from .ea_mode import EAMode
+from enum import Enum
 
 
 class EAModeBinary:
@@ -49,143 +50,143 @@ class EAModeBinary:
     # currently missing the offset modes
     VALID_SRC_EA_111_REGISTERS = VALID_DEST_EA_111_REGISTERS + [REGISTER_IMM]
 
-    @staticmethod
-    def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
-        """
-        Parses binary EA mode text from an EAMode class, returning the mode data first.
-        :param mode: The EAMode to produce binary from
-        :return: The parsed binary
-        """
-        if mode.mode == EAMode.DRD:
-            return "{0:03b}{1:03b}".format(EAModeBinary.MODE_DRD, mode.data)
-        if mode.mode == EAMode.ARD:
-            return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARD, mode.data)
-        if mode.mode == EAMode.ARI:
-            return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARI, mode.data)
-        if mode.mode == EAMode.ARIPI:
-            return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPI, mode.data)
-        if mode.mode == EAMode.ARIPD:
-            return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPD, mode.data)
-        if mode.mode == EAMode.IMM:
-            return "{0:03b}100".format(EAModeBinary.MODE_IMM)
-        if mode.mode == EAMode.ALA:
-            return "{0:03b}001".format(EAModeBinary.MODE_ALA)
-        if mode.mode == EAMode.AWA:
-            return "{0:03b}000".format(EAModeBinary.MODE_AWA)
 
-    @staticmethod
-    def parse_from_ea_mode_xnfirst(mode: EAMode) -> str:
-        """
-        Parses binary EA mode text from an EAMode class, returning the Xn data first.
-        :param mode: The EAMode to produce binary from
-        :return: The parsed binary
-        """
-        if mode.mode == EAMode.DRD:
-            return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_DRD)
-        if mode.mode == EAMode.ARD:
-            return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARD)
-        if mode.mode == EAMode.ARI:
-            return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARI)
-        if mode.mode == EAMode.ARIPI:
-            return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPI)
-        if mode.mode == EAMode.ARIPD:
-            return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPD)
-        if mode.mode == EAMode.IMM:
-            return "100{0:03b}".format(EAModeBinary.MODE_IMM)
-        if mode.mode == EAMode.ALA:
-            return "001{0:03b}".format(EAModeBinary.MODE_ALA)
-        if mode.mode == EAMode.AWA:
-            return "000{0:03b}".format(EAModeBinary.MODE_AWA)
-        
+def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
+    """
+    Parses binary EA mode text from an EAMode class, returning the mode data first.
+    :param mode: The EAMode to produce binary from
+    :return: The parsed binary
+    """
+    if mode.mode == EAMode.DRD:
+        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_DRD, mode.data)
+    if mode.mode == EAMode.ARD:
+        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARD, mode.data)
+    if mode.mode == EAMode.ARI:
+        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARI, mode.data)
+    if mode.mode == EAMode.ARIPI:
+        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPI, mode.data)
+    if mode.mode == EAMode.ARIPD:
+        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPD, mode.data)
+    if mode.mode == EAMode.IMM:
+        return "{0:03b}100".format(EAModeBinary.MODE_IMM)
+    if mode.mode == EAMode.ALA:
+        return "{0:03b}001".format(EAModeBinary.MODE_ALA)
+    if mode.mode == EAMode.AWA:
+        return "{0:03b}000".format(EAModeBinary.MODE_AWA)
+
+
+def parse_from_ea_mode_xnfirst(mode: EAMode) -> str:
+    """
+    Parses binary EA mode text from an EAMode class, returning the Xn data first.
+    :param mode: The EAMode to produce binary from
+    :return: The parsed binary
+    """
+    if mode.mode == EAMode.DRD:
+        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_DRD)
+    if mode.mode == EAMode.ARD:
+        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARD)
+    if mode.mode == EAMode.ARI:
+        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARI)
+    if mode.mode == EAMode.ARIPI:
+        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPI)
+    if mode.mode == EAMode.ARIPD:
+        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPD)
+    if mode.mode == EAMode.IMM:
+        return "100{0:03b}".format(EAModeBinary.MODE_IMM)
+    if mode.mode == EAMode.ALA:
+        return "001{0:03b}".format(EAModeBinary.MODE_ALA)
+    if mode.mode == EAMode.AWA:
+        return "000{0:03b}".format(EAModeBinary.MODE_AWA)
     
-    @staticmethod
-    def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, data : bytearray) -> (EAMode, int):
-        """
-        Takes in the paramaters and returns a newly constructed EAMode and the amount of
-        words of data that it used. If the paramaters were illegal in any way then
-        (None, 0) is returned
-        
-        Test that it handles source and destination behaviors properly
-        >>> EAModeBinary.parse_ea_from_binary(EAModeBinary.MODE_IMM, EAModeBinary.REGISTER_IMM, 'B', False, bytearray.fromhex('A0'))
-        (None, 0)
-        
-        >>> m = EAModeBinary.parse_ea_from_binary(EAModeBinary.MODE_IMM, EAModeBinary.REGISTER_IMM, 'B', True, bytearray.fromhex('A0'))
-        >>> str(m[0])
-        'Mode: 5, Data: 160'
-        >>> m[1]
-        1
-        
-        >>> m = EAModeBinary.parse_ea_from_binary(EAModeBinary.MODE_DRD, 0b010, 'W', True, bytearray())
-        >>> str(m[0])
-        'Mode: 0, Data: 2'
-        >>> m[1]
-        0
-        
-        >>> m = EAModeBinary.parse_ea_from_binary(EAModeBinary.MODE_ARI, 0b110, 'L', True, bytearray())
-        >>> str(m[0])
-        'Mode: 2, Data: 6'
-        >>> m[1]
-        0
-        
-        >>> m = EAModeBinary.parse_ea_from_binary(EAModeBinary.MODE_ALA, EAModeBinary.REGISTER_ALA, 'L', False, bytearray.fromhex('00011000'))
-        >>> str(m[0])
-        'Mode: 6, Data: 69632'
-        >>> m[1]
-        2
-        
-        :param mode: the binary mode bits retrieved from the instruction 
-        :param register: the binary register bits retrieved from the instruction
-        :param size: the alphabetical size (i.e. one of 'BLW')
-        :param is_source: is this the source or destination ea? 
-        :param data: extra data that follows after the command that might be needed
-        :return: an EAMode constructed from the given parameters and how many words were used from data
-        """
-        bytesUsed = 0
-        
-        # check source mode
-        if is_source and not mode in EAModeBinary.VALID_SRC_EA_MODES:
+
+
+def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, data : bytearray) -> (EAMode, int):
+    """
+    Takes in the paramaters and returns a newly constructed EAMode and the amount of
+    words of data that it used. If the paramaters were illegal in any way then
+    (None, 0) is returned
+    
+    Test that it handles source and destination behaviors properly
+    >>> parse_ea_from_binary(EAModeBinary.MODE_IMM, EAModeBinary.REGISTER_IMM, 'B', False, bytearray.fromhex('A0'))
+    (None, 0)
+    
+    >>> m = parse_ea_from_binary(EAModeBinary.MODE_IMM, EAModeBinary.REGISTER_IMM, 'B', True, bytearray.fromhex('A0'))
+    >>> str(m[0])
+    'Mode: 5, Data: 160'
+    >>> m[1]
+    1
+    
+    >>> m = parse_ea_from_binary(EAModeBinary.MODE_DRD, 0b010, 'W', True, bytearray())
+    >>> str(m[0])
+    'Mode: 0, Data: 2'
+    >>> m[1]
+    0
+    
+    >>> m = parse_ea_from_binary(EAModeBinary.MODE_ARI, 0b110, 'L', True, bytearray())
+    >>> str(m[0])
+    'Mode: 2, Data: 6'
+    >>> m[1]
+    0
+    
+    >>> m = parse_ea_from_binary(EAModeBinary.MODE_ALA, EAModeBinary.REGISTER_ALA, 'L', False, bytearray.fromhex('00011000'))
+    >>> str(m[0])
+    'Mode: 6, Data: 69632'
+    >>> m[1]
+    2
+    
+    :param mode: the binary mode bits retrieved from the instruction 
+    :param register: the binary register bits retrieved from the instruction
+    :param size: the alphabetical size (i.e. one of 'BLW')
+    :param is_source: is this the source or destination ea? 
+    :param data: extra data that follows after the command that might be needed
+    :return: an EAMode constructed from the given parameters and how many words were used from data
+    """
+    bytesUsed = 0
+    
+    # check source mode
+    if is_source and not mode in EAModeBinary.VALID_SRC_EA_MODES:
+        return (None, 0)
+    
+    if not is_source and not mode in EAModeBinary.VALID_DEST_EA_MODES:
+        return (None, 0)
+    
+    ea_data = register
+    
+    # these only differ when mode is 0b111
+    ea_mode = mode
+    
+    
+    # check source register
+    if mode == 0b111:
+        if is_source and not register in EAModeBinary.VALID_SRC_EA_111_REGISTERS:
             return (None, 0)
         
-        if not is_source and not mode in EAModeBinary.VALID_DEST_EA_MODES:
+        if not is_source and not register in EAModeBinary.VALID_DEST_EA_111_REGISTERS:
             return (None, 0)
         
-        ea_data = register
-        
-        # these only differ when mode is 0b111
-        ea_mode = mode
-        
-        
-        # check source register
-        if mode == 0b111:
-            if is_source and not register in EAModeBinary.VALID_SRC_EA_111_REGISTERS:
-                return (None, 0)
+        # handle the three special cases for when mode is 7
+        if register == EAModeBinary.REGISTER_AWA:
+            ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
+            bytesUsed += 2
+            ea_mode = 7
             
-            if not is_source and not register in EAModeBinary.VALID_DEST_EA_111_REGISTERS:
-                return (None, 0)
+        elif register == EAModeBinary.REGISTER_ALA:
+            ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
+            bytesUsed += 4
+            ea_mode = 6
             
-            # handle the three special cases for when mode is 7
-            if register == EAModeBinary.REGISTER_AWA:
+        elif is_source and register == EAModeBinary.REGISTER_IMM:
+            if size in 'BW':
+                # TODO: Do we check for bytes that the left byte is all
+                # zeros, or do we do this where we assume the assembler is right
                 ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
                 bytesUsed += 2
-                ea_mode = 7
-                
-            elif register == EAModeBinary.REGISTER_ALA:
+            else: #must be L
                 ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
                 bytesUsed += 4
-                ea_mode = 6
-                
-            elif is_source and register == EAModeBinary.REGISTER_IMM:
-                if size in 'BW':
-                    # TODO: Do we check for bytes that the left byte is all
-                    # zeros, or do we do this where we assume the assembler is right
-                    ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+2], 'big')
-                    bytesUsed += 2
-                else: #must be L
-                    ea_data =  int.from_bytes(data[bytesUsed:bytesUsed+4], 'big')
-                    bytesUsed += 4
-                ea_mode = 5
-            
-            else:
-                return (None, 0)
+            ea_mode = 5
         
-        return (EAMode(ea_mode, ea_data), bytesUsed//2)
+        else:
+            return (None, 0)
+    
+    return (EAMode(ea_mode, ea_data), bytesUsed//2)

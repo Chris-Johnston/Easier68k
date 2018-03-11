@@ -14,6 +14,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 test_modules = [
     'easier68k.core.util.conversions',
     'easier68k.core.util.parsing',
+    'easier68k.core.util.split_bits',
     'easier68k.assembler.assembler',
     'easier68k.core.opcodes.move',
     'easier68k.core.enum.ea_mode_bin',
