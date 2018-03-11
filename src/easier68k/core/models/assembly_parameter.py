@@ -152,15 +152,68 @@ class AssemblyParameter:
         :return:
         """
 
+        if self.mode is EAMode.Immediate:
+            assert False, 'Cannot set the value of an immediate.'
+
         if self.mode is EAMode.DRD:
             # set the value for the data register
             assert 0 <= self.data <= 7
+            assert 0 <= value <= 0xFFFFFFFF, 'The value must fit in a long word'
             data_register = Register(self.data)
             simulator.set_register_value(data_register, value)
 
-        if self.mode is EAMode.ARD:
+        if self.mode is EAMode.AddressRegisterDirect:
             # set the value for the address register
             assert 0 <= self.data <= 7
-            addr_register = Register(self.data - Register.A0)
+            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            addr_register = Register(self.data + Register.A0)
             simulator.set_register_value(addr_register, value)
-        #todo implement the other modes
+
+        if self.mode is EAMode.AddressRegisterIndirect:
+            # sets the value in memory that the address register points to
+            assert 0 <= self.data <= 7
+            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            addr_register = Register(self.data + Register.A0)
+            location = simulator.get_register_value(addr_register)
+            simulator.memory.set(4, location, value.to_bytes(4, 'big'))
+
+        if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
+            # sets the value in memory that the address register points to
+            assert 0 <= self.data <= 7
+            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            addr_register = Register(self.data + Register.A0)
+            location = simulator.get_register_value(addr_register)
+            location -= 1
+            simulator.set_register_value(addr_register, location)
+            simulator.memory.set(4, location, value.to_bytes(4, 'big'))
+
+        if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
+            # sets the value in memory that the address register points to
+            assert 0 <= self.data <= 7
+            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+
+            addr_register = Register(self.data + Register.A0)
+            location = simulator.get_register_value(addr_register)
+
+            simulator.memory.set(4, location, value.to_bytes(4, 'big'))
+
+            location += 1
+            simulator.set_register_value(addr_register, location)
+
+        if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
+            # assert that the value fits in the bounds of memory
+            assert 0 <= self.data <= MAX_MEMORY_LOCATION
+            assert 0 <= value <= 0xFFFFFFFF, 'The value must fit inside of a long word!'
+
+            len = 4
+
+            # if the mode is a word
+            if self.mode is EAMode.AbsoluteWordAddress:
+                # mask it to only be a word
+                value = to_word(value)
+                len = 4
+
+            # set the value in memory to that
+            simulator.memory.set(len, self.data, value.to_bytes(len, 'big'))
+
+

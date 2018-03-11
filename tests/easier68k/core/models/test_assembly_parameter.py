@@ -146,5 +146,74 @@ def test_get_value():
     assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
 
 
+def test_assembly_parameter_set_value():
+    """
+    Tests to see that assembly_parameter set_value works properly
+    :return:
+    """
+
+    sim = M68K()
+
+    ap = AssemblyParameter(EAMode.IMM, 123)
+
+    # immediate set should throw assertion error
+    with pytest.raises(AssertionError):
+        ap.set_value(sim, 1234)
+
+    # test data register set
+
+    ap = AssemblyParameter(EAMode.DataRegisterDirect, 3)
+
+    ap.set_value(sim, 123)
+
+    assert sim.get_register_value(Register.D3) == 123
+
+    # test address register direct
+
+    ap = AssemblyParameter(EAMode.AddressRegisterDirect, 5)
+
+    ap.set_value(sim, 0x120)
+
+    assert sim.get_register_value(Register.A5) == 0x120
+
+    # set some memory at 0x123
+    sim.memory.set(4, 0x120, (0x1ABBAABB).to_bytes(4, 'big'))
+
+    # ensure set proper
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0x1ABBAABB
+
+    # now test address register indirect
+    ap = AssemblyParameter(EAMode.AddressRegisterIndirect, 5)
+
+    # set the value
+    ap.set_value(sim, 0x123123)
+
+    # ensure that it changed
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0x123123
+
+    # test address register indirect pre and post
+
+    ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 5)
+    ap.set_value(sim, 0xAA)
+
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0xAA
+
+    ap = AssemblyParameter(EAMode.AddressRegisterIndirectPreDecrement, 5)
+    ap.set_value(sim, 0xBB)
+
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0xBB
+
+    # test absolute addresses
+
+    ap = AssemblyParameter(EAMode.AbsoluteWordAddress, 0x120)
+    ap.set_value(sim, 0xCC)
+
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0xCC
+
+    ap = AssemblyParameter(EAMode.AbsoluteLongAddress, 0x120)
+    ap.set_value(sim, 0xDD)
+
+    assert int(sim.memory.get(4, 0x120).hex(), 16) == 0xDD
+
 
 
