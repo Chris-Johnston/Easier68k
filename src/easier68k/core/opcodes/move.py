@@ -84,14 +84,13 @@ class Move(Opcode):
         :return: Nothing
         """
         # get the length
-        val_length = get_number_of_bytes(self.size)
+        val_length = get_number_of_bytes(self.size, )
 
         # get the value of src from the simulator
-        src_val = self.src.get_value(simulator)
+        src_val = self.src.get_value(simulator, val_length)
 
         # and set the value
-        self.dest.set_value(simulator, src_val)
-
+        self.dest.set_value(simulator, src_val, val_length)
 
 
     def __str__(self):
