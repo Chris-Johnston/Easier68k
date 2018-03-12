@@ -19,6 +19,7 @@ test_modules = [
     'easier68k.core.opcodes.move',
     'easier68k.core.enum.ea_mode_bin',
     'easier68k.core.models.list_file'
+    'easier68k.core.util.opcode_util'
 ]
 
 def load_tests(tests):

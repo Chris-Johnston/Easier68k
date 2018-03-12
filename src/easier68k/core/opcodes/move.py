@@ -1,8 +1,11 @@
 """
+<<<<<<< 37baa921f537e7a4fa188a262d0c6f0bd5b26e5f
 <<<<<<< 6dbc4e879427374bddda73a92cc7771cc1c5c0da
 >>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
 =======
 <<<<<<< 2d6ea7cab68fbdedabbb096d9d755f1eae7d7112
+=======
+>>>>>>> Added some code reuse to the move opcode
 >>> str(Move.from_str('MOVE.B', '-(A0), D1'))
 >>>>>>> Completed phase 3 of the assembler
 'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
@@ -19,6 +22,7 @@ from ...core.enum.ea_mode_bin import EAModeBinary, parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
+from ...core.util import opcode_util
 from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter
 
@@ -29,31 +33,7 @@ def command_matches(command: str) -> bool:
     :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
     :return: Whether the string is an instance of this command type
     """
-    spl = command.split('.')
-    if len(spl) == 1:
-        return command == 'MOVE'
-    else:
-        # Don't check for other things past this, like size: error handling for this will be done in other methods
-        # For now all we're concerned with is if this is a MOVE command, not if the size is valid or anything else
-        return spl[0] == 'MOVE'
-
-
-class_name = 'Move'
-
-
-def command_matches(command: str) -> bool:
-    """
-    Checks whether a command string is an instance of this command type
-    :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
-    :return: Whether the string is an instance of this command type
-    """
-    spl = command.split('.')
-    if len(spl) == 1:
-        return command == 'MOVE'
-    else:
-        # Don't check for other things past this, like size: error handling for this will be done in other methods
-        # For now all we're concerned with is if this is a MOVE command, not if the size is valid or anything else
-        return spl[0] == 'MOVE'
+    return opcode_util.command_matches(command, 'MOVE')
 
 
 class_name = 'Move'
@@ -81,15 +61,10 @@ class Move(Opcode):
             return None, issues
         # We can forego asserts in here because we've now confirmed this is valid assembly code
 
-        parts = command.split('.')  # Split the command by period to get the size of the command
-        if len(parts) == 1:  # Use the default size
-            size = 'W'
-        else:
-            size = parts[1].upper()
+        size = opcode_util.get_size(command)
 
         # Split the parameters into EA modes
         params = parameters.split(',')
-
         src = parse_assembly_parameter(params[0].strip())
         dest = parse_assembly_parameter(params[1].strip())
 
@@ -117,31 +92,12 @@ class Move(Opcode):
         """
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
-        tr += '{0:02d}'.format(MoveSize.parse(self.size))  # Size bits
-        tr += EAModeBinary.parse_from_ea_mode_regfirst(self.dest)  # Destination first
-        tr += EAModeBinary.parse_from_ea_mode_modefirst(self.src)  # Source second
-
-        if self.src.mode == EAMode.IMM:
-            if self.size.upper() == 'L':
-                tr += '{0:032b}'.format(int.from_bytes(self.src.data, 'big'))
-            else:
-                tr += '{0:016b}'.format(int.from_bytes(self.src.data, 'big'))
-
-        if self.src.mode == EAMode.AWA:
-            tr += '{0:016b}'.format(int.from_bytes(self.src.data, 'big'))
-        if self.src.mode == EAMode.ALA:
-            tr += '{0:032b}'.format(int.from_bytes(self.src.data, 'big'))
-
-        if self.dest.mode == EAMode.IMM:
-            if self.size.upper() == 'L':
-                tr += '{0:032b}'.format(int.from_bytes(self.dest.data, 'big'))
-            else:
-                tr += '{0:016b}'.format(int.from_bytes(self.dest.data, 'big'))
-
-        if self.dest.mode == EAMode.AWA:
-            tr += '{0:016b}'.format(int.from_bytes(self.dest.data, 'big'))
-        if self.dest.mode == EAMode.ALA:
-            tr += '{0:032b}'.format(int.from_bytes(self.dest.data, 'big'))
+        tr += '{0:02b}'.format(MoveSize.parse(self.size))  # Size bits
+        tr += EAModeBinary.parse_from_ea_mode_xnfirst(self.dest)  # Destination first
+        tr += EAModeBinary.parse_from_ea_mode_mfirst(self.src)  # Source second
+        # Append immediates/absolute addresses after the command
+        tr += opcode_util.ea_to_binary_post_op(self.src, self.size)
+        tr += opcode_util.ea_to_binary_post_op(self.dest, self.size)
 
         to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
         return to_return
@@ -159,11 +115,7 @@ class Move(Opcode):
         src_val = self.src.get_value(simulator, val_length)
 
         # and set the value
-<<<<<<< 6dbc4e879427374bddda73a92cc7771cc1c5c0da
         self.dest.set_value(simulator, src_val, val_length)
-=======
-        self.dest.set_value(simulator, src_val)
->>>>>>> Completed phase 3 of the assembler
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -198,12 +150,7 @@ class Move(Opcode):
         """
         issues = []
         try:
-            parts = command.split('.')  # Split the command by period to get the size of the command
-            assert len(parts) <= 2, 'Unknown error (more than 1 period in command)'  # If we have more than 2 parts something is seriously wrong
-            assert parts[0].upper() == 'MOVE', 'Incorrect command passed in'
-            if len(parts) != 1:  # Has a size specifier
-                assert len(parts[1]) == 1, 'Size specifier must be 1 character'
-                assert parts[1] in Move.allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
+            assert opcode_util.check_valid_command(command, 'MOVE', valid_sizes=Move.allowed_sizes), 'Command invalid'
 
             # Split the parameters into EA modes
             params = parameters.split(',')
