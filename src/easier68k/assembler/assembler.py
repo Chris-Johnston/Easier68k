@@ -132,12 +132,16 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         contents = replace_equates(contents, equates)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
+<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
 <<<<<<< 262bb70bacc453cc9feeb29799d0495291e2b2f3
             new_memory_location = parse_literal(contents)
             assert 0 <= new_memory_location < 16777216, 'ORG address must be between 0 and 2^24!'
 =======
             parsed = parse_literal(contents)
             new_memory_location = int.from_bytes(parsed, 'big')
+=======
+            new_memory_location = parse_literal(contents)
+>>>>>>> Rebased onto Chris's PR
             assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
 >>>>>>> Continue PR review and implemented some code reuse
             current_memory_location = new_memory_location
@@ -155,12 +159,13 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
-        length, issues = op_class.get_word_length(opcode, contents)
+        length, more_issues = op_class.get_word_length(opcode, contents)
+        issues.extend(more_issues)
 
         current_memory_location += length * 2
 
     current_memory_location = 0x00000000
-
+    
     # --- PART 3: actually create the list file ---
     for l, opcode, contents in for_line_opcode_parse(text):
         # Equates have already been processed, skip them
@@ -175,12 +180,16 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         contents = replace_label_addresses(contents, label_addresses)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
+<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
 <<<<<<< f4fbfcf933e13d5a4e22f5f86c7470c7ca7134c1
             new_memory_location = parse_literal(contents)
             assert 0 <= new_memory_location < 16777216, 'ORG address must be between 0 and 2^24!'
 =======
             parsed = parse_literal(contents)
             new_memory_location = int.from_bytes(parsed, 'big')
+=======
+            new_memory_location = parse_literal(contents)
+>>>>>>> Rebased onto Chris's PR
             assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
 >>>>>>> Implemented PR feedback
             current_memory_location = new_memory_location
@@ -194,9 +203,15 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
             continue
 
         # Get the actual constructed opcode
-        data, issues = op_class.from_str(opcode, contents)
+        length, more_issues = op_class.get_word_length(opcode, contents)
+        issues.extend(more_issues)
+        data, more_issues = op_class.from_str(opcode, contents)
+        issues.extend(more_issues)
 
         # Write the data to the list file
+        if data is None:
+            continue
+
         to_return.insert_data(current_memory_location, str(binascii.hexlify(data.assemble()))[2:-1])
 
         # Increment our memory counter

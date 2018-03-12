@@ -1,4 +1,5 @@
 """
+<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
 <<<<<<< 37baa921f537e7a4fa188a262d0c6f0bd5b26e5f
 <<<<<<< 6dbc4e879427374bddda73a92cc7771cc1c5c0da
 >>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
@@ -8,6 +9,9 @@
 >>>>>>> Added some code reuse to the move opcode
 >>> str(Move.from_str('MOVE.B', '-(A0), D1'))
 >>>>>>> Completed phase 3 of the assembler
+=======
+>>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
+>>>>>>> Rebased onto Chris's PR
 'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
@@ -218,6 +222,7 @@ class Move(Opcode):
             issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
             return 0, issues
 
+<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
         src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
         dest = parse_assembly_parameter(params[1].strip())
 
@@ -228,6 +233,8 @@ class Move(Opcode):
         src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
         dest = EAMode.parse_ea(params[1].strip())
 
+=======
+>>>>>>> Rebased onto Chris's PR
         length = 1  # Always 1 word not counting additions to end
 
         if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards

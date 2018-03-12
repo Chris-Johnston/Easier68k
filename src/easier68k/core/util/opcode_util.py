@@ -1,4 +1,5 @@
 from ..enum.ea_mode import EAMode
+from ..util.parsing import parse_assembly_parameter
 
 
 def command_matches(command: str, template: str) -> bool:
@@ -118,19 +119,19 @@ def ea_to_binary_post_op(ea: EAMode, size: chr) -> str:
     'MOVE.B #$42, D0', the immediate would need to be appended after the command: this returns the part that
     needs to be appended.
 
-    >>> ea_to_binary_post_op(EAMode.parse_ea('#$42'), 'B')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), 'B')
     '0000000001000010'
 
-    >>> ea_to_binary_post_op(EAMode.parse_ea('D0'), 'W')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('D0'), 'W')
     ''
 
-    >>> ea_to_binary_post_op(EAMode.parse_ea('#$42'), 'L')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), 'L')
     '00000000000000000000000001000010'
 
-    >>> ea_to_binary_post_op(EAMode.parse_ea('($242).W'), 'W')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).W'), 'W')
     '0000001001000010'
 
-    >>> ea_to_binary_post_op(EAMode.parse_ea('($242).L'), 'L')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).L'), 'L')
     '00000000000000000000001001000010'
 
     :param ea: The effective address that needs to be converted
@@ -139,13 +140,13 @@ def ea_to_binary_post_op(ea: EAMode, size: chr) -> str:
     """
     if ea.mode == EAMode.IMM:
         if size.upper() == 'L':
-            return '{0:032b}'.format(int.from_bytes(ea.data, 'big'))
+            return '{0:032b}'.format(ea.data)
         else:
-            return '{0:016b}'.format(int.from_bytes(ea.data, 'big'))
+            return '{0:016b}'.format(ea.data)
 
     if ea.mode == EAMode.AWA:
-        return '{0:016b}'.format(int.from_bytes(ea.data, 'big'))
+        return '{0:016b}'.format(ea.data)
     if ea.mode == EAMode.ALA:
-        return '{0:032b}'.format(int.from_bytes(ea.data, 'big'))
+        return '{0:032b}'.format(ea.data)
 
     return ''  # This EA doesn't have a necessary post-op

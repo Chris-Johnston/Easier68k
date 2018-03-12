@@ -100,7 +100,7 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     return AssemblyParameter()
 
 
-def parse_literal(literal: str) -> bytearray:
+def parse_literal(literal: str) -> int:
     """
     Parses a literal (aka "1234" or "$A0F" or "%1001")
 
