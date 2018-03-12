@@ -1,7 +1,7 @@
 import pytest
 
 from easier68k.simulator.m68k import M68K
-from easier68k.core.enum.register import Register
+from easier68k.core.enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS, DATA_REGISTERS
 
 def test_address_registers():
     """
@@ -13,7 +13,7 @@ def test_address_registers():
 
     # test all of the 4 byte registers (32 bit)
     # exclude the program counter due to its restrictions
-    normal_registers = Register.MEMORY_LIMITED_ADDRESS_REGISTERS
+    normal_registers = MEMORY_LIMITED_ADDRESS_REGISTERS
     for reg in normal_registers:
         _test_single_address_register(a, reg)
 
@@ -79,7 +79,7 @@ def test_data_registers():
     a = M68K()
 
     # test all of the 4 byte DATA registers that can have any value without issues
-    normal_registers = Register.DATA_REGISTERS
+    normal_registers = DATA_REGISTERS
     for reg in normal_registers:
         _test_single_data_register(a, reg)
 
