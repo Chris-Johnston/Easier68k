@@ -1,4 +1,5 @@
-from ..core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, parse_literal
+from ..core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, \
+    parse_literal
 import sys
 import types
 import re
@@ -16,13 +17,6 @@ valid_opcodes = [
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 
-valid_opcodes = [
-    'easier68k.core.opcodes.move'
-]
-
-MAX_MEMORY_LOCATION = 16777216  # 2^24
-
-
 def for_line_stripped_comments(full_text: str):
     for line_index, line in enumerate(full_text.splitlines()):
         stripped = strip_comments(line)
@@ -32,12 +26,7 @@ def for_line_stripped_comments(full_text: str):
         yield line_index + 1, stripped  # line_index + 1 because here the line indices are zero-based
 
 
-<<<<<<< 262bb70bacc453cc9feeb29799d0495291e2b2f3
-
-def parse(text: str):  # should return a list file and errors/warnings eventually
-=======
 def for_line_opcode_parse(full_text: str):
->>>>>>> Continue PR review and implemented some code reuse
     """
     Yields the label (if it exists), opcode, and opcode contents for every line in a file
     :param full_text: The file text to parse
@@ -132,18 +121,8 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         contents = replace_equates(contents, equates)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
-<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
-<<<<<<< 262bb70bacc453cc9feeb29799d0495291e2b2f3
             new_memory_location = parse_literal(contents)
-            assert 0 <= new_memory_location < 16777216, 'ORG address must be between 0 and 2^24!'
-=======
-            parsed = parse_literal(contents)
-            new_memory_location = int.from_bytes(parsed, 'big')
-=======
-            new_memory_location = parse_literal(contents)
->>>>>>> Rebased onto Chris's PR
             assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
->>>>>>> Continue PR review and implemented some code reuse
             current_memory_location = new_memory_location
             continue
 
@@ -165,7 +144,7 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         current_memory_location += length * 2
 
     current_memory_location = 0x00000000
-    
+
     # --- PART 3: actually create the list file ---
     for l, opcode, contents in for_line_opcode_parse(text):
         # Equates have already been processed, skip them
@@ -180,18 +159,8 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         contents = replace_label_addresses(contents, label_addresses)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
-<<<<<<< d92706f647ee633eaa9c92ef347d44f5a8051017
-<<<<<<< f4fbfcf933e13d5a4e22f5f86c7470c7ca7134c1
             new_memory_location = parse_literal(contents)
-            assert 0 <= new_memory_location < 16777216, 'ORG address must be between 0 and 2^24!'
-=======
-            parsed = parse_literal(contents)
-            new_memory_location = int.from_bytes(parsed, 'big')
-=======
-            new_memory_location = parse_literal(contents)
->>>>>>> Rebased onto Chris's PR
             assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
->>>>>>> Implemented PR feedback
             current_memory_location = new_memory_location
             continue
 
