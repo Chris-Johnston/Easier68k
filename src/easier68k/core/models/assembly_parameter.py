@@ -16,15 +16,13 @@ MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 class AssemblyParameter:
 
-    def __init__(self, mode: EAMode = EAMode.ERR, data: int = 0):
+    def __init__(self, mode: EAMode, data: int):
         """
         Constructor
 
         Checks that the mode and the data are considered to be valid, like
         registers are within the correct bounds and addresses are not out of bounds.
         """
-
-
         # ensure that the values are valid
 
         # when referencing a register, ensure that the data is within [0, 7]
@@ -43,8 +41,6 @@ class AssemblyParameter:
             # negative values need to be converted into unsigned integers
             assert 0 <= data <= 0xFFFFFFFF, 'Value must fit inside a long word!'
 
-        assert mode is not EAMode.ERR, 'EAMode cannot be ERROR.'
-
         # set values
         self.mode = mode
         self.data = data
@@ -58,7 +54,7 @@ class AssemblyParameter:
 
     def get_value(self, simulator: M68K, length: int = 4) -> int:
         """
-        Gets the value for this EAMode
+        Gets the value for this EAMode from the simulator
         :param simulator: reference to the 68k simulator
         :param length: the length in bytes associated with this operation, must be 1 2 or 4
         :return: the value associated with this assembly parameter

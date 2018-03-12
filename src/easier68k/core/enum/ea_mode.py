@@ -8,9 +8,6 @@ from enum import Enum
 
 class EAMode(Enum):
     # Enum Values
-    # Error value
-    ERR = -1
-    Error = ERR
 
     # Data register direct
     DRD = 0

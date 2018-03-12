@@ -1,8 +1,8 @@
 """
->>> str(Move.from_str('MOVE.B', '-(A0), D1'))
+>>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
 'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
->>> str(Move.from_str('MOVE.L', 'D3, (A0)'))
+>>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
 'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> Move.from_str('MOVE.W', 'D3, A3')[1]
@@ -48,7 +48,7 @@ class Move(Opcode):
         src = parse_assembly_parameter(params[0].strip())
         dest = parse_assembly_parameter(params[1].strip())
 
-        return cls(src, dest, size)
+        return cls(src, dest, size), issues
 
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
@@ -84,14 +84,13 @@ class Move(Opcode):
         :return: Nothing
         """
         # get the length
-        val_length = get_number_of_bytes(self.size, )
+        val_length = get_number_of_bytes(self.size)
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
 
         # and set the value
         self.dest.set_value(simulator, src_val, val_length)
-
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -138,10 +137,10 @@ class Move(Opcode):
             assert len(params) == 2, 'Must have two parameters'
 
             src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src.mode is not EAMode.ERR, 'Error parsing src'  # -1 means error
+            assert src, 'Error parsing src'
 
             dest = parse_assembly_parameter(params[1].strip())
-            assert dest.mode is not EAMode.ERR, 'Error parsing dest'  # -1 means error
+            assert dest, 'Error parsing dest'
 
             assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
             assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'

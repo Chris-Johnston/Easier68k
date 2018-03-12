@@ -1,5 +1,6 @@
 # Conversion utils
 
+
 def get_number_of_bytes(byte_char: str) -> int:
     """
 
