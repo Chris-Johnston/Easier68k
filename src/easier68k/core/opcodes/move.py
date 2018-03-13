@@ -10,7 +10,8 @@
 """
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize
-from ...core.enum.ea_mode_bin import EAModeBinary, parse_ea_from_binary
+from ...core.enum import ea_mode_bin
+from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
@@ -85,8 +86,8 @@ class Move(Opcode):
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
         tr += '{0:02b}'.format(MoveSize.parse(self.size))  # Size bits
-        tr += EAModeBinary.parse_from_ea_mode_xnfirst(self.dest)  # Destination first
-        tr += EAModeBinary.parse_from_ea_mode_mfirst(self.src)  # Source second
+        tr += ea_mode_bin.parse_from_ea_mode_regfirst(self.dest)  # Destination first
+        tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
         # Append immediates/absolute addresses after the command
         tr += opcode_util.ea_to_binary_post_op(self.src, self.size)
         tr += opcode_util.ea_to_binary_post_op(self.dest, self.size)

@@ -102,7 +102,6 @@ def parse_from_ea_mode_regfirst(mode: EAMode) -> str:
         return "000{0:03b}".format(EAModeBinary.MODE_AWA)
     
 
-
 def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, data : bytearray) -> (EAMode, int):
     """
     Takes in the paramaters and returns a newly constructed EAMode and the amount of
