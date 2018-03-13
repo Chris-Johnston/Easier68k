@@ -237,10 +237,10 @@ def from_binary(data: bytearray):
     >>> op, used = from_binary(bytearray.fromhex('1E01'))
     
     >>> str(op.src)
-    'Mode: 0, Data: 1'
+    'EA Mode: 0, Data: 1'
     
     >>> str(op.dest)
-    'Mode: 0, Data: 7'
+    'EA Mode: 0, Data: 7'
     
     >>> used
     1
@@ -250,10 +250,10 @@ def from_binary(data: bytearray):
     >>> op, used = from_binary(bytearray.fromhex('2E94'))
     
     >>> str(op.src)
-    'Mode: 2, Data: 4'
+    'EA Mode: 2, Data: 4'
     
     >>> str(op.dest)
-    'Mode: 2, Data: 7'
+    'EA Mode: 2, Data: 7'
     
     >>> used
     1
@@ -263,10 +263,10 @@ def from_binary(data: bytearray):
     >>> op, used = from_binary(bytearray.fromhex('34FCDEAF'))
     
     >>> str(op.src)
-    'Mode: 5, Data: 57007'
+    'EA Mode: 5, Data: 57007'
     
     >>> str(op.dest)
-    'Mode: 3, Data: 2'
+    'EA Mode: 3, Data: 2'
     
     >>> used
     2
@@ -277,10 +277,10 @@ def from_binary(data: bytearray):
     >>> op, used = from_binary(bytearray.fromhex('23F8100000200000'))
 
     >>> str(op.src)
-    'Mode: 7, Data: 4096'
+    'EA Mode: 7, Data: 4096'
 
     >>> str(op.dest)
-    'Mode: 6, Data: 2097152'
+    'EA Mode: 6, Data: 2097152'
 
     >>> used
     4

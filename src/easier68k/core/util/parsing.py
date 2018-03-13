@@ -14,16 +14,16 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     AssertionError
 
     >>> str(parse_assembly_parameter('D3'))
-    'Mode: 0, Data: 3'
+    'EA Mode: EAMode.DRD, Data: 3'
 
     >>> str(parse_assembly_parameter('A6'))
-    'Mode: 1, Data: 6'
+    'EA Mode: EAMode.ARD, Data: 6'
 
     >>> str(parse_assembly_parameter('(A4)'))
-    'Mode: 2, Data: 4'
+    'EA Mode: EAMode.ARI, Data: 4'
 
     >>> str(parse_assembly_parameter('(A2)+'))
-    'Mode: 3, Data: 2'
+    'EA Mode: EAMode.ARIPI, Data: 2'
 
     >>> str(parse_assembly_parameter('(A2)-'))  # Invalid, can't do "post-decrement"
     Traceback (most recent call last):
@@ -31,16 +31,16 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     AssertionError
 
     >>> str(parse_assembly_parameter('($45).W'))
-    "Mode: 7, Data: bytearray(b'E')"
+    'EA Mode: EAMode.AWA, Data: 69'
 
     >>> str(parse_assembly_parameter('(%01010111).L'))
-    "Mode: 6, Data: bytearray(b'W')"
+    'EA Mode: EAMode.ALA, Data: 87'
 
     >>> str(parse_assembly_parameter('#$FF'))
-    "Mode: 5, Data: bytearray(b'\\\\xff')"
+    'EA Mode: EAMode.IMM, Data: 255'
 
     >>> str(parse_assembly_parameter('-(A2)'))
-    'Mode: 4, Data: 2'
+    'EA Mode: EAMode.ARIPD, Data: 2'
     """
     assert len(addr) >= 2
 
@@ -104,16 +104,16 @@ def parse_literal(literal: str):
     Parses a literal (aka "1234" or "$A0F" or "%1001")
 
     >>> parse_literal('$BA1')
-    bytearray(b'\\x0b\\xa1')
+    2977
 
     >>> parse_literal('%01010111')
-    bytearray(b'W')
+    87
 
     >>> parse_literal('57')
-    bytearray(b'9')
+    57
 
     >>> parse_literal('400')
-    bytearray(b'\\x01\\x90')
+    400
 
     :param literal: A string containing the literal to parse
     :return: The parsed literal (a bytearray type)

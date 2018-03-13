@@ -3,6 +3,7 @@ EA Mode Binary Enum
 Represents binary translations for various EA modes
 """
 from .ea_mode import EAMode
+from ..models.assembly_parameter import AssemblyParameter
 from enum import IntEnum
 
 
@@ -114,25 +115,25 @@ def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, d
     
     >>> m = parse_ea_from_binary(EAModeBinary.MODE_IMM, EAModeBinary.REGISTER_IMM, 'B', True, bytearray.fromhex('A0'))
     >>> str(m[0])
-    'Mode: 5, Data: 160'
+    'EA Mode: 5, Data: 160'
     >>> m[1]
     1
     
     >>> m = parse_ea_from_binary(EAModeBinary.MODE_DRD, 0b010, 'W', True, bytearray())
     >>> str(m[0])
-    'Mode: 0, Data: 2'
+    'EA Mode: 0, Data: 2'
     >>> m[1]
     0
     
     >>> m = parse_ea_from_binary(EAModeBinary.MODE_ARI, 0b110, 'L', True, bytearray())
     >>> str(m[0])
-    'Mode: 2, Data: 6'
+    'EA Mode: 2, Data: 6'
     >>> m[1]
     0
     
     >>> m = parse_ea_from_binary(EAModeBinary.MODE_ALA, EAModeBinary.REGISTER_ALA, 'L', False, bytearray.fromhex('00011000'))
     >>> str(m[0])
-    'Mode: 6, Data: 69632'
+    'EA Mode: 6, Data: 69632'
     >>> m[1]
     2
     
@@ -191,4 +192,4 @@ def parse_ea_from_binary(mode: int, register: int, size: chr, is_source: bool, d
         else:
             return (None, 0)
     
-    return (EAMode(ea_mode, ea_data), bytesUsed//2)
+    return (AssemblyParameter(ea_mode, ea_data), bytesUsed//2)
