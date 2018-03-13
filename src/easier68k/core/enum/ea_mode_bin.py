@@ -54,7 +54,7 @@ VALID_DEST_EA_111_REGISTERS = [EAModeBinary.REGISTER_ALA, EAModeBinary.REGISTER_
 VALID_SRC_EA_111_REGISTERS = VALID_DEST_EA_111_REGISTERS + [EAModeBinary.REGISTER_IMM]
 
 
-def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
+def parse_from_ea_mode_modefirst(mode: EAMode) -> str:
     """
     Parses binary EA mode text from an EAMode class, returning the mode data first.
     :param mode: The EAMode to produce binary from
@@ -78,7 +78,7 @@ def parse_from_ea_mode_mfirst(mode: EAMode) -> str:
         return "{0:03b}000".format(EAModeBinary.MODE_AWA)
 
 
-def parse_from_ea_mode_xnfirst(mode: EAMode) -> str:
+def parse_from_ea_mode_regfirst(mode: EAMode) -> str:
     """
     Parses binary EA mode text from an EAMode class, returning the Xn data first.
     :param mode: The EAMode to produce binary from

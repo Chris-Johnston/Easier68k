@@ -77,8 +77,8 @@ class Move(Opcode):
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
         tr += '{0:02d}'.format(MoveSize.parse(self.size))  # Size bits
-        tr += EAModeBinary.parse_from_ea_mode_xnfirst(self.dest)  # Destination first
-        tr += EAModeBinary.parse_from_ea_mode_mfirst(self.src)  # Source second
+        tr += EAModeBinary.parse_from_ea_mode_regfirst(self.dest)  # Destination first
+        tr += EAModeBinary.parse_from_ea_mode_modefirst(self.src)  # Source second
 
         to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
         return to_return
