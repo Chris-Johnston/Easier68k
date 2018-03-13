@@ -97,7 +97,7 @@ def replace_label_addresses(contents: str, label_addresses: dict) -> str:
     return contents
 
 
-def parse(text: str):  # should return a list file and errors/warnings eventually
+def parse(text: str) -> (ListFile, list):
     """
     Parses an assembly file and returns a list file, along with errors/warnings from the parsing process.
     :param text: The assembly file text to parse
@@ -186,4 +186,4 @@ def parse(text: str):  # should return a list file and errors/warnings eventuall
         # Increment our memory counter
         current_memory_location += length * 2
 
-    return to_return
+    return to_return, issues
