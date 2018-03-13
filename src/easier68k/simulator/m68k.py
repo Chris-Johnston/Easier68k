@@ -5,6 +5,7 @@ Motorola 68k chip definition
 from .memory import Memory
 from ..core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_ADDRESS_REGISTERS
 from ..core.enum.condition_status_code import ConditionStatusCode
+from ..core.models.list_file import ListFile
 import typing
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
@@ -184,6 +185,17 @@ class M68K:
         :return:
         """
         self._clock_cycles = 0
+
+    def load_list_file(self, list_file: ListFile):
+        """
+        Load List File
+
+        load the contents of a list file into memory
+        using the locations specified inside of the list file
+        :param list_file:
+        :return:
+        """
+        self.memory.load_list_file(list_file)
 
     def load_memory(self, file : typing.BinaryIO):
         """
