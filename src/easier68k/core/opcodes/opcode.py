@@ -10,6 +10,17 @@ class Opcode:
         :param parameters: The parameters after the command (such as the source and destination of a move)
         """
         pass
+    
+    @classmethod
+    def from_binary(cls, data: bytearray):
+        """
+        Parses some raw data into an instance of the opcode class
+        :param data: The data used to convert into an opcode instance
+        :return: The constructed instance or none if there was an error and
+            the amount of data in words that was used (e.g. extra for immediate
+            data) or 0 for not a match
+        """
+        pass
 
     @staticmethod
     def is_valid(command: str, parameters: str) -> (bool, list):

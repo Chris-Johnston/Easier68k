@@ -10,9 +10,10 @@
 """
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize
-from ...core.enum.ea_mode_bin import EAModeBinary
+from ...core.enum.ea_mode_bin import EAModeBinary, parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
+from ...core.util.split_bits import split_bits
 from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter
 
@@ -22,6 +23,9 @@ class Move(Opcode):
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
     allowed_sizes = 'BWL'
+    
+    # same as above, but for dissassembly
+    allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
@@ -50,6 +54,8 @@ class Move(Opcode):
 
         return cls(src, dest, size), issues
 
+        
+
     def __init__(self, src: EAMode, dest: EAMode, size='W'):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
         assert src.mode != EAMode.ARD  # Only invalid src is address register direct
@@ -71,8 +77,8 @@ class Move(Opcode):
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
         tr += '{0:02d}'.format(MoveSize.parse(self.size))  # Size bits
-        tr += EAModeBinary.parse_from_ea_mode_xnfirst(self.dest)  # Destination first
-        tr += EAModeBinary.parse_from_ea_mode_mfirst(self.src)  # Source second
+        tr += EAModeBinary.parse_from_ea_mode_regfirst(self.dest)  # Destination first
+        tr += EAModeBinary.parse_from_ea_mode_modefirst(self.src)  # Source second
 
         to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
         return to_return
@@ -219,3 +225,101 @@ class Move(Opcode):
             length += 2
 
         return length, issues
+
+
+def from_binary(data: bytearray):
+    """
+    This has a non-move opcode
+    >>> from_binary(bytearray.fromhex('5E01'))
+    (None, 0)
+    
+    MOVE.B D1,D7
+    >>> op, used = from_binary(bytearray.fromhex('1E01'))
+    
+    >>> str(op.src)
+    'EA Mode: 0, Data: 1'
+    
+    >>> str(op.dest)
+    'EA Mode: 0, Data: 7'
+    
+    >>> used
+    1
+    
+    
+    MOVE.L (A4),(A7)
+    >>> op, used = from_binary(bytearray.fromhex('2E94'))
+    
+    >>> str(op.src)
+    'EA Mode: 2, Data: 4'
+    
+    >>> str(op.dest)
+    'EA Mode: 2, Data: 7'
+    
+    >>> used
+    1
+    
+    
+    MOVE.W #$DEAF,(A2)+
+    >>> op, used = from_binary(bytearray.fromhex('34FCDEAF'))
+    
+    >>> str(op.src)
+    'EA Mode: 5, Data: 57007'
+    
+    >>> str(op.dest)
+    'EA Mode: 3, Data: 2'
+    
+    >>> used
+    2
+
+
+
+    MOVE.L ($1000).W,($200000).L
+    >>> op, used = from_binary(bytearray.fromhex('23F8100000200000'))
+
+    >>> str(op.src)
+    'EA Mode: 7, Data: 4096'
+
+    >>> str(op.dest)
+    'EA Mode: 6, Data: 2097152'
+
+    >>> used
+    4
+
+
+    Parses some raw data into an instance of the opcode class
+    :param data: The data used to convert into an opcode instance
+    :return: The constructed instance or none if there was an error and
+        the amount of data in words that was used (e.g. extra for immediate
+        data) or 0 for not a match
+    """
+    assert len(data) >= 2, 'opcode size is at least 1 word'
+    
+    # 'big' endian byte order
+    first_word = int.from_bytes(data[0:2], 'big')
+    
+    [opcode_bin,
+    size_bin,
+    destination_register_bin,
+    destination_mode_bin,
+    source_mode_bin,
+    source_register_bin] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
+    
+    # check opcode
+    if opcode_bin != 0b00:
+        return (None, 0)
+    
+    # check size
+    if not size_bin in Move.allowed_sizes_binary:
+        return (None, 0)
+    
+    size = MoveSize.parse_binary(size_bin)
+    
+    wordsUsed = 1
+    
+    src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
+    wordsUsed += src_EA[1]
+    
+    dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
+    wordsUsed += dest_EA[1]
+    
+    return (Move(src_EA[0], dest_EA[0], size), wordsUsed)
