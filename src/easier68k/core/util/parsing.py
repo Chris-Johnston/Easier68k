@@ -3,6 +3,7 @@
 from ..enum.ea_mode import EAMode
 from ..models.assembly_parameter import AssemblyParameter
 
+
 def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     """
     Parses an effective addressing mode (such as D0, (A1), #$01)
@@ -99,7 +100,7 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     return AssemblyParameter()
 
 
-def parse_literal(literal: str):
+def parse_literal(literal: str) -> int:
     """
     Parses a literal (aka "1234" or "$A0F" or "%1001")
 
@@ -301,7 +302,7 @@ def get_opcode(line: str) -> str:
 
         opcode += c
 
-    return opcode
+    return opcode.upper()
 
 
 def strip_opcode(line: str) -> str:

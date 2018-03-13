@@ -1,10 +1,10 @@
 * Equates section
-start       EQU 400
+start       EQU $400
 testData    EQU $ABCD
 
 * Code section
             ORG start
-            MOVE #testData, D0
+            MOVE #testData, ($00AAAAAA).L
             LEA magic, A0
 
             SIMHALT
