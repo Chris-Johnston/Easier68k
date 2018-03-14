@@ -62,7 +62,7 @@ def get_size(command: str, default_size=OpSize.WORD) -> OpSize:
     return OpSize.parse(split[1])
 
 
-def check_valid_command(command: str, template: str, can_take_size=True, valid_sizes='BWL') -> bool:
+def check_valid_command(command: str, template: str, can_take_size=True, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE]) -> bool:
     """
     Checks whether this command is valid
 
@@ -81,10 +81,10 @@ def check_valid_command(command: str, template: str, can_take_size=True, valid_s
     >>> check_valid_command("LEA.B", "LEA", can_take_size=False)
     False
 
-    >>> check_valid_command("MOVEA.W", "MOVEA", valid_sizes='WL')
+    >>> check_valid_command("MOVEA.W", "MOVEA", valid_sizes=[OpSize.WORD, OpSize.LONG])
     True
 
-    >>> check_valid_command("MOVEA.B", "MOVEA", valid_sizes='WL')
+    >>> check_valid_command("MOVEA.B", "MOVEA", valid_sizes=[OpSize.WORD, OpSize.LONG])
     False
 
     :param command: The command to check
@@ -105,7 +105,7 @@ def check_valid_command(command: str, template: str, can_take_size=True, valid_s
             return False  # Command doesn't match
         if len(parts[1]) != 1:
             return False  # Size not 1 character
-        if not parts[1] in valid_sizes:
+        if not OpSize.parse(parts[1]) in valid_sizes:
             return False  # Invalid size specifier
     else:
         return False  # More than 2 parts in the command (more than 2 periods somehow)
