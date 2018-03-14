@@ -1,18 +1,11 @@
 from ..core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, \
     parse_literal
-import sys
 import types
 import re
 import binascii
 from ..core import opcodes
 from ..core.models.list_file import ListFile
-# This *is* actually a necessary import due to using "reflection" style code further down
-# noinspection PyUnresolvedReferences
-from ..core.opcodes import *
-
-valid_opcodes = [
-    'easier68k.core.opcodes.move'
-]
+from ..core.util.find_module import find_module
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -63,24 +56,6 @@ def find_labels(text: str) -> (dict, dict, list):
                     equates[label] = strip_opcode(stripped)
 
     return labels, equates, issues
-
-
-def find_module(opcode: str):  # Note: didn't add a type specifier because I dunno how to specify module and class types
-    """
-    Finds the proper module and module class based on the opcode
-    :param opcode: The opcode to search for
-    :return: The module and class found (or (None, None) if it doesn't find any)
-    """
-    op_module = None
-    op_class = None
-
-    for m in valid_opcodes:
-        mod = sys.modules[m]
-        if mod.command_matches(opcode):
-            op_module = mod
-            op_class = getattr(op_module, op_module.class_name)
-
-    return op_module, op_class
 
 
 def replace_equates(contents: str, equates: dict) -> str:
