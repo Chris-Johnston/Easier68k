@@ -17,6 +17,9 @@ class UnalignedMemoryAccessError(Exception):
 class OutOfBoundsMemoryError(Exception):
     pass
 
+class AssignWrongMemorySizeError(Exception):
+    pass
+
 class Memory:
     Byte = 1
     Word = 2
@@ -64,6 +67,8 @@ class Memory:
 
         load the contents of a list file into memory
         using the locations specified inside of the list file
+        starting location, registers, etc... (anything
+        which is not data) is ignored
         :param list_file:
         :return:
         """
@@ -95,7 +100,6 @@ class Memory:
         sets the memory at the given location index of size
         """
         self.__validateLocation(size, location)
-        assert(len(value) == size)
-        #if(len(value) != size):
-        #    raise AssignWrongMemorySizeError
+        if(len(value) != size):
+            raise AssignWrongMemorySizeError
         self.memory[location:location+size] = value

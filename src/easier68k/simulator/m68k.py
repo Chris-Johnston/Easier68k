@@ -162,7 +162,16 @@ class M68K:
         counter increments
         :return:
         """
-        pass
+        # must be here or we get circular dependency issues
+        from ..core.opcodes.move import from_binary
+
+        PC = self.get_program_counter_value()
+        # fixme: fix the hax. 20 is plenty
+        op, n = from_binary(self.memory.memory[PC:PC+20])
+        if op != None:
+            op.execute(self)
+            self.set_program_counter_value(PC + n*2)
+
 
     def reload_execution(self):
         """
@@ -196,6 +205,7 @@ class M68K:
         :return:
         """
         self.memory.load_list_file(list_file)
+        self.set_program_counter_value(int(list_file.starting_execution_address))
 
     def load_memory(self, file : typing.BinaryIO):
         """
