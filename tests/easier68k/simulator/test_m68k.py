@@ -2,6 +2,8 @@ import pytest
 
 from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS, DATA_REGISTERS
+from easier68k.core.models.list_file import ListFile
+from easier68k.simulator.memory import Memory
 
 def test_address_registers():
     """
@@ -159,3 +161,30 @@ def test_condition_code_register():
         a.set_register_value(Register.CCR, -1)
     with pytest.raises(AssertionError):
         a.set_register_value(Register.CCR, 0xFF + 1)
+
+def test_full_integration():
+    m68k = M68K()
+
+    list_file = ListFile()
+
+    # essentiall contains 'Move.W #$abcd,($00aaaaaa).L'
+    list_file.load_from_json("""
+{
+    "data": {
+        "1024": "33fcabcd00aaaaaa",
+        "1032": "ffffffff",
+        "1036": "abcd"
+    },
+    "startingExecutionAddress": 1024,
+    "symbols": {
+        "magic": 1036
+    }
+}
+    """)
+
+    m68k.load_list_file(list_file)
+    assert(m68k.get_program_counter_value() == 1024)
+    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('0000'))
+    m68k.step_instruction()
+    assert(m68k.get_program_counter_value() == 1032)
+    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('abcd'))

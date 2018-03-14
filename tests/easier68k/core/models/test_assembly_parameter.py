@@ -92,12 +92,12 @@ def test_get_value():
 
     # ensure that get value works correctly for almost all values of assembly parameter immediate
     # have it skip every 0xFF because it takes long enough already
-    for x in range(0, 0xFFFFFFFF, 0xFFFF):
+    for x in [0, 0xFF, 0xFFFF, 0xFFFFF, 0xFFFFFF, 0xFFFFFFFF]:
         ap = AssemblyParameter(EAMode.IMM, x)
         assert ap.get_value(sim) == x
 
     # test address register direct
-    for x in range(0, MAX_MEMORY_LOCATION, 0xFF):
+    for x in [0, 0xFFFF, 0xFFFFF, MAX_MEMORY_LOCATION]:
         for r in range(7):
             # set the register value to a memory location
             sim.set_register_value(Register(r + Register.A0), x)

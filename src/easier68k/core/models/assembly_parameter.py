@@ -214,5 +214,3 @@ class AssemblyParameter:
 
             # set the value in memory to that
             simulator.memory.set(length, self.data, value.to_bytes(length, 'big'))
-
-

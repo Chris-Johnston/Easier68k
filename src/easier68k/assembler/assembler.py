@@ -1,18 +1,11 @@
 from ..core.util.parsing import strip_comments, has_label, get_label, strip_label, get_opcode, strip_opcode, \
     parse_literal
-import sys
 import types
 import re
 import binascii
 from ..core import opcodes
 from ..core.models.list_file import ListFile
-# This *is* actually a necessary import due to using "reflection" style code further down
-# noinspection PyUnresolvedReferences
-from ..core.opcodes import *
-
-valid_opcodes = [
-    'easier68k.core.opcodes.move'
-]
+from ..core.util.find_module import find_module
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -63,24 +56,6 @@ def find_labels(text: str) -> (dict, dict, list):
                     equates[label] = strip_opcode(stripped)
 
     return labels, equates, issues
-
-
-def find_module(opcode: str):  # Note: didn't add a type specifier because I dunno how to specify module and class types
-    """
-    Finds the proper module and module class based on the opcode
-    :param opcode: The opcode to search for
-    :return: The module and class found (or (None, None) if it doesn't find any)
-    """
-    op_module = None
-    op_class = None
-
-    for m in valid_opcodes:
-        mod = sys.modules[m]
-        if mod.command_matches(opcode):
-            op_module = mod
-            op_class = getattr(op_module, op_module.class_name)
-
-    return op_module, op_class
 
 
 def replace_equates(contents: str, equates: dict) -> str:
@@ -138,8 +113,7 @@ def parse(text: str) -> (ListFile, list):
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
-        length, more_issues = op_class.get_word_length(opcode, contents)
-        issues.extend(more_issues)
+        length = op_module.get_word_length(opcode, contents)
 
         current_memory_location += length * 2
 
@@ -172,18 +146,23 @@ def parse(text: str) -> (ListFile, list):
             continue
 
         # Get the actual constructed opcode
-        length, more_issues = op_class.get_word_length(opcode, contents)
-        issues.extend(more_issues)
-        data, more_issues = op_class.from_str(opcode, contents)
-        issues.extend(more_issues)
 
-        # Write the data to the list file
-        if data is None:
-            continue
+        # check that the input is valid the opcode at the module level
+        is_valid, issues = op_module.is_valid(opcode, contents)
 
-        to_return.insert_data(current_memory_location, str(binascii.hexlify(data.assemble()))[2:-1])
+        # if valid, then actually construct the opcode
+        if is_valid:
+            # get the length of the operation in # of words
+            length = op_module.get_word_length(opcode, contents)
+            # make the opcode
+            data = op_module.from_str(opcode, contents)
 
-        # Increment our memory counter
-        current_memory_location += length * 2
+            # ensure that the data was built correctly and append it
+            if data is not None:
+                # instead of converting to a string here, we should make this a method of the base opcode class
+                to_return.insert_data(current_memory_location, str(binascii.hexlify(data.assemble()))[2:-1])
+
+                # Increment our memory counter
+                current_memory_location += length * 2
 
     return to_return, issues

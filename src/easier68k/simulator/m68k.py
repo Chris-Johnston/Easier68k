@@ -5,6 +5,7 @@ Motorola 68k chip definition
 from .memory import Memory
 from ..core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_ADDRESS_REGISTERS
 from ..core.enum.condition_status_code import ConditionStatusCode
+from ..core.models.list_file import ListFile
 import typing
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
@@ -161,7 +162,29 @@ class M68K:
         counter increments
         :return:
         """
-        pass
+        # must be here or we get circular dependency issues
+        from ..core.opcodes.move import from_binary
+        from ..core.util.find_module import find_module, valid_opcodes
+
+        for op_str in valid_opcodes:
+            op_module, op_class = find_module(op_str)
+
+            # We don't know this opcode, there's no module for it
+            if op_module is None:
+                print('Opcode {} is not known: skipping and continuing'.format(op_str))
+                continue
+
+            PC = self.get_program_counter_value()
+            
+            # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
+            # note: this currently has the edge case that it will fail unintelligibly
+            # if encountered at the end of memory
+            op, words_read = op_module.from_binary(self.memory.memory[PC:PC+10])
+            if op != None:
+                op.execute(self)
+                self.set_program_counter_value(PC + words_read*2)
+
+
 
     def reload_execution(self):
         """
@@ -184,6 +207,18 @@ class M68K:
         :return:
         """
         self._clock_cycles = 0
+
+    def load_list_file(self, list_file: ListFile):
+        """
+        Load List File
+
+        load the contents of a list file into memory
+        using the locations specified inside of the list file
+        :param list_file:
+        :return:
+        """
+        self.memory.load_list_file(list_file)
+        self.set_program_counter_value(int(list_file.starting_execution_address))
 
     def load_memory(self, file : typing.BinaryIO):
         """

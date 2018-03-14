@@ -1,12 +1,13 @@
 """
+
 >>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
 'Move command: Size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
 'Move command: Size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
->>> Move.from_str('MOVE.W', 'D3, A3')[1]
-[('Invalid addressing mode', 'ERROR')]
+>>> from_str('MOVE.W', 'D3, A3')
+
 """
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize, OpSize
@@ -17,7 +18,9 @@ from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
 from ..util.parsing import parse_assembly_parameter
-
+from ...core.util.conversions import get_number_of_bytes
+from ..util.parsing import parse_assembly_parameter, from_str_util
+from ..models.assembly_parameter import AssemblyParameter
 
 def command_matches(command: str) -> bool:
     """
@@ -30,38 +33,145 @@ def command_matches(command: str) -> bool:
 
 class_name = 'Move'
 
-
 class Move(Opcode):
     # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
+# Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
+# For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
+# it can't operate on byte-sized data
+allowed_sizes = 'BWL'
 
-    @classmethod
-    def from_str(cls, command: str, parameters: str):
-        """
-        Parses a MOVE command from memory.
+allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
 
-        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
-        :param parameters: The parameters after the command (such as the source and destination of a move)
-        """
-        valid, issues = Move.is_valid(command, parameters)
-        if not valid:
-            return None, issues
-        # We can forego asserts in here because we've now confirmed this is valid assembly code
 
-        size = opcode_util.get_size(command)
+def is_valid(command: str, parameters: str) -> (bool, list):
+    """
+    Tests whether the given command is valid
+
+    >>> is_valid('MOVE.B', 'D0, D1')[0]
+    True
+
+    >>> is_valid('MOVE.W', 'D0')[0]
+    False
+
+    >>> is_valid('MOVE.G', 'D0, D1')[0]
+    False
+
+    >>> is_valid('MOVE.L', 'D0, A2')[0]
+    False
+
+    >>> is_valid('MOV.L', 'D0, D1')[0]
+    False
+
+    >>> is_valid('MOVE.', 'D0, D1')[0]
+    False
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    :return: Whether the given command is valid and a list of issues/warnings encountered
+    """
+    issues = []
+    try:
+        # split command and parmeters using from_str_util
+        size, params, parts = from_str_util(command, parameters)
+
+        assert len(
+            parts) <= 2, 'Unknown error (more than 1 period in command)'  # If we have more than 2 parts something is seriously wrong
+        assert parts[0].upper() == 'MOVE', 'Command is not a MOVE.'
+        if len(parts) != 1:  # Has a size specifier
+            assert len(parts[1]) == 1, 'Size specifier must be 1 character'
+            assert parts[1] in allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
 
         # Split the parameters into EA modes
-        params = parameters.split(',')
-        src = parse_assembly_parameter(params[0].strip())
-        dest = parse_assembly_parameter(params[1].strip())
+        assert len(params) == 2, 'Must have two parameters'
 
-        return cls(src, dest, size), issues
+        src = parse_assembly_parameter(params[0])  # Parse the source and make sure it parsed right
+        dest = parse_assembly_parameter(params[1])
+
+        assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
+        assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
+
+        return True, issues
+    except AssertionError as e:
+        issues.append((e.args[0], 'ERROR'))
+        return False, issues
+
+def get_word_length(command: str, parameters: str) -> (int):
+    """
+    >>> get_word_length('MOVE', 'D0, D1')
+    1
+
+    >>> get_word_length('MOVE.L', '#$90, D3')
+    3
+
+    >>> get_word_length('MOVE.W', '#$90, D3')
+    2
+
+    >>> get_word_length('MOVE.W', '($AAAA).L, D7')
+    3
+    
+    >>> get_word_length('MOVE.W', 'D0, ($BBBB).L')
+    3
+
+    >>> get_word_length('MOVE.W', '($AAAA).L, ($BBBB).L')
+    5
+
+    >>> get_word_length('MOVE.W', '#$AAAA, ($BBBB).L')
+    4
 
 
-    def __init__(self, src: EAMode, dest: EAMode, size: OpSize = OpSize.WORD):
+    Gets what the end length of this command will be in memory
+    :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
+    :param parameters: The parameters after the command
+    :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
+    """
+    valid, issues = is_valid(command, parameters)
+    if not valid:
+        return None
+    # We can forego asserts in here because we've now confirmed this is valid assembly code
+
+    issues = []  # Set up our issues list (warnings + errors)
+    parts = command.split('.')  # Split the command by period to get the size of the command
+    if len(parts) == 1:  # Use the default size
+        size = 'W'
+    else:
+        size = parts[1]
+
+    # Split the parameters into EA modes
+    params = parameters.split(',')
+
+    src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+    dest = parse_assembly_parameter(params[1].strip())
+
+    length = 1  # Always 1 word not counting additions to end
+
+    if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
+        if size == 'L':
+            length += 2  # Longs are 2 words long
+        else:
+            length += 1  # This is a word or byte, so only 1 word
+
+    if src.mode == EAMode.AWA:  # Appends a word
+        length += 1
+
+    if src.mode == EAMode.ALA:  # Appends a long, so 2 words
+        length += 2
+
+    if dest.mode == EAMode.AWA:  # Appends a word
+        length += 1
+
+    if dest.mode == EAMode.ALA:  # Appends a long, so 2 words
+        length += 2
+
+    return length
+
+class Move(Opcode):
+    def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size: OpSize = OpSize.WORD):
+        assert isinstance(src, AssemblyParameter)
+        assert isinstance(dest, AssemblyParameter)
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
         assert src.mode != EAMode.ARD  # Only invalid src is address register direct
         self.src = src
@@ -71,7 +181,9 @@ class Move(Opcode):
         self.dest = dest
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
+
         assert size in Move.valid_sizes
+
         self.size = size
 
     def assemble(self) -> bytearray:
@@ -110,54 +222,6 @@ class Move(Opcode):
         # Makes this a bit easier to read in doctest output
         return 'Move command: Size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
 
-    @staticmethod
-    def is_valid(command: str, parameters: str) -> (bool, list):
-        """
-        Tests whether the given command is valid
-
-        >>> Move.is_valid('MOVE.B', 'D0, D1')[0]
-        True
-
-        >>> Move.is_valid('MOVE.W', 'D0')[0]
-        False
-
-        >>> Move.is_valid('MOVE.G', 'D0, D1')[0]
-        False
-
-        >>> Move.is_valid('MOVE.L', 'D0, A2')[0]
-        False
-
-        >>> Move.is_valid('MOV.L', 'D0, D1')[0]
-        False
-
-        >>> Move.is_valid('MOVE.', 'D0, D1')[0]
-        False
-
-        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
-        :param parameters: The parameters after the command (such as the source and destination of a move)
-        :return: Whether the given command is valid and a list of issues/warnings encountered
-        """
-        issues = []
-        try:
-            assert opcode_util.check_valid_command(command, 'MOVE', valid_sizes=Move.valid_sizes), 'Command invalid'
-
-            # Split the parameters into EA modes
-            params = parameters.split(',')
-            assert len(params) == 2, 'Must have two parameters'
-
-            src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src, 'Error parsing src'
-
-            dest = parse_assembly_parameter(params[1].strip())
-            assert dest, 'Error parsing dest'
-
-            assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
-            assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
-
-            return True, issues
-        except AssertionError as e:
-            issues.append((e.args[0], 'ERROR'))
-            return False, issues
 
     @staticmethod
     def get_word_length(command: str, parameters: str) -> (int, list):
@@ -234,46 +298,48 @@ class Move(Opcode):
 
 
 def from_binary(data: bytearray) -> (str, int):
+
+def from_binary(data: bytearray):
     """
     This has a non-move opcode
     >>> from_binary(bytearray.fromhex('5E01'))
     (None, 0)
-    
+
     MOVE.B D1,D7
     >>> op, used = from_binary(bytearray.fromhex('1E01'))
-    
+
     >>> str(op.src)
-    'EA Mode: 0, Data: 1'
-    
+    'EA Mode: EAMode.DRD, Data: 1'
+
     >>> str(op.dest)
-    'EA Mode: 0, Data: 7'
-    
+    'EA Mode: EAMode.DRD, Data: 7'
+
     >>> used
     1
-    
-    
+
+
     MOVE.L (A4),(A7)
     >>> op, used = from_binary(bytearray.fromhex('2E94'))
-    
+
     >>> str(op.src)
-    'EA Mode: 2, Data: 4'
-    
+    'EA Mode: EAMode.ARI, Data: 4'
+
     >>> str(op.dest)
-    'EA Mode: 2, Data: 7'
-    
+    'EA Mode: EAMode.ARI, Data: 7'
+
     >>> used
     1
-    
-    
+
+
     MOVE.W #$DEAF,(A2)+
     >>> op, used = from_binary(bytearray.fromhex('34FCDEAF'))
-    
+
     >>> str(op.src)
-    'EA Mode: 5, Data: 57007'
-    
+    'EA Mode: EAMode.IMM, Data: 57007'
+
     >>> str(op.dest)
-    'EA Mode: 3, Data: 2'
-    
+    'EA Mode: EAMode.ARIPI, Data: 2'
+
     >>> used
     2
 
@@ -283,10 +349,10 @@ def from_binary(data: bytearray) -> (str, int):
     >>> op, used = from_binary(bytearray.fromhex('23F8100000200000'))
 
     >>> str(op.src)
-    'EA Mode: 7, Data: 4096'
+    'EA Mode: EAMode.AWA, Data: 4096'
 
     >>> str(op.dest)
-    'EA Mode: 6, Data: 2097152'
+    'EA Mode: EAMode.ALA, Data: 2097152'
 
     >>> used
     4
@@ -299,17 +365,17 @@ def from_binary(data: bytearray) -> (str, int):
         data) or 0 for not a match
     """
     assert len(data) >= 2, 'opcode size is at least 1 word'
-    
+
     # 'big' endian byte order
     first_word = int.from_bytes(data[0:2], 'big')
-    
+
     [opcode_bin,
     size_bin,
     destination_register_bin,
     destination_mode_bin,
     source_mode_bin,
     source_register_bin] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
-    
+
     # check opcode
     if opcode_bin != 0b00:
         return (None, 0)
@@ -323,12 +389,32 @@ def from_binary(data: bytearray) -> (str, int):
         return (None, 0)
 
     wordsUsed = 1
-    
+
     src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
     wordsUsed += src_EA[1]
-    
+
     dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
     wordsUsed += dest_EA[1]
 
     # when making the new Move, need to convert that MoveSize back into an OpSize
+
     return (Move(src_EA[0], dest_EA[0], size), wordsUsed)
+
+def from_str(command: str, parameters: str) -> (Move):
+    """
+    Parses a MOVE command from memory.
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    """
+    valid, issues = is_valid(command, parameters)
+    if not valid:
+        return None
+    # We can forego asserts in here because we've now confirmed this is valid assembly code
+
+    size, params, parts = from_str_util(command, parameters)
+
+    src = parse_assembly_parameter(params[0].strip())
+    dest = parse_assembly_parameter(params[1].strip())
+
+    return Move(src, dest, size)
