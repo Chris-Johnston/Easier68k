@@ -61,7 +61,6 @@ class Move(Opcode):
 
         return cls(src, dest, size), issues
 
-        
 
     def __init__(self, src: EAMode, dest: EAMode, size: OpSize = OpSize.WORD):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
@@ -321,7 +320,7 @@ def from_binary(data: bytearray):
         return (None, 0)
 
     # this should be the op size and not the move size
-    size = (size_bin)
+    size = OpSize.parse(size_bin)
     
     wordsUsed = 1
     
