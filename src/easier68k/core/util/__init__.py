@@ -1,6 +1,7 @@
 __all__ = [
     'conversions',
-    'parsing'
+    'parsing',
+    'opcode_util'
 ]
 
 from .conversions import to_byte, to_word

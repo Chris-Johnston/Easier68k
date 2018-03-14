@@ -3,7 +3,7 @@ Motorola 68k chip definition
 """
 
 from .memory import Memory
-from ..core.enum.register import Register
+from ..core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_ADDRESS_REGISTERS
 from ..core.enum.condition_status_code import ConditionStatusCode
 import typing
 
@@ -34,7 +34,7 @@ class M68K:
         """
 
         # loop through all of the full size registers which are just 32 bits / 4 bytes long
-        for register in Register.FULL_SIZE_REGISTERS:
+        for register in FULL_SIZE_REGISTERS:
             self.registers[register] = bytearray(4)
 
         # set up all of the odd registers (in this case, just the Condition Code Register)
@@ -73,7 +73,7 @@ class M68K:
             return
 
         # if the register is an address register that is limited to fit in the bounds of memory
-        if register in Register.MEMORY_LIMITED_ADDRESS_REGISTERS:
+        if register in MEMORY_LIMITED_ADDRESS_REGISTERS:
             self.set_address_register_value(register, val)
             return
 
@@ -115,7 +115,7 @@ class M68K:
         :return:
         """
         assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
-        assert reg in Register.MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
+        assert reg in MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
 
         # now set the value of the register
         self.registers[reg] = bytearray(new_value.to_bytes(4, 'big'))

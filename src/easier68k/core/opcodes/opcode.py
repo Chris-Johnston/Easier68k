@@ -1,8 +1,19 @@
 from ...simulator.m68k import M68K
 
 
+# Outside the class so we can access it easier
+def command_matches(command: str) -> bool:
+    """
+    Checks whether a command string is an instance of this command type
+    :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
+    :return: Whether the string is an instance of this command type
+    """
+    pass
+
+
+class_name = 'Opcode'
+
 class Opcode:
-    
     def assemble(self) -> bytearray:
         """
         Assembles this opcode into hex to be inserted into memory

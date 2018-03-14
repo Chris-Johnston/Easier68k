@@ -1,4 +1,6 @@
 # Parsing utils
+from ..enum.ea_mode import EAMode
+from ..models.assembly_parameter import AssemblyParameter
 
 def from_str_util(command: str, parameters: str) -> (str, list):
     """
@@ -28,21 +30,117 @@ def from_str_util(command: str, parameters: str) -> (str, list):
 
     return size, params, parts
 
-def parse_literal(literal: str):
+def parse_assembly_parameter(addr: str) -> AssemblyParameter:
+    """
+    Parses an effective addressing mode (such as D0, (A1), #$01)
+    and makes a new AssemblyParameter
+
+    >>> parse_assembly_parameter('D')
+    Traceback (most recent call last):
+    ...
+    AssertionError
+
+    >>> str(parse_assembly_parameter('D3'))
+    'EA Mode: EAMode.DRD, Data: 3'
+
+    >>> str(parse_assembly_parameter('A6'))
+    'EA Mode: EAMode.ARD, Data: 6'
+
+    >>> str(parse_assembly_parameter('(A4)'))
+    'EA Mode: EAMode.ARI, Data: 4'
+
+    >>> str(parse_assembly_parameter('(A2)+'))
+    'EA Mode: EAMode.ARIPI, Data: 2'
+
+    >>> str(parse_assembly_parameter('(A2)-'))  # Invalid, can't do "post-decrement"
+    Traceback (most recent call last):
+    ...
+    AssertionError
+
+    >>> str(parse_assembly_parameter('($45).W'))
+    'EA Mode: EAMode.AWA, Data: 69'
+
+    >>> str(parse_assembly_parameter('(%01010111).L'))
+    'EA Mode: EAMode.ALA, Data: 87'
+
+    >>> str(parse_assembly_parameter('#$FF'))
+    'EA Mode: EAMode.IMM, Data: 255'
+
+    >>> str(parse_assembly_parameter('-(A2)'))
+    'EA Mode: EAMode.ARIPD, Data: 2'
+    """
+    assert len(addr) >= 2
+
+    if addr[0] == 'D':
+        assert len(addr) == 2
+        assert 0 <= int(addr[1]) <= 7
+        return AssemblyParameter(EAMode.DRD, int(addr[1]))
+    if addr[0] == 'A':
+        assert len(addr) == 2
+        assert 0 <= int(addr[1]) <= 7
+        return AssemblyParameter(EAMode.ARD, int(addr[1]))
+    if addr[0] == '(':  # ARI, ARIPI, ALA, or AWA
+        # Parse the inside of the parentheses
+        nested = ""
+        found_paren = False
+
+        i = 1
+        while i < len(addr):
+            if addr[i] == ')':
+                found_paren = True
+                break
+
+            nested += addr[i]
+            i += 1
+
+        assert found_paren
+
+        if addr[1] == 'A':  # ARI or ARIPI
+            assert nested[0] == 'A'
+            assert nested[1].isnumeric()
+            assert 0 <= int(nested[1]) <= 7
+
+            if i == len(addr) - 1:
+                return AssemblyParameter(EAMode.ARI, int(nested[1]))
+
+            assert addr[i + 1] == '+'
+            return AssemblyParameter(EAMode.ARIPI, int(nested[1]))
+
+        # ALA or AWA
+        assert i == len(addr) - 3
+        assert addr[len(addr) - 1] == 'W' or addr[len(addr) - 1] == 'L'
+
+        return AssemblyParameter(EAMode.AWA if addr[len(addr) - 1] == 'W' else EAMode.ALA, parse_literal(nested))
+    if addr[0] == '#':  # IMM
+        return AssemblyParameter(EAMode.IMM, parse_literal(addr[1:]))
+    if addr[0] == '-':  # ARIPD
+        assert len(addr) == 5
+        assert addr[1] == '('
+        assert addr[2] == 'A'
+        assert addr[3].isnumeric()
+        assert 0 <= int(addr[3]) <= 7
+        assert addr[4] == ')'
+
+        return AssemblyParameter(EAMode.ARIPD, int(addr[3]))
+
+    return AssemblyParameter()
+
+
+def parse_literal(literal: str) -> int:
     """
     Parses a literal (aka "1234" or "$A0F" or "%1001")
 
     >>> parse_literal('$BA1')
-    bytearray(b'\\x0b\\xa1')
+    2977
 
     >>> parse_literal('%01010111')
-    bytearray(b'W')
+    87
 
     >>> parse_literal('57')
-    bytearray(b'9')
+    57
 
     >>> parse_literal('400')
-    bytearray(b'\\x01\\x90')
+    400
 
     :param literal: A string containing the literal to parse
     :return: The parsed literal (a bytearray type)
@@ -51,21 +149,22 @@ def parse_literal(literal: str):
         if len(literal) % 2 == 0:
             literal = literal[0] + '0' + literal[1:]
 
-        return bytearray.fromhex(literal[1:])
+        return int(literal[1:], 16)
     if literal[0] == '%':  # Parsing a binary literal
         assert (len(literal) - 1) % 4 == 0  # Has to be divisible by 4 to convert into hex
         hexed = hex(int(literal[1:], 2))[2:]
         if len(hexed) % 2 == 1:
             hexed = '0' + hexed
 
-        return bytearray.fromhex(hexed)
+        return int(hexed, 16)
 
     # Integer literal
+
     hexed = hex(int(literal))[2:]
     if len(hexed) % 2 == 1:
         # Odd length string, add 0 to the beginning
         hexed = '0' + hexed
-    return bytearray.fromhex(hexed)
+    return int(hexed, 16)
 
 
 def strip_comments(line: str) -> str:
@@ -229,7 +328,7 @@ def get_opcode(line: str) -> str:
 
         opcode += c
 
-    return opcode
+    return opcode.upper()
 
 
 def strip_opcode(line: str) -> str:
@@ -278,3 +377,5 @@ def strip_opcode(line: str) -> str:
             post_op += c
 
     return post_op
+
+
