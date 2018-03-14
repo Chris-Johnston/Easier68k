@@ -11,6 +11,12 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     >>> from_str_util('MOVE.B', '#123, D0')
     ('B', ['#123', 'D0'], ['MOVE', 'B'])
 
+    >>> from_str_util('FAKEOP', '$AAAA, #123, $AAAA')
+    ('W', ['$AAAA', '#123', '$AAAA'], ['FAKEOP'])
+
+    >>> from_str_util('NOPARAM.L', '')
+    ('L', [''], ['NOPARAM', 'L'])
+
     :param command: the command str
     :param parameters: the parameters str
     :return: size {str}, params {list} of str, parts - both sides of the command after split
