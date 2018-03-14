@@ -313,14 +313,15 @@ def from_binary(data: bytearray) -> (str, int):
     # check opcode
     if opcode_bin != 0b00:
         return (None, 0)
-    
+
+    # the binary will contain the MoveSize, convert this to an OpSize used by everything else
+    size = MoveSize(size_bin).to_op_size()
+
     # check size
-    if size_bin not in Move.valid_sizes:
+    if size not in Move.valid_sizes:
+        print('size not in valid', size)
         return (None, 0)
 
-    # the binary will contain the MoveSize
-    size = MoveSize(size_bin)
-    
     wordsUsed = 1
     
     src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
@@ -330,4 +331,4 @@ def from_binary(data: bytearray) -> (str, int):
     wordsUsed += dest_EA[1]
 
     # when making the new Move, need to convert that MoveSize back into an OpSize
-    return (Move(src_EA[0], dest_EA[0], size.to_op_size()), wordsUsed)
+    return (Move(src_EA[0], dest_EA[0], size), wordsUsed)

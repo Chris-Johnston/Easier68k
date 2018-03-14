@@ -119,11 +119,11 @@ class MoveSize(IntEnum):
         converts back to the op size
         :return:
         """
-        if self is OpSize.BYTE:
+        if self is MoveSize.BYTE:
             return OpSize.BYTE
-        if self is OpSize.WORD:
+        if self is MoveSize.WORD:
             return OpSize.WORD
-        if self is OpSize.LONG:
+        if self is MoveSize.LONG:
             return OpSize.LONG
 
 # forward declaration so that types can return correctly
