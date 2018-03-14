@@ -113,8 +113,7 @@ def parse(text: str) -> (ListFile, list):
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
-        length, more_issues = op_class.get_word_length(opcode, contents)
-        issues.extend(more_issues)
+        length = op_module.get_word_length(opcode, contents)
 
         current_memory_location += length * 2
 
@@ -147,18 +146,23 @@ def parse(text: str) -> (ListFile, list):
             continue
 
         # Get the actual constructed opcode
-        length, more_issues = op_class.get_word_length(opcode, contents)
-        issues.extend(more_issues)
-        data, more_issues = op_class.from_str(opcode, contents)
-        issues.extend(more_issues)
 
-        # Write the data to the list file
-        if data is None:
-            continue
+        # check that the input is valid the opcode at the module level
+        is_valid, issues = op_module.is_valid(opcode, contents)
 
-        to_return.insert_data(current_memory_location, str(binascii.hexlify(data.assemble()))[2:-1])
+        # if valid, then actually construct the opcode
+        if is_valid:
+            # get the length of the operation in # of words
+            length = op_module.get_word_length(opcode, contents)
+            # make the opcode
+            data = op_module.from_str(opcode, contents)
 
-        # Increment our memory counter
-        current_memory_location += length * 2
+            # ensure that the data was built correctly and append it
+            if data is not None:
+                # instead of converting to a string here, we should make this a method of the base opcode class
+                to_return.insert_data(current_memory_location, str(binascii.hexlify(data.assemble()))[2:-1])
+
+                # Increment our memory counter
+                current_memory_location += length * 2
 
     return to_return, issues
