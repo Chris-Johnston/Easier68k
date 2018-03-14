@@ -1,8 +1,8 @@
 """
->>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
+>>> str(from_str('MOVE.B', '-(A0), D1'))
 'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
->>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
+>>> str(from_str('MOVE.L', 'D3, (A0)'))
 'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> from_str('MOVE.W', 'D3, A3')[1]
@@ -18,6 +18,7 @@ from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
 from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter, from_str_util
+from ..models.assembly_parameter import AssemblyParameter
 
 
 def command_matches(command: str) -> bool:
@@ -36,6 +37,8 @@ class_name = 'Move'
 # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
 # it can't operate on byte-sized data
 allowed_sizes = 'BWL'
+
+allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
 
 
 def is_valid(command: str, parameters: str) -> (bool, list):
@@ -79,11 +82,8 @@ def is_valid(command: str, parameters: str) -> (bool, list):
         # Split the parameters into EA modes
         assert len(params) == 2, 'Must have two parameters'
 
-        src = EAMode.parse_ea(params[0])  # Parse the source and make sure it parsed right
-        assert src.mode > EAMode.ERR, 'Error parsing src'  # -1 means error
-
-        dest = EAMode.parse_ea(params[1])
-        assert dest.mode > EAMode.ERR, 'Error parsing dest'  # -1 means error
+        src = parse_assembly_parameter(params[0])  # Parse the source and make sure it parsed right
+        dest = parse_assembly_parameter(params[1])
 
         assert src.mode != EAMode.ARD, 'Invalid addressing mode'  # Only invalid src is address register direct
         assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM, 'Invalid addressing mode'
@@ -92,27 +92,6 @@ def is_valid(command: str, parameters: str) -> (bool, list):
     except AssertionError as e:
         issues.append((e.args[0], 'ERROR'))
         return False, issues
-
-
-def from_str(command: str, parameters: str):
-    """
-    Parses a MOVE command from memory.
-
-    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
-    :param parameters: The parameters after the command (such as the source and destination of a move)
-    """
-    valid, issues = is_valid(command, parameters)
-    if not valid:
-        return None, issues
-    # We can forego asserts in here because we've now confirmed this is valid assembly code
-
-    size, params, parts = from_str_util(command, parameters)
-
-    src = EAMode.parse_ea(params[0].strip())
-    dest = EAMode.parse_ea(params[1].strip())
-
-    return Move(src, dest, size)
-
 
 def get_word_length(command: str, parameters: str) -> (int, list):
     """
@@ -158,8 +137,8 @@ def get_word_length(command: str, parameters: str) -> (int, list):
     # Split the parameters into EA modes
     params = parameters.split(',')
 
-    src = EAMode.parse_ea(params[0].strip())  # Parse the source and make sure it parsed right
-    dest = EAMode.parse_ea(params[1].strip())
+    src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+    dest = parse_assembly_parameter(params[1].strip())
 
     length = 1  # Always 1 word not counting additions to end
 
@@ -184,9 +163,9 @@ def get_word_length(command: str, parameters: str) -> (int, list):
     return length, issues
 
 class Move(Opcode):
-    def __init__(self, src: EAMode, dest: EAMode, size='W'):
-        assert isinstance(src, EAMode)
-        assert isinstance(dest, EAMode)
+    def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size='W'):
+        assert isinstance(src, AssemblyParameter)
+        assert isinstance(dest, AssemblyParameter)
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
         assert src.mode != EAMode.ARD  # Only invalid src is address register direct
         self.src = src
@@ -317,7 +296,7 @@ def from_binary(data: bytearray):
         return (None, 0)
     
     # check size
-    if not size_bin in Move.allowed_sizes_binary:
+    if not size_bin in allowed_sizes_binary:
         return (None, 0)
     
     size = MoveSize.parse_binary(size_bin)
@@ -331,3 +310,22 @@ def from_binary(data: bytearray):
     wordsUsed += dest_EA[1]
     
     return (Move(src_EA[0], dest_EA[0], size), wordsUsed)
+
+def from_str(command: str, parameters: str) -> (Move):
+    """
+    Parses a MOVE command from memory.
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    """
+    valid, issues = is_valid(command, parameters)
+    if not valid:
+        return None
+    # We can forego asserts in here because we've now confirmed this is valid assembly code
+
+    size, params, parts = from_str_util(command, parameters)
+
+    src = parse_assembly_parameter(params[0].strip())
+    dest = parse_assembly_parameter(params[1].strip())
+
+    return Move(src, dest, size)

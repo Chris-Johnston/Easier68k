@@ -138,7 +138,7 @@ def parse(text: str) -> (ListFile, list):
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
-        length, more_issues = op_class.get_word_length(opcode, contents)
+        length, more_issues = op_module.get_word_length(opcode, contents)
         issues.extend(more_issues)
 
         current_memory_location += length * 2
@@ -172,9 +172,9 @@ def parse(text: str) -> (ListFile, list):
             continue
 
         # Get the actual constructed opcode
-        length, more_issues = op_class.get_word_length(opcode, contents)
+        length, more_issues = op_module.get_word_length(opcode, contents)
         issues.extend(more_issues)
-        data, more_issues = op_class.from_str(opcode, contents)
+        data, more_issues = op_module.from_str(opcode, contents)
         issues.extend(more_issues)
 
         # Write the data to the list file
