@@ -9,7 +9,7 @@
 [('Invalid addressing mode', 'ERROR')]
 """
 from ...core.enum.ea_mode import EAMode
-from ...core.enum.op_size import MoveSize
+from ...core.enum.op_size import MoveSize, OpSize
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
@@ -36,10 +36,8 @@ class Move(Opcode):
     # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
-    allowed_sizes = 'BWL'
-    
-    # same as above, but for dissassembly
-    allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
+    __valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
+
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
@@ -65,7 +63,7 @@ class Move(Opcode):
 
         
 
-    def __init__(self, src: EAMode, dest: EAMode, size='W'):
+    def __init__(self, src: EAMode, dest: EAMode, size: OpSize = OpSize.WORD):
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
         assert src.mode != EAMode.ARD  # Only invalid src is address register direct
         self.src = src
@@ -75,7 +73,7 @@ class Move(Opcode):
         self.dest = dest
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-        assert size.upper() in Move.allowed_sizes
+        assert size in Move.__valid_sizes
         self.size = size
 
     def assemble(self) -> bytearray:
@@ -321,8 +319,9 @@ def from_binary(data: bytearray):
     # check size
     if not size_bin in Move.allowed_sizes_binary:
         return (None, 0)
-    
-    size = MoveSize.parse_binary(size_bin)
+
+    # this should be the op size and not the move size
+    size = (size_bin)
     
     wordsUsed = 1
     
