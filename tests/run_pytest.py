@@ -3,8 +3,11 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+import easier68k
+
 def run_tests():
     print('running pytests...')
+    print('version {}'.format(easier68k.__version__))
     status = pytest.main()
     return status
 

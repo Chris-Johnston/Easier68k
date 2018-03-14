@@ -7,29 +7,27 @@ A python package based assmebler, disassembler and simulator of the Motorola 68k
 Easier68k currently targets only Python 3.5 and 3.6. 
 Other versions may work, but are not actively supported.
 
-Easier68k is not available as a pip package (yet?) so it must be built from source.
+See [Easier68k-SampleProject][sampleproject] as an example of incorporating this
+package into your code.
 
-1. Install the requirements:
+1. Add to your `requirements.txt` and install:
    
    ```bash
-    python -m pip install -r requirements.txt
-    ```
-    
-2. Install the package (may require root):
+   # Add this repo to your project's requirements.txt (create one if it doesn't)
+   echo git+https://github.com/Chris-Johnston/Easier68k >> requirements.txt
    
-   ```bash
-    cd src
-    python setup.py install
+   # (re-)install your project requirements (you may want to include the --upgrade flag)
+   python -m pip install -r requirements.txt
+   ```
+    
+2. Use the package in your code:
+    
+    ```python
+    import easier68k
+    sim = easier68k.simulator.m68k.M68K()
+    # you can now use the package!
     ```
     
-3. Use the package in your code:
-   
-    ```bash
-    # Code example TODO
-    ```
-    
-
-
 ### Testing
 
 Running the tests assumes that all the prior installation steps have been run already.
@@ -42,3 +40,5 @@ A list of all modules to test is defined in `tests/run_doctest.py`. Update this 
 new doctest-able modules are added to the CI.
 
 This file can be run from the shell using `python tests/run_doctest.py`.
+
+[sampleproject]: https://github.com/Chris-Johnston/Easier68k-SampleProject
