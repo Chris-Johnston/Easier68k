@@ -1,9 +1,9 @@
 """
 >>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
-'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
+'Move command: Size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
-'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
+'Move command: Size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> Move.from_str('MOVE.W', 'D3, A3')[1]
 [('Invalid addressing mode', 'ERROR')]
@@ -233,7 +233,7 @@ class Move(Opcode):
         return length, issues
 
 
-def from_binary(data: bytearray):
+def from_binary(data: bytearray) -> (str, int):
     """
     This has a non-move opcode
     >>> from_binary(bytearray.fromhex('5E01'))
@@ -315,11 +315,11 @@ def from_binary(data: bytearray):
         return (None, 0)
     
     # check size
-    if not size_bin in Move.valid_sizes:
+    if size_bin not in Move.valid_sizes:
         return (None, 0)
 
-    # this should be the op size and not the move size
-    size = OpSize.parse(size_bin)
+    # the binary will contain the MoveSize
+    size = MoveSize(size_bin)
     
     wordsUsed = 1
     
@@ -328,5 +328,6 @@ def from_binary(data: bytearray):
     
     dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
     wordsUsed += dest_EA[1]
-    
-    return (Move(src_EA[0], dest_EA[0], size), wordsUsed)
+
+    # when making the new Move, need to convert that MoveSize back into an OpSize
+    return (Move(src_EA[0], dest_EA[0], size.to_op_size()), wordsUsed)

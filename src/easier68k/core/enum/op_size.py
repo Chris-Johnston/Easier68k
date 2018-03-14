@@ -114,6 +114,18 @@ class MoveSize(IntEnum):
         if opsize is OpSize.LONG:
             return MoveSize.LONG
 
+    def to_op_size(self) -> OpSize:
+        """
+        converts back to the op size
+        :return:
+        """
+        if self is OpSize.BYTE:
+            return OpSize.BYTE
+        if self is OpSize.WORD:
+            return OpSize.WORD
+        if self is OpSize.LONG:
+            return OpSize.LONG
+
 # forward declaration so that types can return correctly
 class Size(IntEnum):
     pass
