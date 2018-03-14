@@ -7,7 +7,7 @@ setup(
     author='Chris Johnston et al',
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests',)),
     setup_requires=['pytest-runner'],
     python_requires='>=3'
 )
