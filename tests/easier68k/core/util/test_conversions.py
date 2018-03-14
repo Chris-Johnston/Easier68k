@@ -1,6 +1,6 @@
 import pytest
 
-from easier68k.core.util.conversions import to_word, to_byte, get_number_of_bytes
+from easier68k.core.util.conversions import to_word, to_byte
 
 def test_to_word():
     assert to_word(0) == 0
@@ -21,21 +21,3 @@ def test_to_byte():
     # try invalid input
     with pytest.raises((AssertionError, TypeError)):
         to_byte('invalid')
-
-def test_get_number_of_bytes():
-
-    assert get_number_of_bytes('B') == 1
-    assert get_number_of_bytes('B') == 1
-    assert get_number_of_bytes('W') == 2
-    assert get_number_of_bytes('w') == 2
-    assert get_number_of_bytes('L') == 4
-    assert get_number_of_bytes('l') == 4
-
-    with pytest.raises(AssertionError):
-        get_number_of_bytes(123)
-
-    with pytest.raises(ValueError):
-        get_number_of_bytes('invalid')
-
-    with pytest.raises(ValueError):
-        get_number_of_bytes('aaaa')

@@ -7,6 +7,7 @@ from easier68k.core.opcodes.move import Move
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.register import Register
+from easier68k.core.enum.op_size import OpSize
 
 def test_move():
     """
@@ -24,7 +25,7 @@ def test_move():
     dst = AssemblyParameter(EAMode.DRD, 2)
 
     # make a testing move command
-    mv = Move(src, dst, 'B')
+    mv = Move(src, dst, OpSize.BYTE)
 
     mv.execute(a)
 

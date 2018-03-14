@@ -1,21 +1,22 @@
 # Parsing utils
 from ..enum.ea_mode import EAMode
 from ..models.assembly_parameter import AssemblyParameter
+from ..enum.op_size import OpSize
 
-def from_str_util(command: str, parameters: str) -> (str, list):
+def from_str_util(command: str, parameters: str) -> (OpSize, list, list):
     """
     Util method for from_str
     Splits the command into both parts, gets the normalized size
     and splits the parameters
 
     >>> from_str_util('MOVE.B', '#123, D0')
-    ('B', ['#123', 'D0'], ['MOVE', 'B'])
+    (<OpSize.BYTE: 1>, ['#123', 'D0'], ['MOVE', 'B'])
 
     >>> from_str_util('FAKEOP', '$AAAA, #123, $AAAA')
-    ('W', ['$AAAA', '#123', '$AAAA'], ['FAKEOP'])
+    (<OpSize.WORD: 2>, ['$AAAA', '#123', '$AAAA'], ['FAKEOP'])
 
     >>> from_str_util('NOPARAM.L', '')
-    ('L', [''], ['NOPARAM', 'L'])
+    (<OpSize.LONG: 4>, [''], ['NOPARAM', 'L'])
 
     :param command: the command str
     :param parameters: the parameters str
@@ -25,7 +26,7 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     if len(parts) == 1:
         size = 'W'  # default size
     else:
-        size = parts[1].upper()
+        size = parts[1]
 
     # split parameters
     params = parameters.split(',')
@@ -34,7 +35,7 @@ def from_str_util(command: str, parameters: str) -> (str, list):
     for x in range(len(params)):
         params[x] = params[x].strip()
 
-    return size, params, parts
+    return OpSize.parse(size), params, parts
 
 def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     """

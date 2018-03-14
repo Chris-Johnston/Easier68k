@@ -1,25 +1,24 @@
 """
+
 >>> str(from_str('MOVE.B', '-(A0), D1'))
-'Move command: Size B, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
+'Move command: Size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
 >>> str(from_str('MOVE.L', 'D3, (A0)'))
-'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
+'Move command: Size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> from_str('MOVE.W', 'D3, A3')
 
 """
 from ...core.enum.ea_mode import EAMode
-from ...core.enum.op_size import MoveSize
+from ...core.enum.op_size import MoveSize, OpSize
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
-from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..models.assembly_parameter import AssemblyParameter
-
 
 def command_matches(command: str) -> bool:
     """
@@ -31,16 +30,6 @@ def command_matches(command: str) -> bool:
 
 
 class_name = 'Move'
-
-
-
-# Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
-# For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
-# it can't operate on byte-sized data
-allowed_sizes = 'BWL'
-
-allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
-
 
 def is_valid(command: str, parameters: str) -> (bool, list):
     """
@@ -78,7 +67,7 @@ def is_valid(command: str, parameters: str) -> (bool, list):
         assert parts[0].upper() == 'MOVE', 'Command is not a MOVE.'
         if len(parts) != 1:  # Has a size specifier
             assert len(parts[1]) == 1, 'Size specifier must be 1 character'
-            assert parts[1] in allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
+            assert size in Move.valid_sizes, "Size {} isn't allowed for command {}".format(size, command[0])
 
         # Split the parameters into EA modes
         assert len(params) == 2, 'Must have two parameters'
@@ -164,7 +153,13 @@ def get_word_length(command: str, parameters: str) -> (int):
     return length
 
 class Move(Opcode):
-    def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size='W'):
+
+    # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
+    # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
+    # it can't operate on byte-sized data
+    valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
+
+    def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size: OpSize = OpSize.WORD):
         assert isinstance(src, AssemblyParameter)
         assert isinstance(dest, AssemblyParameter)
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
@@ -176,7 +171,9 @@ class Move(Opcode):
         self.dest = dest
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-        assert size.upper() in allowed_sizes
+
+        assert size in Move.valid_sizes
+
         self.size = size
 
     def assemble(self) -> bytearray:
@@ -186,7 +183,7 @@ class Move(Opcode):
         """
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
-        tr += '{0:02b}'.format(MoveSize.parse(self.size))  # Size bits
+        tr += '{0:02b}'.format(MoveSize.from_op_size(self.size))  # Size bits
         tr += ea_mode_bin.parse_from_ea_mode_regfirst(self.dest)  # Destination first
         tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
         # Append immediates/absolute addresses after the command
@@ -203,7 +200,7 @@ class Move(Opcode):
         :return: Nothing
         """
         # get the length
-        val_length = get_number_of_bytes(self.size)
+        val_length = self.size.get_number_of_bytes()
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
@@ -215,7 +212,82 @@ class Move(Opcode):
         # Makes this a bit easier to read in doctest output
         return 'Move command: Size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
 
-def from_binary(data: bytearray):
+
+    @staticmethod
+    def get_word_length(command: str, parameters: str) -> (int, list):
+        """
+        >>> Move.get_word_length('MOVE', 'D0, D1')
+        (1, [])
+
+        >>> Move.get_word_length('MOVE.L', '#$90, D3')
+        (3, [])
+
+        >>> Move.get_word_length('MOVE.W', '#$90, D3')
+        (2, [])
+
+        >>> Move.get_word_length('MOVE.W', '($AAAA).L, D7')
+        (3, [])
+
+        >>> Move.get_word_length('MOVE.W', 'D0, ($BBBB).L')
+        (3, [])
+
+        >>> Move.get_word_length('MOVE.W', '($AAAA).L, ($BBBB).L')
+        (5, [])
+
+        >>> Move.get_word_length('MOVE.W', '#$AAAA, ($BBBB).L')
+        (4, [])
+
+        Gets what the end length of this command will be in memory
+        :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
+        :param parameters: The parameters after the command
+        :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
+        """
+        valid, issues = is_valid(command, parameters)
+        if not valid:
+            return 0, issues
+        # We can forego asserts in here because we've now confirmed this is valid assembly code
+
+        issues = []  # Set up our issues list (warnings + errors)
+        parts = command.split('.')  # Split the command by period to get the size of the command
+        if len(parts) == 1:  # Use the default size
+            size = 'W'
+        else:
+            size = parts[1]
+
+        # Split the parameters into EA modes
+        params = parameters.split(',')
+
+        if len(params) != 2:  # We need exactly 2 parameters
+            issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
+            return 0, issues
+
+        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+        dest = parse_assembly_parameter(params[1].strip())
+
+        length = 1  # Always 1 word not counting additions to end
+
+        if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
+            if size == 'L':
+                length += 2  # Longs are 2 words long
+            else:
+                length += 1  # This is a word or byte, so only 1 word
+
+        if src.mode == EAMode.AWA:  # Appends a word
+            length += 1
+
+        if src.mode == EAMode.ALA:  # Appends a long, so 2 words
+            length += 2
+
+        if dest.mode == EAMode.AWA:  # Appends a word
+            length += 1
+
+        if dest.mode == EAMode.ALA:  # Appends a long, so 2 words
+            length += 2
+
+        return length, issues
+
+
+def from_binary(data: bytearray) -> (str, int):
     """
     This has a non-move opcode
     >>> from_binary(bytearray.fromhex('5E01'))
@@ -296,11 +368,13 @@ def from_binary(data: bytearray):
     if opcode_bin != 0b00:
         return (None, 0)
 
-    # check size
-    if not size_bin in allowed_sizes_binary:
-        return (None, 0)
+    # the binary will contain the MoveSize, convert this to an OpSize used by everything else
+    size = MoveSize(size_bin).to_op_size()
 
-    size = MoveSize.parse_binary(size_bin)
+    # check size
+    if size not in Move.valid_sizes:
+        print('size not in valid', size)
+        return (None, 0)
 
     wordsUsed = 1
 
@@ -309,6 +383,8 @@ def from_binary(data: bytearray):
 
     dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
     wordsUsed += dest_EA[1]
+
+    # when making the new Move, need to convert that MoveSize back into an OpSize
 
     return (Move(src_EA[0], dest_EA[0], size), wordsUsed)
 

@@ -1,6 +1,6 @@
 from ..enum.ea_mode import EAMode
 from ..util.parsing import parse_assembly_parameter
-
+from ..enum.op_size import OpSize
 
 def command_matches(command: str, template: str) -> bool:
     """
@@ -35,18 +35,18 @@ def command_matches(command: str, template: str) -> bool:
     return split[0] == template
 
 
-def get_size(command: str, default_size='W') -> chr:
+def get_size(command: str, default_size=OpSize.WORD) -> OpSize:
     """
     Gets the size of a command, or supplies the default size
 
     >>> get_size("MOVE.B")
-    'B'
+    <OpSize.BYTE: 1>
 
     >>> get_size("MOVE")
-    'W'
+    <OpSize.WORD: 2>
 
-    >>> get_size("MOVE", default_size='B')
-    'B'
+    >>> get_size("MOVE", default_size=OpSize.BYTE)
+    <OpSize.BYTE: 1>
 
     :param command: The command string to parse
     :param default_size: The default size if no size is found
@@ -59,10 +59,10 @@ def get_size(command: str, default_size='W') -> chr:
 
     assert len(split) == 2
     assert len(split[1]) == 1
-    return split[1]
+    return OpSize.parse(split[1])
 
 
-def check_valid_command(command: str, template: str, can_take_size=True, valid_sizes='BWL') -> bool:
+def check_valid_command(command: str, template: str, can_take_size=True, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE]) -> bool:
     """
     Checks whether this command is valid
 
@@ -81,10 +81,10 @@ def check_valid_command(command: str, template: str, can_take_size=True, valid_s
     >>> check_valid_command("LEA.B", "LEA", can_take_size=False)
     False
 
-    >>> check_valid_command("MOVEA.W", "MOVEA", valid_sizes='WL')
+    >>> check_valid_command("MOVEA.W", "MOVEA", valid_sizes=[OpSize.WORD, OpSize.LONG])
     True
 
-    >>> check_valid_command("MOVEA.B", "MOVEA", valid_sizes='WL')
+    >>> check_valid_command("MOVEA.B", "MOVEA", valid_sizes=[OpSize.WORD, OpSize.LONG])
     False
 
     :param command: The command to check
@@ -105,7 +105,7 @@ def check_valid_command(command: str, template: str, can_take_size=True, valid_s
             return False  # Command doesn't match
         if len(parts[1]) != 1:
             return False  # Size not 1 character
-        if not parts[1] in valid_sizes:
+        if not OpSize.parse(parts[1]) in valid_sizes:
             return False  # Invalid size specifier
     else:
         return False  # More than 2 parts in the command (more than 2 periods somehow)
@@ -113,25 +113,25 @@ def check_valid_command(command: str, template: str, can_take_size=True, valid_s
     return True
 
 
-def ea_to_binary_post_op(ea: EAMode, size: chr) -> str:
+def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
     """
     Gets the binary (if any) of an EA Mode to append after the command itself. For example, if we were to do
     'MOVE.B #$42, D0', the immediate would need to be appended after the command: this returns the part that
     needs to be appended.
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), 'B')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.BYTE)
     '0000000001000010'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('D0'), 'W')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('D0'), OpSize.WORD)
     ''
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), 'L')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.LONG)
     '00000000000000000000000001000010'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).W'), 'W')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).W'), OpSize.WORD)
     '0000001001000010'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).L'), 'L')
+    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).L'), OpSize.LONG)
     '00000000000000000000001001000010'
 
     :param ea: The effective address that needs to be converted
@@ -139,7 +139,7 @@ def ea_to_binary_post_op(ea: EAMode, size: chr) -> str:
     :return: The binary that needs to be appended, in string form (or an empty string)
     """
     if ea.mode == EAMode.IMM:
-        if size.upper() == 'L':
+        if size is OpSize.LONG:
             return '{0:032b}'.format(ea.data)
         else:
             return '{0:016b}'.format(ea.data)
