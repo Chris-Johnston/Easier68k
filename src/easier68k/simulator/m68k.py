@@ -164,13 +164,23 @@ class M68K:
         """
         # must be here or we get circular dependency issues
         from ..core.opcodes.move import from_binary
+        from ..core.util.find_module import find_module, valid_opcodes
 
-        PC = self.get_program_counter_value()
-        # fixme: fix the hax. 20 is plenty
-        op, n = from_binary(self.memory.memory[PC:PC+20])
-        if op != None:
-            op.execute(self)
-            self.set_program_counter_value(PC + n*2)
+        for op_str in valid_opcodes:
+            op_module, op_class = find_module(op_str)
+
+            # We don't know this opcode, there's no module for it
+            if op_module is None:
+                print('Opcode {} is not known: skipping and continuing'.format(op_str))
+                continue
+
+            PC = self.get_program_counter_value()
+            # fixme: fix the hax. 20 is plenty
+            op, n = op_module.from_binary(self.memory.memory[PC:PC+20])
+            if op != None:
+                op.execute(self)
+                self.set_program_counter_value(PC + n*2)
+
 
 
     def reload_execution(self):
