@@ -5,8 +5,8 @@
 >>> str(from_str('MOVE.L', 'D3, (A0)'))
 'Move command: Size L, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
->>> from_str('MOVE.W', 'D3, A3')[1]
-[('Invalid addressing mode', 'ERROR')]
+>>> from_str('MOVE.W', 'D3, A3')
+
 """
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize
@@ -93,28 +93,28 @@ def is_valid(command: str, parameters: str) -> (bool, list):
         issues.append((e.args[0], 'ERROR'))
         return False, issues
 
-def get_word_length(command: str, parameters: str) -> (int, list):
+def get_word_length(command: str, parameters: str) -> (int):
     """
     >>> get_word_length('MOVE', 'D0, D1')
-    (1, [])
+    1
 
     >>> get_word_length('MOVE.L', '#$90, D3')
-    (3, [])
+    3
 
     >>> get_word_length('MOVE.W', '#$90, D3')
-    (2, [])
+    2
 
     >>> get_word_length('MOVE.W', '($AAAA).L, D7')
-    (3, [])
+    3
 
     >>> get_word_length('MOVE.W', 'D0, ($BBBB).L')
-    (3, [])
+    3
 
     >>> get_word_length('MOVE.W', '($AAAA).L, ($BBBB).L')
-    (5, [])
+    5
 
     >>> get_word_length('MOVE.W', '#$AAAA, ($BBBB).L')
-    (4, [])
+    4
 
 
     Gets what the end length of this command will be in memory
@@ -124,7 +124,7 @@ def get_word_length(command: str, parameters: str) -> (int, list):
     """
     valid, issues = is_valid(command, parameters)
     if not valid:
-        return 0, issues
+        return None
     # We can forego asserts in here because we've now confirmed this is valid assembly code
 
     issues = []  # Set up our issues list (warnings + errors)
@@ -160,7 +160,7 @@ def get_word_length(command: str, parameters: str) -> (int, list):
     if dest.mode == EAMode.ALA:  # Appends a long, so 2 words
         length += 2
 
-    return length, issues
+    return length
 
 class Move(Opcode):
     def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size='W'):
