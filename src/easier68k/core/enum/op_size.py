@@ -78,6 +78,9 @@ from enum import IntEnum, Enum
 class MoveSize(IntEnum):
     pass
 
+class OpSize(Enum):
+    pass
+
 class MoveSize(IntEnum):
     """
     Represents the "Big S" sizes (dark purple on this chart: http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf)
@@ -94,6 +97,21 @@ class MoveSize(IntEnum):
         if code == 'W':
             return MoveSize.WORD
         if code == 'L':
+            return MoveSize.LONG
+
+    @staticmethod
+    def from_op_size(opsize: OpSize) -> MoveSize:
+        """
+        Converts an OpSize into a MoveSize
+        :param opsize:
+        :return:
+        """
+
+        if opsize is OpSize.BYTE:
+            return MoveSize.BYTE
+        if opsize is OpSize.WORD:
+            return MoveSize.WORD
+        if opsize is OpSize.LONG:
             return MoveSize.LONG
 
 # forward declaration so that types can return correctly
@@ -137,9 +155,6 @@ class SingleBitSize(IntEnum):
             return SingleBitSize.LONG
 
 class OpSize(Enum):
-    pass
-
-class OpSize(Enum):
     """
     Represents the 3 lengths associated with operations, either Byte Word or Long word
 
@@ -149,18 +164,17 @@ class OpSize(Enum):
     WORD = 2
     LONG = 4
 
-    @staticmethod
-    def get_number_of_bytes(size: OpSize) -> int:
+    def get_number_of_bytes(self) -> int:
         """
         Gets the number of bytes associated with an opsize
         :param: size - the OpSize object to get the number of bytes for
         :return:
         """
-        if size is OpSize.BYTE:
+        if self is OpSize.BYTE:
             return 1
-        if size is OpSize.WORD:
+        if self is OpSize.WORD:
             return 2
-        if size is OpSize.LONG:
+        if self is OpSize.LONG:
             return 4
 
     @staticmethod

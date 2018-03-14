@@ -16,7 +16,6 @@ from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
-from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter
 
 
@@ -36,7 +35,7 @@ class Move(Opcode):
     # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
     # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
     # it can't operate on byte-sized data
-    __valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
+    valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
 
     @classmethod
@@ -72,7 +71,7 @@ class Move(Opcode):
         self.dest = dest
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-        assert size in Move.__valid_sizes
+        assert size in Move.valid_sizes
         self.size = size
 
     def assemble(self) -> bytearray:
@@ -82,7 +81,7 @@ class Move(Opcode):
         """
         # Create a binary string to append to, which we'll convert to hex at the end
         tr = '00'  # Opcode
-        tr += '{0:02b}'.format(MoveSize.parse(self.size))  # Size bits
+        tr += '{0:02b}'.format(MoveSize.from_op_size(self.size))  # Size bits
         tr += ea_mode_bin.parse_from_ea_mode_regfirst(self.dest)  # Destination first
         tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
         # Append immediates/absolute addresses after the command
@@ -99,7 +98,7 @@ class Move(Opcode):
         :return: Nothing
         """
         # get the length
-        val_length = get_number_of_bytes(self.size)
+        val_length = self.size.get_number_of_bytes()
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
@@ -140,7 +139,7 @@ class Move(Opcode):
         """
         issues = []
         try:
-            assert opcode_util.check_valid_command(command, 'MOVE', valid_sizes=Move.allowed_sizes), 'Command invalid'
+            assert opcode_util.check_valid_command(command, 'MOVE', valid_sizes=Move.valid_sizes), 'Command invalid'
 
             # Split the parameters into EA modes
             params = parameters.split(',')
@@ -316,7 +315,7 @@ def from_binary(data: bytearray):
         return (None, 0)
     
     # check size
-    if not size_bin in Move.allowed_sizes_binary:
+    if not size_bin in Move.valid_sizes:
         return (None, 0)
 
     # this should be the op size and not the move size
