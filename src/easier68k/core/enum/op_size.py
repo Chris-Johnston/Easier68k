@@ -72,7 +72,7 @@ Holds the values for various binary translations of size codes
 
 """
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 # forward declaration so that types can return correctly
 class MoveSize(IntEnum):
@@ -135,3 +135,58 @@ class SingleBitSize(IntEnum):
             return SingleBitSize.WORD
         if code == 'L':
             return SingleBitSize.LONG
+
+class OpSize(Enum):
+    pass
+
+class OpSize(Enum):
+    """
+    Represents the 3 lengths associated with operations, either Byte Word or Long word
+
+    For example: the OpSize for MOVE.B xxx, yyy is Byte
+    """
+    BYTE = 1
+    WORD = 2
+    LONG = 4
+
+    @staticmethod
+    def get_number_of_bytes(size: OpSize) -> int:
+        """
+        Gets the number of bytes associated with an opsize
+        :param: size - the OpSize object to get the number of bytes for
+        :return:
+        """
+        if size is OpSize.BYTE:
+            return 1
+        if size is OpSize.WORD:
+            return 2
+        if size is OpSize.LONG:
+            return 4
+
+    @staticmethod
+    def parse(code: chr) -> OpSize:
+        """
+        Converts the input character to the corresponding OpSize
+
+        >>> OpSize.parse('b')
+        <OpSize.BYTE: 1>
+
+        >>> OpSize.parse('B')
+        <OpSize.BYTE: 1>
+
+        >>> OpSize.parse('W')
+        <OpSize.WORD: 2>
+
+        >>> OpSize.parse('l')
+        <OpSize.LONG: 4>
+
+        :param code:
+        :return:
+        """
+        code = code.upper()
+        if code == 'B':
+            return OpSize.BYTE
+        if code == 'W':
+            return OpSize.WORD
+        if code == 'L':
+            return OpSize.LONG
