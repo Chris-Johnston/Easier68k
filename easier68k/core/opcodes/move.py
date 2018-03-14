@@ -120,9 +120,9 @@ def get_word_length(command: str, parameters: str) -> (int):
     issues = []  # Set up our issues list (warnings + errors)
     parts = command.split('.')  # Split the command by period to get the size of the command
     if len(parts) == 1:  # Use the default size
-        size = 'W'
+        size = OpSize.WORD
     else:
-        size = parts[1]
+        size = OpSize.parse(parts[1])
 
     # Split the parameters into EA modes
     params = parameters.split(',')
@@ -133,7 +133,7 @@ def get_word_length(command: str, parameters: str) -> (int):
     length = 1  # Always 1 word not counting additions to end
 
     if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
-        if size == 'L':
+        if size is OpSize.LONG:
             length += 2  # Longs are 2 words long
         else:
             length += 1  # This is a word or byte, so only 1 word
@@ -211,80 +211,6 @@ class Move(Opcode):
     def __str__(self):
         # Makes this a bit easier to read in doctest output
         return 'Move command: Size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
-
-
-    @staticmethod
-    def get_word_length(command: str, parameters: str) -> (int, list):
-        """
-        >>> Move.get_word_length('MOVE', 'D0, D1')
-        (1, [])
-
-        >>> Move.get_word_length('MOVE.L', '#$90, D3')
-        (3, [])
-
-        >>> Move.get_word_length('MOVE.W', '#$90, D3')
-        (2, [])
-
-        >>> Move.get_word_length('MOVE.W', '($AAAA).L, D7')
-        (3, [])
-
-        >>> Move.get_word_length('MOVE.W', 'D0, ($BBBB).L')
-        (3, [])
-
-        >>> Move.get_word_length('MOVE.W', '($AAAA).L, ($BBBB).L')
-        (5, [])
-
-        >>> Move.get_word_length('MOVE.W', '#$AAAA, ($BBBB).L')
-        (4, [])
-
-        Gets what the end length of this command will be in memory
-        :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
-        :param parameters: The parameters after the command
-        :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
-        """
-        valid, issues = is_valid(command, parameters)
-        if not valid:
-            return 0, issues
-        # We can forego asserts in here because we've now confirmed this is valid assembly code
-
-        issues = []  # Set up our issues list (warnings + errors)
-        parts = command.split('.')  # Split the command by period to get the size of the command
-        if len(parts) == 1:  # Use the default size
-            size = 'W'
-        else:
-            size = parts[1]
-
-        # Split the parameters into EA modes
-        params = parameters.split(',')
-
-        if len(params) != 2:  # We need exactly 2 parameters
-            issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
-            return 0, issues
-
-        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
-        dest = parse_assembly_parameter(params[1].strip())
-
-        length = 1  # Always 1 word not counting additions to end
-
-        if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
-            if size == 'L':
-                length += 2  # Longs are 2 words long
-            else:
-                length += 1  # This is a word or byte, so only 1 word
-
-        if src.mode == EAMode.AWA:  # Appends a word
-            length += 1
-
-        if src.mode == EAMode.ALA:  # Appends a long, so 2 words
-            length += 2
-
-        if dest.mode == EAMode.AWA:  # Appends a word
-            length += 1
-
-        if dest.mode == EAMode.ALA:  # Appends a long, so 2 words
-            length += 2
-
-        return length, issues
 
 
 def from_binary(data: bytearray) -> (str, int):

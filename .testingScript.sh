@@ -1,8 +1,8 @@
 # install current version of module
 # would use setup.py test, but I don't think thats working
-cd src
+
 sudo python3 setup.py install
-cd ..
+
 
 # run doctest
 cd tests

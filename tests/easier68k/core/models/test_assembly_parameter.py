@@ -8,9 +8,25 @@ from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register, ADDRESS_REGISTERS
+from easier68k.core.enum.op_size import OpSize
 
 # should try to make this a constant only defined once
 MAX_MEMORY_LOCATION = 16777216  # 2^24
+
+def test_assembly_parameter_sizes():
+    """
+    basic test to ensure that the assembly parameter sizes work correctly
+    :return:
+    """
+
+    sim = M68K()
+
+    # make a param of len word but size byte
+    ap = AssemblyParameter(EAMode.IMM, 0xFFFF, OpSize.WORD)
+
+    print(ap.size)
+    # assert that the value is just the lower byte
+    assert ap.get_value(sim) == 0xFF
 
 
 def test_assembly_parameter():

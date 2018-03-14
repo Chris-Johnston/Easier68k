@@ -5,12 +5,10 @@ python:
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
-  - cd src
-  - python setup.py test
   - python setup.py install
 script:
   - pwd
-  - cd ../tests
+  - cd tests
   - python run_doctest.py
   - python run_pytest.py
 after_failure:

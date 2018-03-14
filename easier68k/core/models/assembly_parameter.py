@@ -9,6 +9,7 @@ from ..enum.ea_mode import EAMode
 from ..enum.register import Register
 from ...simulator.m68k import M68K
 from ..util.conversions import to_word
+from ..enum.op_size import OpSize
 
 # should try to make this a constant only defined once
 MAX_MEMORY_LOCATION = 16777216  # 2^24
@@ -16,7 +17,7 @@ MAX_MEMORY_LOCATION = 16777216  # 2^24
 
 class AssemblyParameter:
 
-    def __init__(self, mode: EAMode, data: int):
+    def __init__(self, mode: EAMode, data: int, size: OpSize = OpSize.WORD):
         """
         Constructor
 
@@ -44,23 +45,22 @@ class AssemblyParameter:
         # set values
         self.mode = mode
         self.data = data
+        self.size = size
 
     def __str__(self):
         """
         str util method
         :return:
         """
-        return "EA Mode: {}, Data: {}".format(self.mode, self.data)
+        return "EA Mode: {}, Data: {} Size {}".format(self.mode, self.data, self.size)
 
-    def get_value(self, simulator: M68K, length: int = 4) -> int:
+    def get_value(self, simulator: M68K) -> int:
         """
         Gets the value for this EAMode from the simulator
         :param simulator: reference to the 68k simulator
         :param length: the length in bytes associated with this operation, must be 1 2 or 4
         :return: the value associated with this assembly parameter
         """
-        assert length in [1, 2, 4], 'The length for this operation must be 1 2 or 4 bytes!'
-
         if self.mode is EAMode.IMM:
             return self.data
 
@@ -88,7 +88,7 @@ class AssemblyParameter:
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
             # now get the value in memory of that register
-            return simulator.memory.get(length, register_value)
+            return simulator.memory.get(self.size, register_value)
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
             # address register indirect gets the value that the register points to
@@ -100,9 +100,9 @@ class AssemblyParameter:
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
             # now get the value in memory of that register
-            val = simulator.memory.get(length, register_value)
+            val = simulator.memory.get(self.size, register_value)
             # do the post increment
-            simulator.set_register_value(addr_register, register_value + length)
+            simulator.set_register_value(addr_register, register_value + self.size)
             # return the value
             return val
 
@@ -117,11 +117,11 @@ class AssemblyParameter:
             register_value = simulator.get_register_value(addr_register)
 
             # do the pre decrement (this does not update the value of register_value)
-            simulator.set_register_value(addr_register, register_value - length)
+            simulator.set_register_value(addr_register, register_value - self.size)
 
             # now get the value in memory of that register
             # and return that value
-            return simulator.memory.get(length, register_value - length)
+            return simulator.memory.get(self.size, register_value - self.size)
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # if mode is absolute long or word address
@@ -138,12 +138,12 @@ class AssemblyParameter:
                 addr = to_word(addr)
 
             # now get the value at that memory location
-            return simulator.memory.get(length, addr)
+            return simulator.memory.get(self.size, addr)
 
         # if nothing was done by now, surely something must be wrong
         assert False, 'Invalid effective addressing mode!'
 
-    def set_value(self, simulator: M68K, value: int, length: int = 4):
+    def set_value(self, simulator: M68K, value: int):
         """
         Sets the value of a destination mode
         :param simulator: the reference to the simulator
@@ -151,8 +151,6 @@ class AssemblyParameter:
         :param length: the number of bits associated for this instruction, must be 1 2 or 4
         :return:
         """
-
-        assert length in [1, 2, 4], 'The value of length must be 1 2 or 4!'
 
         if self.mode is EAMode.Immediate:
             assert False, 'Cannot set the value of an immediate.'
@@ -177,7 +175,7 @@ class AssemblyParameter:
             assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register_value(addr_register)
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            simulator.memory.set(self.size, location, value.to_bytes(self.size, 'big'))
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
             # sets the value in memory that the address register points to
@@ -185,9 +183,9 @@ class AssemblyParameter:
             assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register_value(addr_register)
-            location -= length
+            location -= self.size
             simulator.set_register_value(addr_register, location)
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            simulator.memory.set(self.size, location, value.to_bytes(self.size, 'big'))
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
             # sets the value in memory that the address register points to
@@ -197,9 +195,9 @@ class AssemblyParameter:
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register_value(addr_register)
 
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            simulator.memory.set(self.size, location, value.to_bytes(self.size, 'big'))
 
-            location += length
+            location += self.size
             simulator.set_register_value(addr_register, location)
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
@@ -213,4 +211,4 @@ class AssemblyParameter:
                 value = to_word(value)
 
             # set the value in memory to that
-            simulator.memory.set(length, self.data, value.to_bytes(length, 'big'))
+            simulator.memory.set(self.size, self.data, value.to_bytes(self.size, 'big'))
