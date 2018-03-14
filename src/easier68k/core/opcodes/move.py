@@ -1,9 +1,9 @@
 """
 
->>> str(Move.from_str('MOVE.B', '-(A0), D1')[0])
+>>> str(from_str('MOVE.B', '-(A0), D1'))
 'Move command: Size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
 
->>> str(Move.from_str('MOVE.L', 'D3, (A0)')[0])
+>>> str(from_str('MOVE.L', 'D3, (A0)'))
 'Move command: Size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
 
 >>> from_str('MOVE.W', 'D3, A3')
@@ -17,8 +17,6 @@ from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
-from ..util.parsing import parse_assembly_parameter
-from ...core.util.conversions import get_number_of_bytes
 from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..models.assembly_parameter import AssemblyParameter
 
@@ -32,20 +30,6 @@ def command_matches(command: str) -> bool:
 
 
 class_name = 'Move'
-
-class Move(Opcode):
-    # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
-    # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
-    # it can't operate on byte-sized data
-    valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
-
-# Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
-# For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
-# it can't operate on byte-sized data
-allowed_sizes = 'BWL'
-
-allowed_sizes_binary = [MoveSize.parse(x) for x in allowed_sizes]
-
 
 def is_valid(command: str, parameters: str) -> (bool, list):
     """
@@ -83,7 +67,7 @@ def is_valid(command: str, parameters: str) -> (bool, list):
         assert parts[0].upper() == 'MOVE', 'Command is not a MOVE.'
         if len(parts) != 1:  # Has a size specifier
             assert len(parts[1]) == 1, 'Size specifier must be 1 character'
-            assert parts[1] in allowed_sizes, "Size {} isn't allowed for command {}".format(parts[1], command[0])
+            assert size in Move.valid_sizes, "Size {} isn't allowed for command {}".format(size, command[0])
 
         # Split the parameters into EA modes
         assert len(params) == 2, 'Must have two parameters'
@@ -169,6 +153,12 @@ def get_word_length(command: str, parameters: str) -> (int):
     return length
 
 class Move(Opcode):
+
+    # Allowed values: nothing, or some combination of B, W, and L (for byte, word, and long)
+    # For example, MOVE would have 'BWL' because it can operate on any size of data, while MOVEA would have 'WL' because
+    # it can't operate on byte-sized data
+    valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
+
     def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size: OpSize = OpSize.WORD):
         assert isinstance(src, AssemblyParameter)
         assert isinstance(dest, AssemblyParameter)
@@ -252,7 +242,7 @@ class Move(Opcode):
         :param parameters: The parameters after the command
         :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
         """
-        valid, issues = Move.is_valid(command, parameters)
+        valid, issues = is_valid(command, parameters)
         if not valid:
             return 0, issues
         # We can forego asserts in here because we've now confirmed this is valid assembly code
@@ -298,8 +288,6 @@ class Move(Opcode):
 
 
 def from_binary(data: bytearray) -> (str, int):
-
-def from_binary(data: bytearray):
     """
     This has a non-move opcode
     >>> from_binary(bytearray.fromhex('5E01'))
