@@ -175,11 +175,14 @@ class M68K:
                 continue
 
             PC = self.get_program_counter_value()
-            # fixme: fix the hax. 20 is plenty
-            op, n = op_module.from_binary(self.memory.memory[PC:PC+20])
+            
+            # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
+            # note: this currently has the edge case that it will fail unintelligibly
+            # if encountered at the end of memory
+            op, words_read = op_module.from_binary(self.memory.memory[PC:PC+10])
             if op != None:
                 op.execute(self)
-                self.set_program_counter_value(PC + n*2)
+                self.set_program_counter_value(PC + words_read*2)
 
 
 
