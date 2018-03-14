@@ -1,7 +1,7 @@
 # install current version of module
 # would use setup.py test, but I don't think thats working
 
-sudo python3 setup.py install
+sudo python3 setup.py develop
 
 # run doctest
 cd tests

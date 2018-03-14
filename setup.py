@@ -2,13 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='easier68k',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/Chris-Johnston/Easier68k',
     author='Chris Johnston et al',
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
-    packages=find_packages(exclude=('tests',)),
-    package_dir={'':'src'},
+    packages=find_packages(exclude=['tests']),
     setup_requires=['pytest-runner'],
     python_requires='>=3'
 )
