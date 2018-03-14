@@ -4,7 +4,7 @@ setup(
     name='easier68k',
     version='0.0.2',
     url='https://github.com/Chris-Johnston/Easier68k',
-    author='Chris Johnston et al',
+    author='Adam Krpan, Chris Johnston, Levi Stoddard',
     author_email='githubchrisjohnston@gmail.com',
     license='MIT',
     packages=find_packages(exclude=['tests']),
