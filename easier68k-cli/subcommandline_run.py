@@ -1,7 +1,9 @@
 import cmd
+import binascii
 from easier68k.simulator import m68k
 from easier68k.core.models.list_file import ListFile
 from easier68k.core.enum.register import Register
+from util.split_args import split_args
 
 class Run_CLI(cmd.Cmd):
     prompt = '(easier68k.run) '
@@ -19,8 +21,69 @@ class Run_CLI(cmd.Cmd):
     def do_step(self, args):
         pass # run the simulator one instruction
     
-    def do_registers(self, args):
-        pass # print out all the register values or just the specified one or set one
+    
+    def do_set_register(self, args):
+        args = split_args(args, 2, 0)
+        if(args == None):
+            return False
+            
+        # get the one passed in
+        try:
+            reg = Register[args[0]]
+            value = int(args[1], 0) #let python automatically determine base
+            self.simulator.set_register_value(reg, value)
+        except KeyError:
+            print('[ERROR] unrecognized register ' + args[0])
+            return False
+        
+        
+    
+    def help_set_register(self):
+        print('syntax: registers_set register, value')
+        print('sets the value in register to value (decimal unless prefixed with 0x for hexidecimal)')
+        
+        
+        
+    def do_get_registers(self, args):
+        args = split_args(args, 0, 1)
+        if(args == None):
+            return False
+        
+        if(len(args) == 0):
+            output = ''
+            for i, reg in enumerate(Register):
+                value_hex = hex(self.simulator.get_register_value(reg))
+                
+                # pad with 0's. use 10 instead of 8 because of 0x prefix
+                if(len(value_hex) < 10):
+                    value_hex = value_hex[0:2] + '0'*(10-len(value_hex)) + value_hex[2:]
+                
+                output += '{:<16}'.format(reg.name + ': ' + value_hex)
+                if(i % 4 == 3):
+                    output += '\n'
+                
+            print(output)
+        else:
+            # get the one passed in
+            try:
+                reg = Register[args[0]]
+                value_hex = hex(self.simulator.get_register_value(reg))
+                
+                # pad with 0's. use 10 instead of 8 because of 0x prefix
+                if(len(value_hex) < 10):
+                    value_hex = value_hex[0:3] + '0'*(10-len(value_hex)) + value_hex[3:]
+                
+                print(value_hex)
+            except KeyError:
+                print('[ERROR] unrecognized register ' + args[0])
+                return False
+            
+        
+        
+    def help_get_registers(self):
+        print('syntax: registers_get [register]')
+        print('if no register is selected then all of them are printed')
+        print('if a register is selected then just that register is printed')
     
     def do_memory(self, args):
         pass # get a whole memory dump or just a region or set a region

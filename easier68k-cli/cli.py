@@ -23,11 +23,11 @@ class CLI(cmd.Cmd):
     
     
     def do_assemble(self, args):
-        args = split_args(args)
-        length = len(args)
-        if(length == 0 or length > 2):
-            print('Expected 1 or two args. aborting.')
+        args = split_args(args, 1, 1)
+        if(args == None):
             return False
+        
+        length = len(args)
             
         try:
             in_file = open(args[0])
@@ -60,11 +60,8 @@ class CLI(cmd.Cmd):
         
     # run a sub-command line with options like step instruction, run, print registers, etc...
     def do_run(self, args):
-        args = split_args(args)
-        length = len(args)
-        
-        if(length != 1):
-            print('Expected 1 arg. aborting.')
+        args = split_args(args, 1, 0)
+        if(args == None):
             return False
         
         subcommandline_run(args[0])
