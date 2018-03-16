@@ -12,7 +12,7 @@ from easier68k.core.models.list_file import ListFile
 from easier68k.core.enum.register import Register
 
 
-from .split_args import split_args
+from util.split_args import split_args
 
 
 
