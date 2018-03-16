@@ -5,7 +5,7 @@ import re
 import binascii
 from ..core import opcodes
 from ..core.models.list_file import ListFile
-from ..core.util.find_module import find_module
+from ..core.util.find_module import find_opcode_cls
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -106,14 +106,14 @@ def parse(text: str) -> (ListFile, list):
             to_return.define_symbol(label, current_memory_location)
 
         # TODO: Possibly cache this (and the module search) for Part 3 later so we don't have to redo introspection?
-        op_module, op_class = find_module(opcode)
+        op_class = find_opcode_cls(opcode)
 
         # We don't know this opcode, there's no module for it
-        if op_module is None:
+        if op_class is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
-        length = op_module.get_word_length(opcode, contents)
+        length = op_class.get_word_length(opcode, contents)
 
         current_memory_location += length * 2
 
@@ -139,23 +139,23 @@ def parse(text: str) -> (ListFile, list):
             continue
 
         # TODO: Possibly use a cached version?
-        op_module, op_class = find_module(opcode)
+        op_class = find_opcode_cls(opcode)
 
-        if op_module is None:
+        if op_class is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
 
         # Get the actual constructed opcode
 
         # check that the input is valid the opcode at the module level
-        is_valid, issues = op_module.is_valid(opcode, contents)
+        is_valid, issues = op_class.is_valid(opcode, contents)
 
         # if valid, then actually construct the opcode
         if is_valid:
             # get the length of the operation in # of words
-            length = op_module.get_word_length(opcode, contents)
+            length = op_class.get_word_length(opcode, contents)
             # make the opcode
-            data = op_module.from_str(opcode, contents)
+            data = op_class.from_str(opcode, contents)
 
             # ensure that the data was built correctly and append it
             if data is not None:
