@@ -1,1 +1,4 @@
-__all__ = ['test_move']
+__all__ = [
+    'test_move',
+    'test_lea'
+]

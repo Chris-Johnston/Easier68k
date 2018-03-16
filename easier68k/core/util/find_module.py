@@ -5,7 +5,10 @@ from types import ModuleType
 import sys
 
 valid_opcode_classes = [
-    'easier68k.core.opcodes.move.Move'
+    'easier68k.core.opcodes.move.Move',
+    'easier68k.core.opcodes.simhalt.Simhalt',
+    'easier68k.core.opcodes.dc.DC',
+    'easier68k.core.opcodes.lea.Lea'
 ]
 
 valid_opcodes = [
@@ -19,9 +22,6 @@ def find_opcode_cls(opcode: str) -> type:  # classes are of type "type" Really p
     :param opcode: The opcode to search for
     :return: The module and class found (or (None, None) if it doesn't find any)
     """
-    op_module = None
-    op_class = None
-
     for m in valid_opcode_classes:
         split = m.split('.')
         mod_name = '.'.join(split[:-1])  # Trims the class name (the last part after the period)

@@ -5,7 +5,11 @@ import re
 import binascii
 from ..core import opcodes
 from ..core.models.list_file import ListFile
+
 from ..core.util.find_module import find_opcode_cls
+# This *is* actually a necessary import due to using "reflection" style code further down
+# noinspection PyUnresolvedReferences
+from ..core.opcodes import *
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -67,7 +71,20 @@ def replace_equates(contents: str, equates: dict) -> str:
 
 def replace_label_addresses(contents: str, label_addresses: dict) -> str:
     for label in label_addresses.items():
-        contents = contents.replace(label[0], '$' + hex(label[1])[2:])
+        contents = contents.replace(label[0], '(${0:08x}).L'.format(label[1]))
+
+    return contents
+
+
+def replace_labels_with_temps(contents: str, labels: dict) -> str:
+    """
+    Replaces all labels that we don't know the location for with temporary addresses ($00000000)
+    :param contents: The string to replace labels
+    :param labels: The labels
+    :return: The string with labels replaced
+    """
+    for label in labels.items():
+        contents = contents.replace(label[0], '($00000000).L')
 
     return contents
 
@@ -88,16 +105,25 @@ def parse(text: str) -> (ListFile, list):
 
     for label, opcode, contents in for_line_opcode_parse(text):
         # Equates have already been processed, skip them
+        # ENDs aren't processed until phase 3, skip them for now
         # (this idea could be expanded for more preprocessor directives)
-        if opcode == 'EQU':
+        if opcode == 'EQU' or opcode == 'END':
             continue
 
         # Replace all substitutions in the current line with their corresponding values
         contents = replace_equates(contents, equates)
+        # Replace all labels with temporary addresses because we don't know their actual values yet
+        contents = replace_labels_with_temps(contents, labels)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
-            new_memory_location = parse_literal(contents)
-            assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
+            try:
+                new_memory_location = parse_literal(contents)
+            except:
+                issues.append(('Error parsing ORG value', 'ERROR'))
+                continue
+            if not (0 <= new_memory_location < MAX_MEMORY_LOCATION):
+                issues.append(('ORG address must be between 0 and 2^24!', 'ERROR'))
+                continue
             current_memory_location = new_memory_location
             continue
 
@@ -107,7 +133,6 @@ def parse(text: str) -> (ListFile, list):
 
         # TODO: Possibly cache this (and the module search) for Part 3 later so we don't have to redo introspection?
         op_class = find_opcode_cls(opcode)
-
         # We don't know this opcode, there's no module for it
         if op_class is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
@@ -133,9 +158,21 @@ def parse(text: str) -> (ListFile, list):
         contents = replace_label_addresses(contents, label_addresses)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
-            new_memory_location = parse_literal(contents)
-            assert 0 <= new_memory_location < MAX_MEMORY_LOCATION, 'ORG address must be between 0 and 2^24!'
+            try:
+                new_memory_location = parse_literal(contents)
+            except:
+                # Don't need to print assertion, we already did that earlier
+                continue
+            if not (0 <= new_memory_location < MAX_MEMORY_LOCATION):
+                continue
             current_memory_location = new_memory_location
+            continue
+
+        if opcode == 'END':  # This will set our end memory location, it's a special case
+            start_location = parse_literal(contents)
+            if not (0 <= new_memory_location < MAX_MEMORY_LOCATION):
+                continue
+            to_return.set_starting_execution_address(start_location)
             continue
 
         # TODO: Possibly use a cached version?
@@ -144,8 +181,6 @@ def parse(text: str) -> (ListFile, list):
         if op_class is None:
             issues.append(('Opcode {} is not known: skipping and continuing'.format(opcode), 'ERROR'))
             continue
-
-        # Get the actual constructed opcode
 
         # check that the input is valid the opcode at the module level
         is_valid, issues = op_class.is_valid(opcode, contents)

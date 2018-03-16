@@ -178,6 +178,7 @@ class M68K:
             # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
             # note: this currently has the edge case that it will fail unintelligibly
             # if encountered at the end of memory
+            # op, words_read =
             op, words_read = op_class.from_binary(self.memory.memory[PC:PC+10])
             if op != None:
                 op.execute(self)

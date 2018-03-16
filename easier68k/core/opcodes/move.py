@@ -10,6 +10,10 @@ from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..models.assembly_parameter import AssemblyParameter
 
 
+class Move(Opcode):  # Forward declaration
+    pass
+
+
 class Move(Opcode):
 
     # Allowed sizes for this opcode
@@ -114,9 +118,9 @@ class Move(Opcode):
         issues = []  # Set up our issues list (warnings + errors)
         parts = command.split('.')  # Split the command by period to get the size of the command
         if len(parts) == 1:  # Use the default size
-            size = 'W'
+            size = OpSize.WORD
         else:
-            size = parts[1]
+            size = OpSize.parse(parts[1])
 
         # Split the parameters into EA modes
         params = parameters.split(',')
@@ -131,7 +135,7 @@ class Move(Opcode):
         length = 1  # Always 1 word not counting additions to end
 
         if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
-            if size == 'L':
+            if size == OpSize.LONG:
                 length += 2  # Longs are 2 words long
             else:
                 length += 1  # This is a word or byte, so only 1 word
@@ -188,9 +192,9 @@ class Move(Opcode):
         issues = []  # Set up our issues list (warnings + errors)
         parts = command.split('.')  # Split the command by period to get the size of the command
         if len(parts) == 1:  # Use the default size
-            size = 'W'
+            size = OpSize.WORD
         else:
-            size = parts[1]
+            size = OpSize.parse(parts[1])
 
         # Split the parameters into EA modes
         params = parameters.split(',')
@@ -201,7 +205,7 @@ class Move(Opcode):
         length = 1  # Always 1 word not counting additions to end
 
         if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
-            if size == 'L':
+            if size == OpSize.LONG:
                 length += 2  # Longs are 2 words long
             else:
                 length += 1  # This is a word or byte, so only 1 word
@@ -274,7 +278,7 @@ class Move(Opcode):
             return False, issues
 
     @classmethod
-    def from_binary(cls, data: bytearray) -> (str, int):
+    def from_binary(cls, data: bytearray) -> (Move, int):
         """
         This has a non-move opcode
         >>> Move.from_binary(bytearray.fromhex('5E01'))
