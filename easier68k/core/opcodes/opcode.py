@@ -1,12 +1,6 @@
 from ...simulator.m68k import M68K
 
 
-# Outside the class so we can access it easier
-
-
-
-class_name = 'Opcode'
-
 class Opcode:
     def assemble(self) -> bytearray:
         """

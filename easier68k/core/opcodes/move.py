@@ -1,6 +1,3 @@
-"""
-
-"""
 from ...core.enum.ea_mode import EAMode
 from ...core.enum.op_size import MoveSize, OpSize
 from ...core.enum import ea_mode_bin
@@ -11,9 +8,6 @@ from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
 from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..models.assembly_parameter import AssemblyParameter
-
-
-class_name = 'Move'
 
 
 class Move(Opcode):
