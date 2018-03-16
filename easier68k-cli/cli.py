@@ -7,12 +7,9 @@ import sys
 import readline
 
 from easier68k.assembler import assembler
-from easier68k.simulator import m68k
-from easier68k.core.models.list_file import ListFile
-from easier68k.core.enum.register import Register
-
 
 from util.split_args import split_args
+from subcommandline_run import subcommandline_run
 
 
 
@@ -61,7 +58,7 @@ class CLI(cmd.Cmd):
         print('')
         
         
-    # will transfer this to a sub-command line with options like step instruction, run, print registers, etc... 
+    # run a sub-command line with options like step instruction, run, print registers, etc...
     def do_run(self, args):
         args = split_args(args)
         length = len(args)
@@ -70,23 +67,10 @@ class CLI(cmd.Cmd):
             print('Expected 1 arg. aborting.')
             return False
         
-        in_file = open(args[0])
-        
-        list_file = ListFile()
-        list_file.load_from_json(in_file.read(-1))
-        
-        in_file.close()
-        
-        simulator = m68k.M68K()
-        simulator.load_list_file(list_file)
-        print(simulator.get_register_value(Register.A0))
-        simulator.step_instruction()
-        simulator.step_instruction()
-        print(simulator.get_register_value(Register.A0))
+        subcommandline_run(args[0])
     
     
-    # for now make everything autocomplete with files
-    # does not handle spaces
+    # make everything autocomplete with files
     def completedefault(self, text, line, begidx, endidx):
         # find last argument or first one is seperated by a space from the command
         before_arg = line.rfind(',')
@@ -104,7 +88,8 @@ class CLI(cmd.Cmd):
     
     
 if __name__ == '__main__':
-    # originally alot of undesired characters were included such as hypthen and '/' 
+    # originally alot of undesired characters were included such as hypthen and '/'
+    # this is applied globally so it affects all sub command lines as well
     readline.set_completer_delims(' ,')
     cli = CLI()
     
