@@ -1,3 +1,6 @@
+import glob
+
+
 def split_args(args, required=0, optional=0):
     """
     splits the args string by comma and removes left and right whitespace.
@@ -35,3 +38,29 @@ def long_hex(number):
         value_hex = value_hex[0:2] + '0'*(10-len(value_hex)) + value_hex[2:]
     
     return value_hex
+
+def autocomplete_getarg(line):
+    """
+    autocomplete passes in a line like: get_memory arg1, arg2
+    the arg2 is what is being autocompleted on so return that
+    """
+    # find last argument or first one is seperated by a space from the command
+    before_arg = line.rfind(',')
+    if(before_arg == -1):
+        before_arg = line.find(' ')
+    
+    assert before_arg >= 0
+    
+    # assign the arg. it skips the deliminator and any excess whitespace
+    return line[before_arg+1:].lstrip()
+
+
+def autocomplete_file(line):
+    """
+    helper that autocompletes files
+    """
+    arg = autocomplete_getarg(line)
+    
+    files = glob.glob(arg + "*")
+    return files
+    

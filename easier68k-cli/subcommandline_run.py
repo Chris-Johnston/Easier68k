@@ -4,7 +4,7 @@ from easier68k.simulator.m68k import M68K
 from easier68k.simulator.memory import Memory
 from easier68k.core.models.list_file import ListFile
 from easier68k.core.enum.register import Register
-from util import split_args, long_hex
+from util import split_args, long_hex, autocomplete_file, autocomplete_getarg
 
 class Run_CLI(cmd.Cmd):
     prompt = '(easier68k.run) '
@@ -43,6 +43,10 @@ class Run_CLI(cmd.Cmd):
         print('syntax: registers_set register, value')
         print('sets the value in register to value (decimal unless prefixed with 0x for hexidecimal)')
         
+    
+    def complete_set_register(self, text, line, begidx, endidx):
+        arg = autocomplete_getarg(line).upper()
+        return [x.name for x in Register if x.name.find(arg) == 0]
         
         
     def do_get_registers(self, args):
@@ -70,7 +74,10 @@ class Run_CLI(cmd.Cmd):
             except KeyError:
                 print('[ERROR] unrecognized register ' + args[0])
                 return False
-            
+    
+    def complete_get_registers(self, text, line, begidx, endidx):
+        arg = autocomplete_getarg(line).upper()
+        return [x.name for x in Register if x.name.find(arg) == 0]
         
         
     def help_get_registers(self):
@@ -94,6 +101,8 @@ class Run_CLI(cmd.Cmd):
         print('syntax: dump_memory out_file')
         print('dumps the memory to the out_file.')
     
+    def complete_dump_memory(self, text, line, begidx, endidx):
+        return autocomplete_file(line)
     
     def do_load_memory(self, args):
         args = split_args(args, 1, 0)
@@ -112,6 +121,10 @@ class Run_CLI(cmd.Cmd):
     def help_load_memory(self, args):
         print('syntax: load_memory in_file')
         print('loads the memory from the in_file.')
+    
+    def complete_load_memory(self, text, line, begidx, endidx):
+        return autocomplete_file(line)
+        
     
     
     def do_get_memory(self, args):

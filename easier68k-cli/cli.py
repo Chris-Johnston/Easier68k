@@ -1,5 +1,4 @@
 import cmd
-import glob
 import json
 import sys
 
@@ -8,7 +7,7 @@ import readline
 
 from easier68k.assembler import assembler
 
-from util import split_args
+from util import split_args, autocomplete_file
 from subcommandline_run import subcommandline_run
 
 
@@ -74,22 +73,8 @@ class CLI(cmd.Cmd):
         print('to see what the simulator mode can do, enter it and type help')
     
     
-    # make everything autocomplete with files
     def completedefault(self, text, line, begidx, endidx):
-        # find last argument or first one is seperated by a space from the command
-        before_arg = line.rfind(',')
-        if(before_arg == -1):
-            before_arg = line.find(' ')
-        
-        assert before_arg >= 0
-        
-        
-        # assign the arg. it skips the deliminator and any excess whitespace
-        arg = line[before_arg+1:].lstrip()
-        
-        files = glob.glob(arg + "*")
-        return files
-    
+        return autocomplete_file(line)
     
 if __name__ == '__main__':
     # originally alot of undesired characters were included such as hypthen and '/'
