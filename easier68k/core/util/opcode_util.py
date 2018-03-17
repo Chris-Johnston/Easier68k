@@ -63,7 +63,8 @@ def get_size(command: str, default_size=OpSize.WORD) -> OpSize:
     return OpSize.parse(split[1])
 
 
-def check_valid_command(command: str, template: str, can_take_size=True, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE]) -> bool:
+def check_valid_command(command: str, template: str, can_take_size=True,
+                        valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE]) -> bool:
     """
     Checks whether this command is valid
 
@@ -224,4 +225,3 @@ def two_param_from_str(command: str, parameters: str, opcode_cls, default_size=O
         return opcode_cls(param1, param2, size)
     else:
         return opcode_cls(param1, param2)
-

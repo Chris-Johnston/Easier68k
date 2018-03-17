@@ -93,7 +93,7 @@ class Lea(Opcode):
 
         if len(params) != 2:  # We need exactly 2 parameters
             issues.append(('Invalid syntax (missing a parameter/too many parameters)', 'ERROR'))
-            return 0, issues
+            return 0
 
         src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
         dest = parse_assembly_parameter(params[1].strip())
@@ -147,27 +147,9 @@ class Lea(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        issues = []
-        try:
-            assert opcode_util.check_valid_command(command, 'LEA', can_take_size=False), 'Command invalid'
-
-            # Split the parameters into EA modes
-            params = parameters.split(',')
-            assert len(params) == 2, 'Must have two parameters'
-
-            src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
-            assert src, 'Error parsing src'
-
-            dest = parse_assembly_parameter(params[1].strip())
-            assert dest, 'Error parsing dest'
-
-            assert src.mode not in [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI], 'Invalid addressing mode'
-            assert dest.mode == EAMode.ARD, 'Invalid addressing mode'
-
-            return True, issues
-        except AssertionError as e:
-            issues.append((e.args[0], 'ERROR'))
-            return False, issues
+        return opcode_util.two_param_is_valid(command, parameters, "LEA", None, None,
+                                              [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI],
+                                              [mode for mode in EAMode if mode is not EAMode.ARD])  # Select all but ARD
 
     @classmethod
     def from_binary(cls, data: bytearray) -> (Lea, int):
@@ -195,14 +177,4 @@ class Lea(Opcode):
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
         :param parameters: The parameters after the command (such as the source and destination of a move)
         """
-        valid, issues = cls.is_valid(command, parameters)
-        if not valid:
-            return None
-        # We can forego asserts in here because we've now confirmed this is valid assembly code
-
-        # Split the parameters into EA modes
-        params = parameters.split(',')
-        src = parse_assembly_parameter(params[0].strip())
-        dest = parse_assembly_parameter(params[1].strip())
-
-        return cls(src, dest)
+        return opcode_util.two_param_from_str(command, parameters, Lea, None)
