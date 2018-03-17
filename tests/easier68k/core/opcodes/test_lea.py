@@ -19,8 +19,9 @@ def test_lea():
 
     # test immediate -> data register
 
-    # move 123 to A3
-    src = AssemblyParameter(EAMode.ALA, 123)
+    # move 124 to A3
+    # 123 is not an aligned address
+    src = AssemblyParameter(EAMode.AbsoluteLongAddress, 124)
     dst = AssemblyParameter(EAMode.ARD, 3)
 
     # make a testing move command
@@ -28,4 +29,4 @@ def test_lea():
 
     lea.execute(a)
 
-    assert a.get_register_value(Register.A3) == 123
+    assert a.get_register_value(Register.A3) == 124

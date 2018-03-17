@@ -167,6 +167,17 @@ def test_full_integration():
 
     list_file = ListFile()
 
+    '''
+    ORG 1036
+MAGIC:
+    DC.W $ABCD
+    ORG    1024
+START:
+    MOVE.W #$ABCD, ($00AAAAAA).L
+    SIMHALTe
+    END    START 
+    '''
+
     # essentiall contains 'Move.W #$abcd,($00aaaaaa).L'
     list_file.load_from_json("""
 {
@@ -186,5 +197,7 @@ def test_full_integration():
     assert(m68k.get_program_counter_value() == 1024)
     assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('0000'))
     m68k.step_instruction()
-    assert(m68k.get_program_counter_value() == 1038)
+    assert(m68k.get_program_counter_value() == 1032)
     assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('abcd'))
+    m68k.step_instruction()
+    assert (m68k.get_program_counter_value() == 1036)
