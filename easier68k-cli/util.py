@@ -20,3 +20,18 @@ def split_args(args, required=0, optional=0):
         return None
     else:
         return args
+
+
+def long_hex(number):
+    """
+    converts number to hex just like the inbuilt hex function but also
+    pads zeroes such that there are always 8 hexidecimal digits
+    """
+    
+    value_hex = hex(number)
+    
+    # pad with 0's. use 10 instead of 8 because of 0x prefix
+    if(len(value_hex) < 10):
+        value_hex = value_hex[0:2] + '0'*(10-len(value_hex)) + value_hex[2:]
+    
+    return value_hex

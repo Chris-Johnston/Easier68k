@@ -1,9 +1,10 @@
 import cmd
 import binascii
-from easier68k.simulator import m68k
+from easier68k.simulator.m68k import M68K
+from easier68k.simulator.memory import Memory
 from easier68k.core.models.list_file import ListFile
 from easier68k.core.enum.register import Register
-from util.split_args import split_args
+from util import split_args, long_hex
 
 class Run_CLI(cmd.Cmd):
     prompt = '(easier68k.run) '
@@ -52,11 +53,7 @@ class Run_CLI(cmd.Cmd):
         if(len(args) == 0):
             output = ''
             for i, reg in enumerate(Register):
-                value_hex = hex(self.simulator.get_register_value(reg))
-                
-                # pad with 0's. use 10 instead of 8 because of 0x prefix
-                if(len(value_hex) < 10):
-                    value_hex = value_hex[0:2] + '0'*(10-len(value_hex)) + value_hex[2:]
+                value_hex = long_hex(self.simulator.get_register_value(reg))
                 
                 output += '{:<16}'.format(reg.name + ': ' + value_hex)
                 if(i % 4 == 3):
@@ -67,11 +64,7 @@ class Run_CLI(cmd.Cmd):
             # get the one passed in
             try:
                 reg = Register[args[0]]
-                value_hex = hex(self.simulator.get_register_value(reg))
-                
-                # pad with 0's. use 10 instead of 8 because of 0x prefix
-                if(len(value_hex) < 10):
-                    value_hex = value_hex[0:3] + '0'*(10-len(value_hex)) + value_hex[3:]
+                value_hex = long_hex(self.simulator.get_register_value(reg))
                 
                 print(value_hex)
             except KeyError:
@@ -85,22 +78,123 @@ class Run_CLI(cmd.Cmd):
         print('if no register is selected then all of them are printed')
         print('if a register is selected then just that register is printed')
     
-    def do_memory(self, args):
-        pass # get a whole memory dump or just a region or set a region
+    
+    
+    def do_dump_memory(self, args):
+        args = split_args(args, 1, 0)
+        if(args == None):
+            return False
+            
+        out_file = open(args[0], 'wb')
+        self.simulator.save_memory(out_file)
+        out_file.close()
+        
+    
+    def help_dump_memory(self, args):
+        print('syntax: dump_memory out_file')
+        print('dumps the memory to the out_file.')
+    
+    
+    def do_load_memory(self, args):
+        args = split_args(args, 1, 0)
+        if(args == None):
+            return False
+            
+        try:
+            in_file = open(args[0], 'rb')
+            self.simulator.load_memory(in_file)
+            
+            in_file.close()
+            
+        except FileNotFoundError as not_found:
+            print('[Error] file: ' + str(not_found) + ' does not exist')
+    
+    def help_load_memory(self, args):
+        print('syntax: load_memory in_file')
+        print('loads the memory from the in_file.')
+    
+    
+    def do_get_memory(self, args):
+        args = split_args(args, 2, 0)
+        if(args == None):
+            return False
+            
+        memory = self.simulator.memory
+        
+        start = int(args[0], 0)
+        length = int(args[1], 0)
+        
+        # round down to nearest multiple of 8 to keep alignment
+        start -= start % 8
+        
+        for i in range(length):
+            loc = start + i
+            
+            if(loc % 8 == 0):
+                print(long_hex(loc), end='    ')
+            
+            ending = ' '
+            if(i % 4 == 3):
+                ending = '    '
+            if(i % 8 == 7):
+                ending = '\n'
+            
+            value_str = bytes(memory.get(Memory.Byte, loc)).hex()
+            print(value_str, end=ending)
+        print('') # newline
+        
+    def help_get_memory(self):
+        print('syntax: get_memory start_idx, length')
+        print('retrievs the memory in the range [start_idx, start_idx+length)')
+        print('accessing values outside of memory causes an error')
+        print('start_idx is rounded down to the nearest multiple of 8 to keep formatting alignment')
+    
+    
+    
+    def do_set_memory(self, args):
+        args = split_args(args, 3, 0)
+        if(args == None):
+            return False
+            
+        memory = self.simulator.memory
+        
+        start = int(args[0], 0)
+        length = int(args[1], 0)
+        value = args[2]
+        
+        
+        # trim off optional prefix
+        if(value[0:2] == '0x'):
+            value = value[2:]
+        
+        # check lengths
+        if(len(value) % 2 != 0 or len(value) // 2 != length):
+            print('length of value and given length do not match')
+            return False
+            
+        for i in range(length):
+            loc = start + i
+            memory.set(Memory.Byte, loc, bytearray.fromhex(value[i*2:i*2+2]))
+        
+    def help_set_memory(self, args):
+        print('syntax: get_memory start_idx, length, value')
+        print('sets the memory in the range [start_idx, start_idx+length) to the value(which must be expressed in hex)')
+        print('accessing values outside of memory causes an error')
+        print('assigning a value larger or smaller than the range can hold is an error')
     
     # break points when we add that too!
     
 
 def subcommandline_run(file_name):
-    in_file = open(file_name)
-    
-    list_file = ListFile()
-    list_file.load_from_json(in_file.read(-1))
-    
-    in_file.close()
-    
-    simulator = m68k.M68K()
-    simulator.load_list_file(list_file)
+    simulator = M68K()
+    if(file_name != None):
+        in_file = open(file_name)
+        
+        list_file = ListFile()
+        list_file.load_from_json(in_file.read(-1))
+        
+        in_file.close()
+        simulator.load_list_file(list_file)
     
     #print(simulator.get_register_value(Register.A0))
     #simulator.step_instruction()

@@ -8,7 +8,7 @@ import readline
 
 from easier68k.assembler import assembler
 
-from util.split_args import split_args
+from util import split_args
 from subcommandline_run import subcommandline_run
 
 
@@ -60,11 +60,18 @@ class CLI(cmd.Cmd):
         
     # run a sub-command line with options like step instruction, run, print registers, etc...
     def do_run(self, args):
-        args = split_args(args, 1, 0)
+        args = split_args(args, 0, 1)
         if(args == None):
             return False
         
-        subcommandline_run(args[0])
+        subcommandline_run(None if len(args) == 0 else args[0])
+    
+    
+    def help_run(self):
+        print('syntax: run [list_file]')
+        print('goes into the simulator mode')
+        print('if list_file is specified then that file is loaded into memory')
+        print('to see what the simulator mode can do, enter it and type help')
     
     
     # make everything autocomplete with files
