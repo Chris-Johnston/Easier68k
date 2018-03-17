@@ -1,6 +1,7 @@
 from ..enum.ea_mode import EAMode
-from ..util.parsing import parse_assembly_parameter
+from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..enum.op_size import OpSize
+
 
 def command_matches(command: str, template: str) -> bool:
     """
@@ -150,3 +151,77 @@ def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
         return '{0:032b}'.format(ea.data)
 
     return ''  # This EA doesn't have a necessary post-op
+
+
+def two_param_is_valid(command: str, parameters: str, opcode: str, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE],
+                       default_size=OpSize.WORD, param1_invalid_modes=[], param2_invalid_modes=[]) -> (bool, list):
+    """
+    Tests whether the given command is valid
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    :param opcode: The opcode to check for ('MOVE', 'LEA', etc.)
+    :param valid_sizes: valid sizes of the command (empty list or None for no size)
+    :param default_size: the default size for the command (can be None if it doesn't take a command)
+    :param param1_invalid_modes: invalid modes for the first parameter
+    :param param2_invalid_modes: invalid modes for the second parameter
+    :return: Whether the given command is valid and a list of issues/warnings encountered
+    """
+    issues = []
+    try:
+        size, params, parts = from_str_util(command, parameters)
+
+        # If we have more than 2 parts something is seriously wrong
+        assert len(parts) <= 2, 'Unknown error (more than 1 period in command)'
+        assert parts[0].upper() == opcode.upper(), "Command doesn't match template {}".format(opcode)
+        # Size check
+        if valid_sizes is not None and len(valid_sizes) > 0:
+            if not size:
+                # If size is null but we had a size parameter, it was an invalid size
+                assert len(parts) == 1, 'Invalid size parameter'
+                size = default_size
+            assert size in valid_sizes, 'Size {} is not a valid size'.format(size)
+        else:
+            assert len(parts) == 1, "Can't specify a size for command {}".format(opcode)
+
+        assert len(params) == 2, 'Opcode {} must have two parameters'.format(opcode)
+
+        param1 = parse_assembly_parameter(params[0])
+        param2 = parse_assembly_parameter(params[1])
+
+        assert param1.mode not in param1_invalid_modes, 'Invalid addressing mode'
+        assert param2.mode not in param2_invalid_modes, 'Invalid addressing mode'
+
+    except AssertionError as e:
+        issues.append((e.args[0], 'ERROR'))
+        return False, issues
+
+    return True, issues
+
+
+def two_param_from_str(command: str, parameters: str, opcode_cls, default_size=OpSize.WORD):
+    """
+    Parses a command from text. Note that this assumes that is_valid has already been run and was successful.
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    :param opcode_cls: The class of opcode we're parsing to
+    :param opcode: The opcode template (like 'MOVE', 'LEA', etc.)
+    :param default_size: The default size if no size is specified, or None if this is an unsized opcode
+    :return: The parsed command
+    """
+    size, params, parts = from_str_util(command, parameters)
+
+    if default_size and not size:
+        size = default_size
+    elif not default_size:
+        size = None
+
+    param1 = parse_assembly_parameter(params[0].strip())
+    param2 = parse_assembly_parameter(params[1].strip())
+
+    if size:
+        return opcode_cls(param1, param2, size)
+    else:
+        return opcode_cls(param1, param2)
+
