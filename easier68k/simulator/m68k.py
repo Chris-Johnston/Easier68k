@@ -17,6 +17,10 @@ class M68K:
         """
         self.memory = Memory()
 
+        # has the simulation been halted using SIMHALT or .halt()
+        self.halted = False
+
+        # should the clock automatically cycle?
         self.clock_auto_cycle = True
         self._clock_cycles = 0
 
@@ -156,13 +160,13 @@ class M68K:
         Starts the automatic execution
         :return:
         """
-
-        if not self.clock_auto_cycle:
-            # run a single instruction
-            self.step_instruction()
-        else:
-            while self.clock_auto_cycle:
+        if not self.halted:
+            if not self.clock_auto_cycle:
+                # run a single instruction
                 self.step_instruction()
+            else:
+                while self.clock_auto_cycle:
+                    self.step_instruction()
 
     def halt(self):
         """
@@ -170,6 +174,7 @@ class M68K:
         :return:
         """
         self.clock_auto_cycle = False
+        self.halted = True
 
     def step_instruction(self):
         """
@@ -177,27 +182,28 @@ class M68K:
         counter increments
         :return:
         """
-        # must be here or we get circular dependency issues
-        from ..core.util.find_module import find_opcode_cls, valid_opcodes
+        if not self.halted:
+            # must be here or we get circular dependency issues
+            from ..core.util.find_module import find_opcode_cls, valid_opcodes
 
-        for op_str in valid_opcodes:
-            op_class = find_opcode_cls(op_str)
+            for op_str in valid_opcodes:
+                op_class = find_opcode_cls(op_str)
 
-            # We don't know this opcode, there's no module for it
-            if op_class is None:
-                print('Opcode {} is not known: skipping and continuing'.format(op_str))
-                continue
+                # We don't know this opcode, there's no module for it
+                if op_class is None:
+                    print('Opcode {} is not known: skipping and continuing'.format(op_str))
+                    continue
 
-            # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
-            # note: this currently has the edge case that it will fail unintelligibly
-            # if encountered at the end of memory
-            pc_val = self.get_program_counter_value()
-            op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
-            if op is not None:
-                op.execute(self)
+                # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
+                # note: this currently has the edge case that it will fail unintelligibly
+                # if encountered at the end of memory
+                pc_val = self.get_program_counter_value()
+                op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
+                if op is not None:
+                    op.execute(self)
 
-                # done exeucting after doing an operation
-                return
+                    # done exeucting after doing an operation
+                    return
 
     def reload_execution(self):
         """
