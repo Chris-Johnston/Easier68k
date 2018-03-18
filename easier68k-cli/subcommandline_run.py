@@ -7,7 +7,7 @@ from easier68k.core.enum.register import Register
 from util import split_args, long_hex, autocomplete_file, autocomplete_getarg
 
 class Run_CLI(cmd.Cmd):
-    prompt = '(easier68k.run) '
+    prompt = '(easier68k.simulate) '
     def __init__(self, sim):
         super().__init__()
         self.simulator = sim
@@ -17,10 +17,12 @@ class Run_CLI(cmd.Cmd):
         return True
     
     def do_run(self, args):
-        pass # run the simulator
+        self.simulator.clock_auto_cycle = True
+        self.simulator.run()
         
     def do_step(self, args):
-        pass # run the simulator one instruction
+        self.simulator.clock_auto_cycle = False
+        self.simulator.run()
     
     
     def do_set_register(self, args):
@@ -208,12 +210,6 @@ def subcommandline_run(file_name):
         
         in_file.close()
         simulator.load_list_file(list_file)
-    
-    #print(simulator.get_register_value(Register.A0))
-    #simulator.step_instruction()
-    #simulator.step_instruction()
-    #print(simulator.get_register_value(Register.A0))
-    
     
     cli = Run_CLI(simulator)
     
