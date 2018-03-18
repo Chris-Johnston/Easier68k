@@ -32,7 +32,6 @@ class Move(Opcode):
         self.dest = params[1]
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-
         assert size in Move.valid_sizes
 
         self.size = size
@@ -68,6 +67,37 @@ class Move(Opcode):
 
         # and set the value
         self.dest.set_value(simulator, src_val, val_length)
+
+        # increment the program counter by the length of the instruction (1 word)
+        to_increment = OpSize.WORD.value
+
+        if self.src.mode in [EAMode.Immediate]:
+            # add the length of the size of the operation, in words
+            if self.size is OpSize.BYTE:
+                to_increment += OpSize.WORD.value
+            else:
+                to_increment += self.size.value
+
+        # if followed by a long addr, add the length of the long
+        if self.src.mode in [EAMode.AbsoluteLongAddress]:
+            to_increment += OpSize.LONG.value
+
+        # same goes with a word
+        if self.src.mode in [EAMode.AbsoluteWordAddress]:
+            to_increment += OpSize.WORD.value
+
+        # repeat for the dest
+        if self.dest.mode in [EAMode.AbsoluteLongAddress]:
+            to_increment += OpSize.LONG.value
+
+        if self.dest.mode in [EAMode.AbsoluteWordAddress]:
+            to_increment += OpSize.WORD.value
+
+        # get the current program counter
+        pc_val = simulator.get_program_counter_value()
+
+        # set the program counter value
+        simulator.increment_program_counter(to_increment)
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -183,14 +213,14 @@ class Move(Opcode):
                                               [EAMode.ARD, EAMode.IMM]])
 
     @classmethod
-    def from_binary(cls, data: bytearray) -> (Move, int):
+    def disassemble_instruction(cls, data: bytearray) -> Opcode:
         """
         This has a non-move opcode
-        >>> Move.from_binary(bytearray.fromhex('5E01'))
-        (None, 0)
+        >>> Move.disassemble_instruction(bytearray.fromhex('5E01'))
+
 
         MOVE.B D1,D7
-        >>> op, used = Move.from_binary(bytearray.fromhex('1E01'))
+        >>> op = Move.disassemble_instruction(bytearray.fromhex('1E01'))
 
         >>> str(op.src)
         'EA Mode: EAMode.DRD, Data: 1'
@@ -198,12 +228,9 @@ class Move(Opcode):
         >>> str(op.dest)
         'EA Mode: EAMode.DRD, Data: 7'
 
-        >>> used
-        1
-
 
         MOVE.L (A4),(A7)
-        >>> op, used = Move.from_binary(bytearray.fromhex('2E94'))
+        >>> op = Move.disassemble_instruction(bytearray.fromhex('2E94'))
 
         >>> str(op.src)
         'EA Mode: EAMode.ARI, Data: 4'
@@ -211,12 +238,8 @@ class Move(Opcode):
         >>> str(op.dest)
         'EA Mode: EAMode.ARI, Data: 7'
 
-        >>> used
-        1
-
-
         MOVE.W #$DEAF,(A2)+
-        >>> op, used = Move.from_binary(bytearray.fromhex('34FCDEAF'))
+        >>> op = Move.disassemble_instruction(bytearray.fromhex('34FCDEAF'))
 
         >>> str(op.src)
         'EA Mode: EAMode.IMM, Data: 57007'
@@ -224,23 +247,14 @@ class Move(Opcode):
         >>> str(op.dest)
         'EA Mode: EAMode.ARIPI, Data: 2'
 
-        >>> used
-        2
-
-
-
         MOVE.L ($1000).W,($200000).L
-        >>> op, used = Move.from_binary(bytearray.fromhex('23F8100000200000'))
+        >>> op = Move.disassemble_instruction(bytearray.fromhex('23F8100000200000'))
 
         >>> str(op.src)
         'EA Mode: EAMode.AWA, Data: 4096'
 
         >>> str(op.dest)
         'EA Mode: EAMode.ALA, Data: 2097152'
-
-        >>> used
-        4
-
 
         Parses some raw data into an instance of the opcode class
         :param data: The data used to convert into an opcode instance
@@ -262,15 +276,14 @@ class Move(Opcode):
 
         # check opcode
         if opcode_bin != 0b00:
-            return (None, 0)
+            return None
 
         # the binary will contain the MoveSize, convert this to an OpSize used by everything else
         size = MoveSize(size_bin).to_op_size()
 
         # check size
         if size not in Move.valid_sizes:
-            print('size not in valid', size)
-            return (None, 0)
+            return None
 
         wordsUsed = 1
 
@@ -278,11 +291,9 @@ class Move(Opcode):
         wordsUsed += src_EA[1]
 
         dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
-        wordsUsed += dest_EA[1]
 
         # when making the new Move, need to convert that MoveSize back into an OpSize
-
-        return cls([src_EA[0], dest_EA[0]], size), wordsUsed
+        return cls((src_EA[0], dest_EA[0]), size)
 
     @classmethod
     def from_str(cls, command: str, parameters: str):

@@ -119,7 +119,7 @@ def test_get_value():
             # now set up the parameter to get the value that the address reg points to
             ap = AssemblyParameter(EAMode.AddressRegisterIndirect, r)
             # ensure that the value matches
-            assert int(ap.get_value(sim).hex(), 16) == 2 * x
+            assert ap.get_value(sim) == 2 * x
 
     # test that address register indirect post increment and pre decrement
     # work properly
@@ -127,23 +127,23 @@ def test_get_value():
     sim.set_register_value(Register.A0, 0x1000)
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 0)
-    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+    assert ap.get_value(sim) == 2 * 0x1000
 
     assert sim.get_register_value(Register.A0) == 0x1000 + 4
 
     # pre decrement
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPreDecrement, 0)
-    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+    assert ap.get_value(sim) == 2 * 0x1000
 
     assert sim.get_register_value(Register.A0) == 0x1000
 
     # test absolute long / word address
     ap = AssemblyParameter(EAMode.AbsoluteWordAddress, 0x1000)
-    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+    assert ap.get_value(sim) == 0x1000
 
     ap = AssemblyParameter(EAMode.AbsoluteLongAddress, 0x1000)
-    assert int(ap.get_value(sim).hex(), 16) == 2 * 0x1000
+    assert ap.get_value(sim) == 0x1000
 
 
 def test_assembly_parameter_set_value():

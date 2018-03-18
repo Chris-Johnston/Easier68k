@@ -13,8 +13,10 @@ class Lea(Opcode):
 
 
 class Lea(Opcode):
-
-    def __init__(self, params: list):
+    # size should always be opsize long, per the manual
+    valid_sizes = [OpSize.LONG]
+    
+    def __init__(self, params: list, size: OpSize = OpSize.LONG):
         assert len(params) == 2
         assert isinstance(params[0], AssemblyParameter)
         assert isinstance(params[1], AssemblyParameter)
@@ -25,6 +27,9 @@ class Lea(Opcode):
         # Check that the destination is of a proper type
         assert params[1].mode == EAMode.ARD  # Can only take address register direct
         self.dest = params[1]
+
+        assert size in Lea.valid_sizes
+        self.size = size
 
     def assemble(self) -> bytearray:
         """
@@ -38,7 +43,7 @@ class Lea(Opcode):
         tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
         # Append after the command
         # Size doesn't matter if it's not an immediate so we'll just give it W
-        tr += opcode_util.ea_to_binary_post_op(self.src, 'L' if self.src.mode == EAMode.ALA else 'W')
+        tr += opcode_util.ea_to_binary_post_op(self.src, OpSize.LONG if self.src.mode == EAMode.ALA else OpSize.WORD)
 
         to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
         return to_return
@@ -49,7 +54,29 @@ class Lea(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
-        self.dest.set_value(simulator, self.src.data, OpSize.LONG.get_number_of_bytes())
+
+        val_len = self.size.get_number_of_bytes()
+
+        # get the value of the source
+        src_val = self.src.get_value(simulator, val_len)
+
+        # set the value in the dest
+        self.dest.set_value(simulator, src_val, val_len)
+
+        # increment the program counter by at least 2 bytes (1 word)
+        to_increment = 2
+
+        if self.src.mode is EAMode.AddressRegisterIndirect:
+            to_increment += val_len
+
+        if self.src.mode is EAMode.AbsoluteWordAddress:
+            to_increment += OpSize.LONG.value
+
+        if self.src.mode is EAMode.AbsoluteLongAddress:
+            to_increment += OpSize.LONG.value
+
+        simulator.increment_program_counter(to_increment)
+
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output

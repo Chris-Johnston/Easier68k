@@ -17,6 +17,10 @@ class M68K:
         """
         self.memory = Memory()
 
+        # has the simulation been halted using SIMHALT or .halt()
+        self.halted = False
+
+        # should the clock automatically cycle?
         self.clock_auto_cycle = True
         self._clock_cycles = 0
 
@@ -131,6 +135,15 @@ class M68K:
         """
         self.set_address_register_value(Register.ProgramCounter, new_value)
 
+    def increment_program_counter(self, inc: int):
+        """
+        Increments the program counter by the given value
+        :param inc:
+        :return:
+        """
+        self.set_program_counter_value(
+            self.get_program_counter_value() + inc)
+
     def get_condition_status_code(self, code: ConditionStatusCode) -> bool:
         """
         Gets the status of a code from the Condition Code Register
@@ -147,14 +160,21 @@ class M68K:
         Starts the automatic execution
         :return:
         """
-        pass
+        if not self.halted:
+            if not self.clock_auto_cycle:
+                # run a single instruction
+                self.step_instruction()
+            else:
+                while self.clock_auto_cycle:
+                    self.step_instruction()
 
-    def step_clock(self):
+    def halt(self):
         """
-        Increments the clock by a single cycle
+        Halts the auto simulation execution
         :return:
         """
-        pass
+        self.clock_auto_cycle = False
+        self.halted = True
 
     def step_instruction(self):
         """
@@ -162,29 +182,28 @@ class M68K:
         counter increments
         :return:
         """
-        # must be here or we get circular dependency issues
-        from ..core.util.find_module import find_opcode_cls, valid_opcodes
+        if not self.halted:
+            # must be here or we get circular dependency issues
+            from ..core.util.find_module import find_opcode_cls, valid_opcodes
 
-        for op_str in valid_opcodes:
-            op_class = find_opcode_cls(op_str)
+            for op_str in valid_opcodes:
+                op_class = find_opcode_cls(op_str)
 
-            # We don't know this opcode, there's no module for it
-            if op_class is None:
-                print('Opcode {} is not known: skipping and continuing'.format(op_str))
-                continue
+                # We don't know this opcode, there's no module for it
+                if op_class is None:
+                    print('Opcode {} is not known: skipping and continuing'.format(op_str))
+                    continue
 
-            PC = self.get_program_counter_value()
-            
-            # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
-            # note: this currently has the edge case that it will fail unintelligibly
-            # if encountered at the end of memory
-            # op, words_read =
-            op, words_read = op_class.from_binary(self.memory.memory[PC:PC+10])
-            if op != None:
-                op.execute(self)
-                self.set_program_counter_value(PC + words_read*2)
+                # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
+                # note: this currently has the edge case that it will fail unintelligibly
+                # if encountered at the end of memory
+                pc_val = self.get_program_counter_value()
+                op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
+                if op is not None:
+                    op.execute(self)
 
-
+                    # done exeucting after doing an operation
+                    return
 
     def reload_execution(self):
         """
@@ -192,7 +211,15 @@ class M68K:
         up to the current program counter location
         :return:
         """
-        pass
+        # get the current PC
+        current_pc = self.get_program_counter_value()
+
+        # reset the PC value
+        # todo, need to store the starting location
+
+        # set the starting PC value
+
+        # run until hits that PC value
 
     def get_cycles(self):
         """

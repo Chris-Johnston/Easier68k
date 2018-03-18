@@ -1,6 +1,7 @@
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
+from ..enum.op_size import OpSize
 
 
 class Simhalt(Opcode):
@@ -24,7 +25,11 @@ class Simhalt(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
-        pass
+        # make the simulator halt
+        simulator.halt()
+
+        # increment the program counter
+        simulator.increment_program_counter(OpSize.LONG.value)
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -92,7 +97,7 @@ class Simhalt(Opcode):
             return False, issues
 
     @classmethod
-    def from_binary(cls, data: bytearray) -> (Simhalt, int):
+    def disassemble_instruction(cls, data: bytearray) -> Opcode:
         """
         Parses some raw data into an instance of the opcode class
 
@@ -101,7 +106,7 @@ class Simhalt(Opcode):
             the amount of data in words that was used (e.g. extra for immediate
             data) or 0 for not a match
         """
-        return cls(), 2
+        return cls()
 
     @classmethod
     def from_str(cls, command: str, parameters: str):

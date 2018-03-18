@@ -88,7 +88,7 @@ class AssemblyParameter:
             # in memory where the target value is
             register_value = simulator.get_register_value(addr_register)
             # now get the value in memory of that register
-            return simulator.memory.get(length, register_value)
+            return int.from_bytes(simulator.memory.get(length, register_value), byteorder='big', signed=False)
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
             # address register indirect gets the value that the register points to
@@ -104,7 +104,7 @@ class AssemblyParameter:
             # do the post increment
             simulator.set_register_value(addr_register, register_value + length)
             # return the value
-            return val
+            return int.from_bytes(val, byteorder='big', signed=False)
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
             # address register indirect gets the value that the register points to
@@ -121,7 +121,7 @@ class AssemblyParameter:
 
             # now get the value in memory of that register
             # and return that value
-            return simulator.memory.get(length, register_value - length)
+            return int.from_bytes(simulator.memory.get(length, register_value - length), byteorder='big', signed=False)
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # if mode is absolute long or word address
@@ -137,8 +137,8 @@ class AssemblyParameter:
             if self.mode is EAMode.AbsoluteWordAddress:
                 addr = to_word(addr)
 
-            # now get the value at that memory location
-            return simulator.memory.get(length, addr)
+            # now get the value of that absolute long address
+            return addr
 
         # if nothing was done by now, surely something must be wrong
         assert False, 'Invalid effective addressing mode!'
