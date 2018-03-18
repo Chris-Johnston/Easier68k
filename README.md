@@ -1,28 +1,22 @@
 # Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k)
 
-Easier68k is a python library that assembles to 68k and simulates the Motorola 68k CPU Architecture.
-It is built as a library so anyone can create a front end for it. Currently this repository includes a CLI and a GUI is in the works.
+Easier68k is a python library that assembles and simulates the Motorola 68k CPU Architecture.
 
 NOTE: Easier68k is currently under heavy production and is not stable.
 
 ### Motivation
 
-There are very few 68K simulators and assemblers. The only one which is still maintained and complete is Easy68k.
+There are very few 68K simulators and assemblers and the ones that exist were all found to be lacking in some areas.
 We realized we could do better:
-* Easy68k is not cross platform, but Easier68k is
-* Easy68k is not modular and enforces you to use its editor and GUI, but Easier68k is built as a modular library so it can fit in anyones personal setup
-* Easy68k is buggy, but Easier68k has a focus on correctness by using unit tests and integration tests for everything.
-* Easy68k is GPL licensed, but Easier68k is MIT licensed
+* Easier68k is cross platform.
+* Easier68k is built as a modular library so anyone can build a front end for it or integrate a 68k simulation into their project.
+* Easier68k has a focus on correctness by using unit tests and integration tests for everything.
+* Easier68k is MIT licensed so you can use it however you would like.
 
 
-### How to Use?
+### How to Use the CLI
 
-If you want to use this as a library to either develop a front end or automate some special tasks then simply import the
-package in your project and start coding.
-
-If you want to use this to assemble and simulate some 68k assembly then keep on reading.
-
-Currently there is only one front end available for easier68k which is the easier68k-cli which comes in this Github repository.
+The cli is in the folder "easier68k-cli" which comes in this Github repository.
 Go to the easier68k-cli folder in the terminal/command prompt and install the dependencies with
 ```bash
 python -m pip install -r requirements.txt
@@ -83,9 +77,10 @@ new doctest-able modules are added to the CI.
 
 This file can be run from the shell using `python tests/run_doctest.py`.
 
-[sampleproject]: https://github.com/Chris-Johnston/Easier68k-SampleProject
-
 
 ### License
 
-Easy68k is under the MIT license.
+Easier68k is under the MIT license.
+
+
+[sampleproject]: https://github.com/Chris-Johnston/Easier68k-SampleProject
