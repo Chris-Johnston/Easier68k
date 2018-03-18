@@ -16,7 +16,7 @@ class Lea(Opcode):
     # size should always be opsize long, per the manual
     valid_sizes = [OpSize.LONG]
     
-    def __init__(self, params: list):
+    def __init__(self, params: list, size: OpSize = OpSize.LONG):
         assert len(params) == 2
         assert isinstance(params[0], AssemblyParameter)
         assert isinstance(params[1], AssemblyParameter)

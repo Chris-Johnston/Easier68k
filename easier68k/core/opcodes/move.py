@@ -32,7 +32,6 @@ class Move(Opcode):
         self.dest = params[1]
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
-
         assert size in Move.valid_sizes
 
         self.size = size
@@ -294,7 +293,7 @@ class Move(Opcode):
         dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
 
         # when making the new Move, need to convert that MoveSize back into an OpSize
-        return cls(src_EA[0], dest_EA[0], size)
+        return cls((src_EA[0], dest_EA[0]), size)
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
