@@ -25,7 +25,7 @@ def test_move():
     dst = AssemblyParameter(EAMode.DRD, 2)
 
     # make a testing move command
-    mv = Move(src, dst, OpSize.BYTE)
+    mv = Move([src, dst], OpSize.BYTE)
 
     mv.execute(a)
 

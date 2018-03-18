@@ -24,7 +24,7 @@ def test_lea():
     dst = AssemblyParameter(EAMode.ARD, 3)
 
     # make a testing move command
-    lea = Lea(src, dst)
+    lea = Lea([src, dst])
 
     lea.execute(a)
 

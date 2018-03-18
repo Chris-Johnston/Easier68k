@@ -19,16 +19,17 @@ class Move(Opcode):
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
-    def __init__(self, src: AssemblyParameter, dest: AssemblyParameter, size: OpSize = OpSize.WORD):
-        assert isinstance(src, AssemblyParameter)
-        assert isinstance(dest, AssemblyParameter)
+    def __init__(self, params: list, size: OpSize = OpSize.WORD):
+        assert len(params) == 2
+        assert isinstance(params[0], AssemblyParameter)
+        assert isinstance(params[1], AssemblyParameter)
         # Check that the src is of the proper type (for example, can't move from an address register for a move command)
-        assert src.mode != EAMode.ARD  # Only invalid src is address register direct
-        self.src = src
+        assert params[0].mode != EAMode.ARD  # Only invalid src is address register direct
+        self.src = params[0]
 
         # Check that the destination is of a proper type
-        assert dest.mode != EAMode.ARD and dest.mode != EAMode.IMM  # Can't take address register direct or immediates
-        self.dest = dest
+        assert params[1].mode != EAMode.ARD and params[1].mode != EAMode.IMM  # Can't take address register direct or immediates
+        self.dest = params[1]
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
 
@@ -178,8 +179,8 @@ class Move(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.two_param_is_valid(command, parameters, "MOVE", param1_invalid_modes=[EAMode.ARD],
-                                              param2_invalid_modes=[EAMode.ARD, EAMode.IMM])
+        return opcode_util.n_param_is_valid(command, parameters, "MOVE", 2, param_invalid_modes=[[EAMode.ARD],
+                                              [EAMode.ARD, EAMode.IMM]])
 
     @classmethod
     def from_binary(cls, data: bytearray) -> (Move, int):
@@ -281,7 +282,7 @@ class Move(Opcode):
 
         # when making the new Move, need to convert that MoveSize back into an OpSize
 
-        return cls(src_EA[0], dest_EA[0], size), wordsUsed
+        return cls([src_EA[0], dest_EA[0]], size), wordsUsed
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
@@ -298,4 +299,4 @@ class Move(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.two_param_from_str(command, parameters, Move, OpSize.WORD)
+        return opcode_util.n_param_from_str(command, parameters, Move, 2, OpSize.WORD)

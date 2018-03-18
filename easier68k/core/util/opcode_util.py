@@ -154,8 +154,8 @@ def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
     return ''  # This EA doesn't have a necessary post-op
 
 
-def two_param_is_valid(command: str, parameters: str, opcode: str, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE],
-                       default_size=OpSize.WORD, param1_invalid_modes=[], param2_invalid_modes=[]) -> (bool, list):
+def n_param_is_valid(command: str, parameters: str, opcode: str, n: int=2, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE],
+                       default_size=OpSize.WORD, param_invalid_modes=[]) -> (bool, list):
     """
     Tests whether the given command is valid
 
@@ -164,8 +164,8 @@ def two_param_is_valid(command: str, parameters: str, opcode: str, valid_sizes=[
     :param opcode: The opcode to check for ('MOVE', 'LEA', etc.)
     :param valid_sizes: valid sizes of the command (empty list or None for no size)
     :param default_size: the default size for the command (can be None if it doesn't take a command)
-    :param param1_invalid_modes: invalid modes for the first parameter
-    :param param2_invalid_modes: invalid modes for the second parameter
+    :param n: the number of parameters to parse
+    :param param_invalid_modes: list of lists of invalid parameter modes (in order)
     :return: Whether the given command is valid and a list of issues/warnings encountered
     """
     issues = []
@@ -185,14 +185,15 @@ def two_param_is_valid(command: str, parameters: str, opcode: str, valid_sizes=[
         else:
             assert len(parts) == 1, "Can't specify a size for command {}".format(opcode)
 
-        assert len(params) == 2, 'Opcode {} must have two parameters'.format(opcode)
+        assert len(params) == n, 'Opcode {} must have {} parameters'.format(opcode, n)
 
-        param1 = parse_assembly_parameter(params[0])
-        param2 = parse_assembly_parameter(params[1])
+        parsed = []
 
-        assert param1.mode not in param1_invalid_modes, 'Invalid addressing mode'
-        assert param2.mode not in param2_invalid_modes, 'Invalid addressing mode'
-
+        for i in range(n):
+            param = parse_assembly_parameter(params[i])
+            if i < len(param_invalid_modes):
+                assert param.mode not in param_invalid_modes[i], 'Invalid addressing mode'
+            parsed.append(parse_assembly_parameter(params[i]))
     except AssertionError as e:
         issues.append((e.args[0], 'ERROR'))
         return False, issues
@@ -200,14 +201,14 @@ def two_param_is_valid(command: str, parameters: str, opcode: str, valid_sizes=[
     return True, issues
 
 
-def two_param_from_str(command: str, parameters: str, opcode_cls, default_size=OpSize.WORD):
+def n_param_from_str(command: str, parameters: str, opcode_cls, n: int=2, default_size=OpSize.WORD):
     """
     Parses a command from text. Note that this assumes that is_valid has already been run and was successful.
 
     :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
     :param parameters: The parameters after the command (such as the source and destination of a move)
     :param opcode_cls: The class of opcode we're parsing to
-    :param opcode: The opcode template (like 'MOVE', 'LEA', etc.)
+    :param n: The number of parameters to parse
     :param default_size: The default size if no size is specified, or None if this is an unsized opcode
     :return: The parsed command
     """
@@ -218,10 +219,13 @@ def two_param_from_str(command: str, parameters: str, opcode_cls, default_size=O
     elif not default_size:
         size = None
 
-    param1 = parse_assembly_parameter(params[0].strip())
-    param2 = parse_assembly_parameter(params[1].strip())
+    parsed = []
+    for i in range(n):
+        parsed.append(parse_assembly_parameter(params[i].strip()))
+    # param1 = parse_assembly_parameter(params[0].strip())
+    # param2 = parse_assembly_parameter(params[1].strip())
 
     if size:
-        return opcode_cls(param1, param2, size)
+        return opcode_cls(parsed, size)
     else:
-        return opcode_cls(param1, param2)
+        return opcode_cls(parsed)

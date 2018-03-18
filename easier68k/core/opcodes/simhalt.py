@@ -114,9 +114,4 @@ class Simhalt(Opcode):
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
         :param parameters: The parameters after the command (such as the source and destination of a move)
         """
-        valid, issues = Simhalt.is_valid(command, parameters)
-        if not valid:
-            return None
-        # We can forego asserts in here because we've now confirmed this is valid assembly code
-
         return cls()

@@ -1,4 +1,5 @@
 from ...core.enum.ea_mode import EAMode
+from ...core.models.assembly_parameter import AssemblyParameter
 from ...core.enum import ea_mode_bin
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
@@ -13,14 +14,17 @@ class Lea(Opcode):
 
 class Lea(Opcode):
 
-    def __init__(self, src: EAMode, dest: EAMode):
+    def __init__(self, params: list):
+        assert len(params) == 2
+        assert isinstance(params[0], AssemblyParameter)
+        assert isinstance(params[1], AssemblyParameter)
         # Can't take data register, address register, or ARI with modifications
-        assert src.mode not in [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI, EAMode.IMM]
-        self.src = src
+        assert params[0].mode not in [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI, EAMode.IMM]
+        self.src = params[0]
 
         # Check that the destination is of a proper type
-        assert dest.mode == EAMode.ARD  # Can only take address register direct
-        self.dest = dest
+        assert params[1].mode == EAMode.ARD  # Can only take address register direct
+        self.dest = params[1]
 
     def assemble(self) -> bytearray:
         """
@@ -147,9 +151,9 @@ class Lea(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.two_param_is_valid(command, parameters, "LEA", None, None,
-                                              [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI],
-                                              [mode for mode in EAMode if mode is not EAMode.ARD])  # Select all but ARD
+        return opcode_util.n_param_is_valid(command, parameters, "LEA", 2, None, None,
+                                            [[EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI],
+                                             [mode for mode in EAMode if mode is not EAMode.ARD]])  # Select all but ARD
 
     @classmethod
     def from_binary(cls, data: bytearray) -> (Lea, int):
@@ -161,7 +165,7 @@ class Lea(Opcode):
             the amount of data in words that was used (e.g. extra for immediate
             data) or 0 for not a match
         """
-        return cls(parse_assembly_parameter('(A0)'), parse_assembly_parameter('A0')), 1  # TODO: Make this proper!
+        return cls([parse_assembly_parameter('(A0)'), parse_assembly_parameter('A0')]), 1  # TODO: Make this proper!
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
@@ -177,4 +181,4 @@ class Lea(Opcode):
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
         :param parameters: The parameters after the command (such as the source and destination of a move)
         """
-        return opcode_util.two_param_from_str(command, parameters, Lea, None)
+        return opcode_util.n_param_from_str(command, parameters, Lea, 2, None)
