@@ -4,18 +4,19 @@ from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.trap_task import TrapTask
 import easier68k.core.util.input as inp
+from easier68k.core.enum.trap_vector import TrapVectors
 
 def test_disassemble_instruction():
-    val = 0b0100111001001010.to_bytes(2, byteorder='big', signed=False)
+    val = 0b0100111001001111.to_bytes(2, byteorder='big', signed=False)
 
     a = Trap.disassemble_instruction(val)
-    assert a.task.get_value() == 0b1010
+    assert a.trpVector == 0b1111
 
 
 def test_trap_assemble():
     val = 0b0100111001001111.to_bytes(2, byteorder='big', signed=False)
 
-    a = Trap(TrapVector(15))
+    a = Trap(TrapVectors.IO)
 
     assert val == a.assemble()
 
@@ -29,8 +30,9 @@ def test_display_null_term_string(capsys):
     ]))
 
     sim.set_register_value(Register.A1, 0x1000)
+    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermString)
 
-    exec = Trap(TrapVector(TrapTask.DisplayNullTermString.value))
+    exec = Trap(TrapVectors.IO)
 
     exec.execute(sim)
 
@@ -49,8 +51,9 @@ def test_display_null_term_string_crlf(capsys):
     ]))
 
     sim.set_register_value(Register.A1, 0x1000)
+    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermStringWithCRLF)
 
-    exec = Trap(TrapVector(TrapTask.DisplayNullTermStringWithCRLF.value))
+    exec = Trap(TrapVectors.IO)
 
     exec.execute(sim)
 
@@ -62,8 +65,9 @@ def test_display_signed_number(capsys):
     sim = M68K()
 
     sim.set_register_value(Register.D1, 123)
+    sim.set_register_value(Register.D0, TrapTask.DisplaySignedNumber)
 
-    exec = Trap(TrapVector(TrapTask.DisplaySignedNumber.value))
+    exec = Trap(TrapVectors.IO)
 
     exec.execute(sim)
 
@@ -81,8 +85,9 @@ def test_display_signed_number_negative(capsys):
     x += 1
 
     sim.set_register_value(Register.D1, x)
+    sim.set_register_value(Register.D0, TrapTask.DisplaySignedNumber)
 
-    exec = Trap(TrapVector(TrapTask.DisplaySignedNumber.value))
+    exec = Trap(TrapVectors.IO)
 
     exec.execute(sim)
 
@@ -91,12 +96,13 @@ def test_display_signed_number_negative(capsys):
     assert captured.out == '-123'
 
 
-def test_display_signed_number(capsys):
+def test_display_single_character(capsys):
     sim = M68K()
 
     sim.set_register_value(Register.D1, ord('a'))
+    sim.set_register_value(Register.D0, TrapTask.DisplaySingleCharacter)
 
-    exec = Trap(TrapVector(TrapTask.DisplaySingleCharacter.value))
+    exec = Trap(TrapVectors.IO)
 
     exec.execute(sim)
 
@@ -109,8 +115,9 @@ def test_read_null_term_string(capsys):
     sim = M68K()
 
     sim.set_register_value(Register.A1, 0x1000)
+    sim.set_register_value(Register.D0, TrapTask.ReadNullTermString)
 
-    exec = Trap(TrapVector(TrapTask.ReadNullTermString.value))
+    exec = Trap(TrapVectors.IO)
     exec.use_debug_input = True
     exec.debug_input = 'test123!'
 
