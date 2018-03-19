@@ -10,4 +10,4 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2018 Adam Krpan, Chris Johnston, Levi Stoddard'
 __version__ = '0.0.2'
 
-__all__ = ['simulator', 'core']
+__all__ = ['simulator', 'core', 'assembler']
