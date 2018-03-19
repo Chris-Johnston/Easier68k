@@ -3,7 +3,9 @@ from ...simulator.m68k import M68K
 from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..util.split_bits import split_bits
 from ..models.trap_vector import TrapVector
-from ..enum.ea_mode import EAMode
+from ..enum.trap_task import TrapTask
+from ..enum.register import Register
+from ..enum.op_size import OpSize
 
 class Trap(Opcode): # forward declaration
     pass
@@ -40,7 +42,56 @@ class Trap(Opcode):
         :param simulator:
         :return:
         """
-        pass
+        task = TrapTask(self.task.get_value())
+
+        if task is TrapTask.DisplayNullTermString:
+
+            # get the value of A1
+            location = simulator.get_register_value(Register.A1)
+            value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+            while value != 0:
+                print(chr(value), end='')
+                location += 1
+                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+
+        if task is TrapTask.DisplayNullTermStringWithCRLF:
+            # get the value of A1
+            location = simulator.get_register_value(Register.A1)
+            value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+            while value != 0:
+                print(chr(value), end='')
+                location += 1
+                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+            print('')
+
+        if task is TrapTask.DisplayNullTermStringAndReadNumberFromKeyboard:
+            # get the value of A1
+            location = simulator.get_register_value(Register.A1)
+            value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+            while value != 0:
+                print(chr(value), end='')
+                location += 1
+                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+
+            # read a number from the keyboard
+
+        # if task is TrapTask.DisplaySignedNumber:
+        #
+        # if task is TrapTask.DisplaySingleCharacter:
+        #
+        # if task is TrapTask.ReadNullTermString:
+        #
+        # if task is TrapTask.ReadNumberFromKeyboard:
+        #
+        # if task is TrapTask.ReadSingleCharacterFromKeyboard:
+
+
+        # increment the program counter
+        simulator.increment_program_counter(OpSize.WORD.value)
+
+    # def __display_null_term_string(self, simulator: M68K):
+
+
 
     def __str__(self):
         return 'TRAP {}'.format(self.task)
@@ -92,3 +143,42 @@ class Trap(Opcode):
         # though some may not do anything
 
         return cls(TrapVector(task_num))
+
+    def is_valid(cls, command: str, parameters: str) -> (bool, list):
+        """
+        Tests whether the given command is valid
+        :param command:
+        :param parameters:
+        :return:
+        """
+
+        # dont care about the size and parts values
+        size, params, parts = from_str_util(command, parameters)
+
+        # have it parse, but not return value, just
+        # check that it works
+        try:
+            TrapVector.parse(params[0])
+        except:
+            return False
+        return command.strip().upper() == 'TRAP' and len(params) == 1
+
+    @classmethod
+    def get_word_length(cls, command: str, parameters: str) -> int:
+        """
+        Get the length in words that this will take up in memory
+        :param command:
+        :param parameters:
+        :return:
+        """
+        # always 1
+        return 1
+
+    @classmethod
+    def command_matches(cls, command: str) -> bool:
+        """
+        Checks if a command string matches
+        :param command:
+        :return:
+        """
+        return command.upper() == 'TRAP'
