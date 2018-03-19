@@ -146,15 +146,37 @@ def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
     if ea.mode == EAMode.IMM:
         if size is OpSize.LONG:
             str = ''
+            bytes = None
+
+            try:
+                bytes = ea.data.to_bytes(4, byteorder='big', signed=True)
+            except OverflowError:
+                mask = 0xFFFFFFFF
+                comp = ea.data ^ mask
+                comp += 1
+                bytes = comp.to_bytes(4, byteorder='big', signed=True)
+
             # convert the value to a bytearray of len 4
-            for byte in ea.data.to_bytes(4, byteorder='big', signed=True):
+            for byte in bytes:
                 str += bin(byte)[2:].zfill(8) # trim the first two characters '0b'
             return str
         else:
             str = ''
-            print(ea.data)
+
+            bytes = None
+
+            try:
+                bytes = ea.data.to_bytes(2, byteorder='big', signed=True)
+            except OverflowError:
+                # 2s comp the value, if it should be considered negative
+                mask = 0xFFFF
+                # flip bits
+                comp = ea.data ^ mask
+                comp += 1
+                bytes = comp.to_bytes(2, byteorder='big', signed=True)
+
             # convert the value to a bytearray of len 2
-            for byte in ea.data.to_bytes(2, byteorder='big', signed=True):
+            for byte in bytes:
                 str += bin(byte)[2:].zfill(8) # trim '0b'
             return str
 
