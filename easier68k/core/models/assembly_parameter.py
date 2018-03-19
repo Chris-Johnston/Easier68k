@@ -39,7 +39,7 @@ class AssemblyParameter:
         if mode is EAMode.Immediate:
             # ensure that the value isn't too large, cannot be larger than a long word
             # negative values need to be converted into unsigned integers
-            assert 0 <= data <= 0xFFFFFFFF, 'Value must fit inside a long word!'
+            assert -2147483648 <= data <= 2147483647 or 0 <= data <= 0xFFFFFFFF, 'Value must fit inside a long word!'
 
         # set values
         self.mode = mode

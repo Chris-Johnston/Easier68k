@@ -25,9 +25,13 @@ def test_assembly_parameter():
     ap = AssemblyParameter(EAMode.IMM, 0xFFFF)
     ap = AssemblyParameter(EAMode.IMM, 0xFFFFFFFF)
 
+    #with pytest.raises(AssertionError):
+    # values can be negative
+    AssemblyParameter(EAMode.IMM, -1)
+
     with pytest.raises(AssertionError):
-        # values must be unsigned
-        AssemblyParameter(EAMode.IMM, -1)
+        # values must fit in 32 bit value
+        AssemblyParameter(EAMode.IMM, -2147483648 -1)
 
     with pytest.raises(AssertionError):
         # values must fit in 0xFFFFFFFF
