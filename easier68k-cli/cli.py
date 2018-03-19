@@ -2,8 +2,6 @@ import cmd
 import json
 import sys
 
-# cmd uses readline. controlling this directly is necessary sometimes
-import readline
 
 from easier68k.assembler import assembler
 
@@ -77,9 +75,19 @@ class CLI(cmd.Cmd):
         return autocomplete_file(line)
     
 if __name__ == '__main__':
-    # originally alot of undesired characters were included such as hypthen and '/'
-    # this is applied globally so it affects all sub command lines as well
-    readline.set_completer_delims(' ,')
+    # cmd uses readline. controlling this directly is necessary sometimes
+    # not crossplatform so it may not import. If it does not import then
+    # that means the OS doesn't support readline, but all other functionality
+    # will work
+    try:
+        import readline
+        
+        # originally alot of undesired characters were included such as hypthen and '/'
+        # this is applied globally so it affects all sub command lines as well
+        readline.set_completer_delims(' ,')
+    except ImportError:
+        pass
+        
     cli = CLI()
     
     # only loops if Ctrl-C was pressed
