@@ -37,6 +37,7 @@ def test_display_null_term_string(capsys):
     captured = capsys.readouterr()
     assert captured.out == 'ABC'
 
+
 def test_display_null_term_string_crlf(capsys):
 
     sim = M68K()
@@ -55,3 +56,35 @@ def test_display_null_term_string_crlf(capsys):
     # check that the previous command returned this
     captured = capsys.readouterr()
     assert captured.out == 'ABC\n'
+
+def test_display_signed_number(capsys):
+    sim = M68K()
+
+    sim.set_register_value(Register.D1, 123)
+
+    exec = Trap(TrapVector(TrapTask.DisplaySignedNumber.value))
+
+    exec.execute(sim)
+
+    # check that the previous command returned this
+    captured = capsys.readouterr()
+    assert captured.out == '123'
+
+def test_display_signed_number_negative(capsys):
+    sim = M68K()
+
+    # 2's comp of 123
+    x = 123
+    mask = 0xFFFFFFFF
+    x = x ^ mask
+    x += 1
+
+    sim.set_register_value(Register.D1, x)
+
+    exec = Trap(TrapVector(TrapTask.DisplaySignedNumber.value))
+
+    exec.execute(sim)
+
+    # check that the previous command returned this
+    captured = capsys.readouterr()
+    assert captured.out == '-123'
