@@ -1,7 +1,8 @@
+### usage:
+
 This requires that easy68k is installed on the system to work.
 
-usage:
-
+```
 python3 ./cli.py
 (easier68k) assemble ./test.68k
 [ stuff gets printed ]
@@ -15,6 +16,6 @@ python3 ./cli.py
 [ will load sub-repl eventually ]
 
 (easier68k) exit
+```
 
-
-note: on Linux (and other operating systems?) autocomplete works when pressing tab
+note: on Linux (and other operating systems?) auto complete works when pressing tab
