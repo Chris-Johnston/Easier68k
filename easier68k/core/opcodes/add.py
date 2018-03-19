@@ -8,6 +8,7 @@ from ...core.util.split_bits import split_bits
 from ...core.util import opcode_util
 from ..util.parsing import parse_assembly_parameter
 from ..models.assembly_parameter import AssemblyParameter
+from ..enum.condition_status_code import ConditionStatusCode
 import binascii
 
 
@@ -111,8 +112,18 @@ class Add(Opcode):
         if self.dest.mode in [EAMode.AbsoluteWordAddress]:
             to_increment += OpSize.WORD.value
 
+
+        total = src_val + dest_val
+
+        # these will be implemented later
+        #simulator.set_condition_status_code(ConditionStatusCode.X, )
+        #simulator.set_condition_status_code(ConditionStatusCode.N, )
+        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
+        #simulator.set_condition_status_code(ConditionStatusCode.V, )
+        #simulator.set_condition_status_code(ConditionStatusCode.C, )
+
         # and set the value
-        self.dest.set_value(simulator, src_val + dest_val, val_length)
+        self.dest.set_value(simulator, total, val_length)
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
