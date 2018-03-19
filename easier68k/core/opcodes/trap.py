@@ -161,7 +161,8 @@ class Trap(Opcode):
         :return:
         """
 
-        assert len(data) == 2, 'Size must be 1 word'
+        if len(data) != 2:
+            return None  # len must be 1 word
 
         [opcode_bin, task_num] = split_bits(
             int.from_bytes(data, byteorder='big', signed=False),
