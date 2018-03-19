@@ -51,10 +51,10 @@ class Trap(Opcode):
         Parses a TRAP command from text
 
         >>> str(Trap.from_str('TRAP', '#15'))
-        'TRAP EA Mode: EAMode.IMM, Data: 15'
+        'TRAP Vector 15'
 
         >>> str(Trap.from_str('trap', '#%1110'))
-        'TRAP EA Mode: EAMode.IMM, Data: 14'
+        'TRAP Vector 14'
 
         :param command:
         :param parameters:
@@ -68,7 +68,7 @@ class Trap(Opcode):
 
         assert len(params) == 1
 
-        return cls(parse_assembly_parameter(params[0]))
+        return cls(TrapVector.parse(params[0]))
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> Opcode:
