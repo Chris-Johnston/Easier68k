@@ -7,6 +7,7 @@ from ..core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_A
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.models.list_file import ListFile
 import typing
+import binascii
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 

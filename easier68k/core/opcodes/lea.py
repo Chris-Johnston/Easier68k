@@ -1,11 +1,13 @@
 from ...core.enum.ea_mode import EAMode
 from ...core.models.assembly_parameter import AssemblyParameter
 from ...core.enum import ea_mode_bin
+from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
 from ..util.parsing import parse_assembly_parameter
+from ..util.split_bits import split_bits
 
 
 class Lea(Opcode):
@@ -13,10 +15,8 @@ class Lea(Opcode):
 
 
 class Lea(Opcode):
-    # size should always be opsize long, per the manual
-    valid_sizes = [OpSize.LONG]
     
-    def __init__(self, params: list, size: OpSize = OpSize.LONG):
+    def __init__(self, params: list):
         assert len(params) == 2
         assert isinstance(params[0], AssemblyParameter)
         assert isinstance(params[1], AssemblyParameter)
@@ -27,9 +27,6 @@ class Lea(Opcode):
         # Check that the destination is of a proper type
         assert params[1].mode == EAMode.ARD  # Can only take address register direct
         self.dest = params[1]
-
-        assert size in Lea.valid_sizes
-        self.size = size
 
     def assemble(self) -> bytearray:
         """
@@ -55,7 +52,7 @@ class Lea(Opcode):
         :return: Nothing
         """
 
-        val_len = self.size.get_number_of_bytes()
+        val_len = OpSize.LONG.get_number_of_bytes()
 
         # get the value of the source
         src_val = self.src.get_value(simulator, val_len)
@@ -183,7 +180,7 @@ class Lea(Opcode):
                                              [mode for mode in EAMode if mode is not EAMode.ARD]])  # Select all but ARD
 
     @classmethod
-    def from_binary(cls, data: bytearray) -> (Lea, int):
+    def disassemble_instruction(cls, data: bytearray) -> (Lea, int):
         """
         Parses some raw data into an instance of the opcode class
 
@@ -192,7 +189,30 @@ class Lea(Opcode):
             the amount of data in words that was used (e.g. extra for immediate
             data) or 0 for not a match
         """
-        return cls([parse_assembly_parameter('(A0)'), parse_assembly_parameter('A0')]), 1  # TODO: Make this proper!
+        assert len(data) >= 2, 'opcode size is at least 1 word'
+
+        # 'big' endian byte order
+        first_word = int.from_bytes(data[0:2], 'big')
+
+        [opcode_bin,
+         register_bin,
+         ones_bin,
+         ea_mode,
+         ea_reg] = split_bits(first_word, [4, 3, 3, 3, 3])
+
+        # check opcode
+        if opcode_bin != 0b0100 or ones_bin != 0b111:  # Second condition to distinguish from TRAP
+            return None
+
+        wordsUsed = 1
+
+        src_EA = parse_ea_from_binary(ea_mode, ea_reg, OpSize.LONG, True, data[wordsUsed * 2:])
+        wordsUsed += src_EA[1]
+
+        dest_EA = AssemblyParameter(EAMode.ARD, register_bin)
+
+        # when making the new Move, need to convert that MoveSize back into an OpSize
+        return cls([src_EA[0], dest_EA])
 
     @classmethod
     def from_str(cls, command: str, parameters: str):
