@@ -24,15 +24,15 @@ class Or(Opcode):
         assert isinstance(params[1], AssemblyParameter)
 
         # check src param is valid
-        assert params[0] != EAMode.ARD
+        assert params[0].mode != EAMode.ARD
         self.src = params[0]
 
         # check the dest param is valid
 
         # one of the modes must be DRD
-        if(self.src != EAMode.DRD):
+        if(params[0].mode != EAMode.DRD):
             assert params[1].mode == EAMode.DRD
-        assert params[1] != EAMode.ARD and params[1] != EAMode.IMM
+        assert params[1].mode != EAMode.ARD and params[1].mode != EAMode.IMM
         self.dest = params[1]
 
         assert size in Or.valid_sizes
@@ -117,7 +117,7 @@ class Or(Opcode):
 
 
     def __str__(self):
-        return 'OR command: size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
+        return 'Or command: size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -197,7 +197,7 @@ class Or(Opcode):
         True
 
         >>> Or.is_valid('OR.W', 'A3, D7')[0]
-        True
+        False
 
         >>> Or.is_valid('OR.L', '#$ABCD, D3')[0]
         True
@@ -228,28 +228,28 @@ class Or(Opcode):
         OR.B #0, D1
         >>> op = Or.disassemble_instruction(bytearray.fromhex('823C00'))
 
-        >>> str(op.ea)
+        >>> str(op.src)
         'EA Mode: EAMode.IMM, Data: 0'
 
-        >>> str(op.register)
+        >>> str(op.dest)
         'EA Mode: EAMode.DRD, Data: 1'
 
         OR.W D3, D0
         >>> op = Or.disassemble_instruction(bytearray.fromhex('8740'))
 
-        >>> str(op.ea)
+        >>> str(op.src)
         'EA Mode: EAMode.DRD, Data: 3'
 
-        >>> str(op.register)
+        >>> str(op.dest)
         'EA Mode: EAMode.DRD, Data: 0'
 
         OR.L ($0A0B0C0D).L, D7
         >>> op = Or.disassemble_instruction(bytearray.fromhex('8EB9000A0B0C'))
 
-        >>> str(op.ea)
+        >>> str(op.src)
         'EA Mode: EAMode.ALA, Data: 658188'
 
-        >>> str(op.register)
+        >>> str(op.dest)
         'EA Mode: EAMode.DRD, Data: 7'
 
         Parses some raw data into an instance of the opcode class
@@ -274,30 +274,31 @@ class Or(Opcode):
         dest = None
         size = None
         words_used = 1
-        if opmode_bin == 0b000:
-            size = OpSize.BYTE
-            dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
-        elif opmode_bin == 0b001:
-            size = OpSize.WORD
-            dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
-        elif opmode_bin == 0b010:
-            size = OpSize.LONG
-            dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
-        elif opmode_bin == 0b100:
+
+        if opmode_bin == 0b100:
             size = OpSize.BYTE
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
         elif opmode_bin == 0b101:
             size = OpSize.WORD
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
         elif opmode_bin == 0b110:
             size = OpSize.LONG
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+        elif opmode_bin == 0b000:
+            size = OpSize.BYTE
+            dest = AssemblyParameter(EAMode.DRD, register_bin)
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+        elif opmode_bin == 0b001:
+            size = OpSize.WORD
+            dest = AssemblyParameter(EAMode.DRD, register_bin)
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+        elif opmode_bin == 0b010:
+            size = OpSize.LONG
+            dest = AssemblyParameter(EAMode.DRD, register_bin)
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
         else:
             return None
 
@@ -307,10 +308,11 @@ class Or(Opcode):
     def from_str(cls, command: str, parameters: str):
         """
         Parses a MOVE command from text.
-        >>> str(Move.from_str('MOVE.B', '-(A0), D1'))
-        'Move command: Size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
-        >>> str(Move.from_str('MOVE.L', 'D3, (A0)'))
-        'Move command: Size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
+        >>> str(Or.from_str('OR.B', '-(A0), D1'))
+        'Or command: size OpSize.BYTE, src EA Mode: EAMode.ARIPD, Data: 0, dest EA Mode: EAMode.DRD, Data: 1'
+        >>> str(Or.from_str('OR.L', 'D3, (A0)'))
+        'Or command: size OpSize.LONG, src EA Mode: EAMode.DRD, Data: 3, dest EA Mode: EAMode.ARI, Data: 0'
+
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
