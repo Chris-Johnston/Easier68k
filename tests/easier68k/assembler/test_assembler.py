@@ -22,9 +22,10 @@ def test_basic_test_input():
         assert assembled.starting_execution_address == 1024
         assert len(assembled.symbols) == 1
         assert assembled.symbols['magic'] == 1042
-        assert len(assembled.data) == 4
-        assert assembled.data['1024'] == '33fcabcd00aaaaaa'
-        assert assembled.data['1032'] == '41f900000412'
-        assert assembled.data['1038'] == 'ffffffff'
-        assert assembled.data['1042'] == 'abcd'
+        assert len(assembled.data) == 5
+        assert assembled.data['1024'] == '303cfffd'
+        assert assembled.data['1028'] == '33fcabcd00aaaaaa'
+        assert assembled.data['1036'] == '41f900000412'
+        assert assembled.data['1042'] == 'ffffffff'
+        assert assembled.data['1046'] == 'abcd'
         assert not issues
