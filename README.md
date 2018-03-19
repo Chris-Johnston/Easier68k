@@ -1,6 +1,42 @@
 # Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k)
 
-A python package based assmebler, disassembler and simulator of the Motorola 68k CPU Architecture.
+Easier68k is a python library that assembles and simulates the Motorola 68k CPU Architecture.
+
+NOTE: Easier68k is currently under heavy production and is not stable.
+
+### Motivation
+
+There are very few 68K simulators and assemblers and the ones that exist were all found to be lacking in some areas.
+We realized we could do better:
+* Easier68k is cross platform.
+* Easier68k is built as a modular library so anyone can build a front end for it or integrate a 68k simulation into their project.
+* Easier68k has a focus on correctness by using unit tests and integration tests for everything.
+* Easier68k is MIT licensed so you can use it however you would like.
+
+
+### How to Use the CLI
+
+The cli is in the folder "easier68k-cli" which comes in this Github repository.
+Go to the easier68k-cli folder in the terminal/command prompt and install the dependencies with
+```bash
+python -m pip install -r requirements.txt
+```
+
+Then run the application with
+```bash
+python ./cli.py
+```
+
+You can now assemble and simulate a file
+```
+(easier68k) assemble ./file.x68, ./assembled.json
+(easier68k) simulate ./assembled.json
+(easier68k.simulate) run
+(easier68k.simulate) exit
+(easier68k) exit
+```
+
+See the readme in the easier68k-cli for complete documentation.
 
 ### Installation
 
@@ -40,5 +76,11 @@ A list of all modules to test is defined in `tests/run_doctest.py`. Update this 
 new doctest-able modules are added to the CI.
 
 This file can be run from the shell using `python tests/run_doctest.py`.
+
+
+### License
+
+Easier68k is under the MIT license.
+
 
 [sampleproject]: https://github.com/Chris-Johnston/Easier68k-SampleProject
