@@ -139,6 +139,9 @@ def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
     >>> ea_to_binary_post_op(parse_assembly_parameter('#-1'), OpSize.BYTE)
     '1111111111111111'
 
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#-113442343'), OpSize.LONG)
+    '11111001001111010000000111011001'
+
     :param ea: The effective address that needs to be converted
     :param size: The size of the operation
     :return: The binary that needs to be appended, in string form (or an empty string)
