@@ -24,7 +24,7 @@ def test_basic_test_input():
         assert len(assembled.data) == 5
         assert assembled.data['1024'] == '303cfffd'
         assert assembled.data['1028'] == '33fcabcd00aaaaaa'
-        assert assembled.data['1036'] == '41f900000412'
+        assert assembled.data['1036'] == '41f900000416'
         assert assembled.data['1042'] == 'ffffffff'
         assert assembled.data['1046'] == 'abcd'
         assert not issues
