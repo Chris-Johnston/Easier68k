@@ -37,10 +37,11 @@ class CLI(cmd.Cmd):
             out_file.write(json.dumps(pretty_json, indent=4, sort_keys=True))
             if not issues:
                 return
-                
-            print('----- ISSUES -----')
-            for issue in issues:
-                print('{}: {}\n'.format(issue[1], issue[0]))
+            
+            if(len(issues) != 0):
+                print('----- ISSUES -----')
+                for issue in issues:
+                    print('{}: {}\n'.format(issue[1], issue[0]))
             
             in_file.close()
             
