@@ -6,6 +6,7 @@ from ..models.trap_vector import TrapVector
 from ..enum.trap_task import TrapTask
 from ..enum.register import Register
 from ..enum.op_size import OpSize
+from ..util.input import get_input
 
 class Trap(Opcode): # forward declaration
     pass
@@ -17,6 +18,10 @@ class Trap(Opcode):
         # max size is 4 bit
         assert 0 <= param.get_value() <= 0b1111
         self.task = param
+
+        # flags to use so that this can be tested easier
+        self.use_debug_input = False
+        self.debug_input = 'debug input'
 
     def assemble(self) -> bytearray:
         """
@@ -35,6 +40,7 @@ class Trap(Opcode):
 
         # convert this value into a bytearray of len = 1 word
         return value.to_bytes(2, byteorder='big', signed=False)
+
 
     def execute(self, simulator: M68K):
         """
@@ -81,11 +87,30 @@ class Trap(Opcode):
             int_val = int.from_bytes(value, byteorder='big', signed=True)
             print(int_val, end='')
 
+        if task is TrapTask.DisplaySingleCharacter:
+            # get the value of D1.B
+            value = simulator.get_register_value(Register.D1)
+            # mask it
+            value = 0xFF & value
+            print(chr(value), end='')
 
-        # if task is TrapTask.DisplaySignedNumber:
+        # if task is TrapTask.ReadNullTermString:
+        #     to_set = None
         #
-        # if task is TrapTask.DisplaySingleCharacter:
+        #     if self.use_debug_input:
+        #         to_set = self.debug_input
+        #     else:
+        #         to_set = get_input()
         #
+        #     to_set += '\0'
+        #
+        #     # assign that input memory starting at a1
+        #     location = simulator.get_register_value(Register.A1)
+        #
+        #     b = to_set.encode('utf-8')
+        #
+        #     simulator.memory.set(len(to_set), location, b)
+
         # if task is TrapTask.ReadNullTermString:
         #
         # if task is TrapTask.ReadNumberFromKeyboard:
