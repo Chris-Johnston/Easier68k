@@ -12,5 +12,5 @@ def test_trap_vector_parse():
     a = TrapVector.parse('#15')
     assert a.value == 15
 
-    a = TrapVector.parse('#%0001')
-    assert a.value == 1
+    a = TrapVector.parse('#%1110')
+    assert a.value == 14

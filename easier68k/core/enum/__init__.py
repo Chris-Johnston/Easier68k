@@ -6,4 +6,5 @@ __all__ = ['condition',
            'register',
            'srecordtype',
            'system_status_code',
-           'trap_task']
+           'trap_task',
+           'trap_vector']
