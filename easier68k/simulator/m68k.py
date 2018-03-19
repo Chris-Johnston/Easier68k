@@ -154,6 +154,21 @@ class M68K:
         # ccr is only 1 byte, bit mask away the bit being looked for
         return (ccr[0] & code) > 0
 
+    def set_condition_status_code(self, code: ConditionStatusCode, value: bool):
+        """
+        Sets the status of a code from the Condition Code Register to value
+        :param code:
+        :return:
+        """
+        ccr = self.get_register(Register.CCR)
+        
+        if(value):
+            # set bit to 1
+            self._set_condition_code_register_value(ccr[0] | code)
+        else:
+            # set bit to 0
+            self._set_condition_code_register_value(ccr[0] & ~code)
+
 
     def run(self):
         """
