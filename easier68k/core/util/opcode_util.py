@@ -136,15 +136,27 @@ def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
     >>> ea_to_binary_post_op(parse_assembly_parameter('($242).L'), OpSize.LONG)
     '00000000000000000000001001000010'
 
+    >>> ea_to_binary_post_op(parse_assembly_parameter('#-1'), OpSize.BYTE)
+    '1111111111111111'
+
     :param ea: The effective address that needs to be converted
     :param size: The size of the operation
     :return: The binary that needs to be appended, in string form (or an empty string)
     """
     if ea.mode == EAMode.IMM:
         if size is OpSize.LONG:
-            return '{0:032b}'.format(ea.data)
+            str = ''
+            # convert the value to a bytearray of len 4
+            for byte in ea.data.to_bytes(4, byteorder='big', signed=True):
+                str += bin(byte)[2:].zfill(8) # trim the first two characters '0b'
+            return str
         else:
-            return '{0:016b}'.format(ea.data)
+            str = ''
+            print(ea.data)
+            # convert the value to a bytearray of len 2
+            for byte in ea.data.to_bytes(2, byteorder='big', signed=True):
+                str += bin(byte)[2:].zfill(8) # trim '0b'
+            return str
 
     if ea.mode == EAMode.AWA:
         return '{0:016b}'.format(ea.data)
