@@ -75,6 +75,13 @@ class Trap(Opcode):
 
             # read a number from the keyboard
 
+        if task is TrapTask.DisplaySignedNumber:
+            # get the value of D1.L
+            value = simulator.get_register(Register.D1)
+            int_val = int.from_bytes(value, byteorder='big', signed=True)
+            print(int_val, end='')
+
+
         # if task is TrapTask.DisplaySignedNumber:
         #
         # if task is TrapTask.DisplaySingleCharacter:
