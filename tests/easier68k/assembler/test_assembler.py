@@ -12,16 +12,15 @@ def test_basic_test_input():
         with open('easier68k/assembler/temp_output_file.txt', 'w') as out:  # Temporary output file for testing results
             pretty_json = json.loads(assembled.to_json())
             out.write(json.dumps(pretty_json, indent=4, sort_keys=True))
-            if not issues:
-                return
-            out.write('\r\n----- ISSUES -----\r\n')
-            for issue in issues:
-                out.write('{}: {}\r\n'.format(issue[1], issue[0]))
+            if issues:
+                out.write('\r\n----- ISSUES -----\r\n')
+                for issue in issues:
+                    out.write('{}: {}\r\n'.format(issue[1], issue[0]))
 
         assert isinstance(assembled, ListFile)
         assert assembled.starting_execution_address == 1024
         assert len(assembled.symbols) == 1
-        assert assembled.symbols['magic'] == 1042
+        assert assembled.symbols['magic'] == 1046
         assert len(assembled.data) == 5
         assert assembled.data['1024'] == '303cfffd'
         assert assembled.data['1028'] == '33fcabcd00aaaaaa'
