@@ -12,4 +12,4 @@ testData    EQU $ABCD
 * Data section
 magic       DC.B $AB, $CD
 
-END start
+            END start
