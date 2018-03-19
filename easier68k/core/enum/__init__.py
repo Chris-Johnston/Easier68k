@@ -5,4 +5,5 @@ __all__ = ['condition',
            'op_size',
            'register',
            'srecordtype',
-           'system_status_code']
+           'system_status_code',
+           'trap_task']
