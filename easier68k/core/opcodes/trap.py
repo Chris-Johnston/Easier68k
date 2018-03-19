@@ -176,6 +176,7 @@ class Trap(Opcode):
 
         return cls(TrapVector(task_num))
 
+    @classmethod
     def is_valid(cls, command: str, parameters: str) -> (bool, list):
         """
         Tests whether the given command is valid
@@ -193,7 +194,7 @@ class Trap(Opcode):
             TrapVector.parse(params[0])
         except:
             return False
-        return command.strip().upper() == 'TRAP' and len(params) == 1
+        return (command.strip().upper() == 'TRAP' and len(params) == 1, [])  # TODO: Convert to actually return issues
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:

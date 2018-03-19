@@ -115,6 +115,10 @@ def parse(text: str) -> (ListFile, list):
         # Replace all labels with temporary addresses because we don't know their actual values yet
         contents = replace_labels_with_temps(contents, labels)
 
+        if label is not None:
+            label_addresses[label] = current_memory_location
+            to_return.define_symbol(label, current_memory_location)
+
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
             try:
                 new_memory_location = parse_literal(contents)
@@ -125,11 +129,11 @@ def parse(text: str) -> (ListFile, list):
                 issues.append(('ORG address must be between 0 and 2^24!', 'ERROR'))
                 continue
             current_memory_location = new_memory_location
+            # Update the label with the new address, if it exists
+            if label is not None:
+                label_addresses[label] = current_memory_location
+                to_return.define_symbol(label, current_memory_location)
             continue
-
-        if label is not None:
-            label_addresses[label] = current_memory_location
-            to_return.define_symbol(label, current_memory_location)
 
         # TODO: Possibly cache this (and the module search) for Part 3 later so we don't have to redo introspection?
         op_class = find_opcode_cls(opcode)
@@ -154,8 +158,13 @@ def parse(text: str) -> (ListFile, list):
         # Replace all substitutions in the current line with their corresponding values
         contents = replace_equates(contents, equates)
 
-        # Replace all memory labels with their proper values (that's the difference in this step)
-        contents = replace_label_addresses(contents, label_addresses)
+        if opcode == 'END':
+            # End doesn't take an absolute long address, replace it differently
+            for label in label_addresses.items():
+                contents = contents.replace(label[0], '${:x}'.format(label[1]))
+        else:
+            # Replace all memory labels with their proper values (that's the difference in this step)
+            contents = replace_label_addresses(contents, label_addresses)
 
         if opcode == 'ORG':  # This will shift our current memory location, it's a special case
             try:
@@ -170,7 +179,7 @@ def parse(text: str) -> (ListFile, list):
 
         if opcode == 'END':  # This will set our end memory location, it's a special case
             start_location = parse_literal(contents)
-            if not (0 <= new_memory_location < MAX_MEMORY_LOCATION):
+            if not (0 <= start_location < MAX_MEMORY_LOCATION):
                 continue
             to_return.set_starting_execution_address(start_location)
             continue

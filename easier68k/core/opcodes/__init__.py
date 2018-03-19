@@ -3,5 +3,6 @@ __all__ = [
     'dc',
     'lea',
     'simhalt',
+    'trap',
     'opcode'
 ]
