@@ -149,6 +149,11 @@ def parse_literal(literal: str) -> int:
     >>> parse_literal('400')
     400
 
+    todo allow support for negative numbers in parse_literal
+
+    >>> parse_literal('-100')
+    100
+
     :param literal: A string containing the literal to parse
     :return: The parsed literal (a bytearray type)
     """
