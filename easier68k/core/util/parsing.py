@@ -73,6 +73,12 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     >>> str(parse_assembly_parameter('#$FF'))
     'EA Mode: EAMode.IMM, Data: 255'
 
+    >>> str(parse_assembly_parameter('#-1'))
+    'EA Mode: EAMode.IMM, Data: -1'
+
+    >>> str(parse_assembly_parameter('#-100'))
+    'EA Mode: EAMode.IMM, Data: -100'
+
     >>> str(parse_assembly_parameter('-(A2)'))
     'EA Mode: EAMode.ARIPD, Data: 2'
     """
@@ -149,6 +155,12 @@ def parse_literal(literal: str) -> int:
     >>> parse_literal('400')
     400
 
+    >>> parse_literal('-100')
+    -100
+
+    >>> parse_literal('-1')
+    -1
+
     :param literal: A string containing the literal to parse
     :return: The parsed literal (a bytearray type)
     """
@@ -167,10 +179,12 @@ def parse_literal(literal: str) -> int:
 
     # Integer literal
 
-    hexed = hex(int(literal))[2:]
-    if len(hexed) % 2 == 1:
+    hexed = hex(int(literal)).replace('0x', '')
+
+    #if len(hexed) % 2 == 1:
         # Odd length string, add 0 to the beginning
-        hexed = '0' + hexed
+        #hexed = '0' + hexed
+
     return int(hexed, 16)
 
 
