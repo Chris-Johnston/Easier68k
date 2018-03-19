@@ -3,6 +3,7 @@ from easier68k.core.models.trap_vector import TrapVector
 from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.trap_task import TrapTask
+import easier68k.core.util.input as inp
 
 def test_disassemble_instruction():
     val = 0b0100111001001010.to_bytes(2, byteorder='big', signed=False)
@@ -88,3 +89,34 @@ def test_display_signed_number_negative(capsys):
     # check that the previous command returned this
     captured = capsys.readouterr()
     assert captured.out == '-123'
+
+
+def test_display_signed_number(capsys):
+    sim = M68K()
+
+    sim.set_register_value(Register.D1, ord('a'))
+
+    exec = Trap(TrapVector(TrapTask.DisplaySingleCharacter.value))
+
+    exec.execute(sim)
+
+    # check that the previous command returned this
+    captured = capsys.readouterr()
+    assert captured.out == 'a'
+
+
+def test_read_null_term_string(capsys):
+    sim = M68K()
+
+    sim.set_register_value(Register.A1, 0x1000)
+
+    exec = Trap(TrapVector(TrapTask.ReadNullTermString.value))
+    exec.use_debug_input = True
+    exec.debug_input = 'test123!'
+
+    #with patch('easier68k.core.util.input.get_input', return_value='test123!'):
+    #    exec.execute(sim)
+
+    # exec.execute(sim)
+    #
+    # assert sim.memory.get(8, 0x1000) == 0
