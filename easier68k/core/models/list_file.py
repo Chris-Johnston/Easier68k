@@ -179,6 +179,7 @@ class ListFile:
         :param line: {str} a single line of an S record file
         :return: None
         """
+        line = line.replace('\r', '').replace('\n', '')
         # type of record
         record_type = SRecordType.parse(line[:2])
         # count of remaining character pairs in the record
