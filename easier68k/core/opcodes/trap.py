@@ -32,13 +32,10 @@ class Trap(Opcode):
         """
         # the bottom 4 bits are set to 0
         value = 0b0100111001000000
-
         # mask the task to fit in 4 bits
         masked = self.trpVector.value & 0b1111
-
         # add the masked bits
         value |= masked
-
         # convert this value into a bytearray of len = 1 word
         return value.to_bytes(2, byteorder='big', signed=False)
 

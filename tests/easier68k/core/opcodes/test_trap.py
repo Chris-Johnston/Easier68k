@@ -14,13 +14,9 @@ def test_disassemble_instruction():
 
 
 def test_trap_assemble():
-    val = 0b010011100100111.to_bytes(2, byteorder='big', signed=False)
+    val = 0b0100111001001111.to_bytes(2, byteorder='big', signed=False)
 
     a = Trap(TrapVectors.IO)
-
-    print(val.hex())
-
-    print(a.assemble().hex())
 
     assert val == a.assemble()
 
