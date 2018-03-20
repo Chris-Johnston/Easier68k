@@ -208,6 +208,7 @@ class M68K:
                 # We don't know this opcode, there's no module for it
                 if op_class is None:
                     print('Opcode {} is not known: skipping and continuing'.format(op_str))
+                    assert False
                     continue
 
                 # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
@@ -217,7 +218,6 @@ class M68K:
                 op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
                 if op is not None:
                     op.execute(self)
-
                     # done exeucting after doing an operation
                     return
 

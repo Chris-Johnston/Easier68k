@@ -94,35 +94,8 @@ class Trap(Opcode):
                 value = 0xFF & value
                 print(chr(value), end='')
 
-            # if task is TrapTask.ReadNullTermString:
-            #     to_set = None
-            #
-            #     if self.use_debug_input:
-            #         to_set = self.debug_input
-            #     else:
-            #         to_set = get_input()
-            #
-            #     to_set += '\0'
-            #
-            #     # assign that input memory starting at a1
-            #     location = simulator.get_register_value(Register.A1)
-            #
-            #     b = to_set.encode('utf-8')
-            #
-            #     simulator.memory.set(len(to_set), location, b)
-
-            # if task is TrapTask.ReadNullTermString:
-            #
-            # if task is TrapTask.ReadNumberFromKeyboard:
-            #
-            # if task is TrapTask.ReadSingleCharacterFromKeyboard:
-
-
         # increment the program counter
         simulator.increment_program_counter(OpSize.WORD.value)
-
-    # def __display_null_term_string(self, simulator: M68K):
-
 
 
     def __str__(self):

@@ -25,6 +25,7 @@ class Simhalt(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
+
         # make the simulator halt
         simulator.halt()
 
@@ -106,7 +107,7 @@ class Simhalt(Opcode):
             the amount of data in words that was used (e.g. extra for immediate
             data) or 0 for not a match
         """
-        if binascii.hexlify(data) == b'ffffffff':
+        if binascii.hexlify(data)[:8] == b'ffffffff':
             return cls()
         return None
 

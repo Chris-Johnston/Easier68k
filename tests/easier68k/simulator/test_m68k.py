@@ -200,7 +200,7 @@ START:
     assert(m68k.get_program_counter_value() == 1032)
     assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('abcd'))
     m68k.step_instruction()
-    assert (m68k.get_program_counter_value() == 1036)
+    assert m68k.get_program_counter_value() == 1036
     assert m68k.halted
 
 def test_auto_execute():

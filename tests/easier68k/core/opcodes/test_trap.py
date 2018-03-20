@@ -41,6 +41,31 @@ def test_display_null_term_string(capsys):
     assert captured.out == 'ABC'
 
 
+def test_display_test_increment_pc(capsys):
+
+    sim = M68K()
+
+    # null term string ABC\0
+    sim.memory.set(4, 0x1000, bytearray([
+        0x41, 0x42, 0x43, 0x00
+    ]))
+
+    sim.set_register_value(Register.A1, 0x1000)
+    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermString)
+
+    exec = Trap(TrapVectors.IO)
+
+    sim.set_program_counter_value(0x1000)
+
+    exec.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000 + 2
+
+    # check that the previous command returned this
+    captured = capsys.readouterr()
+    assert captured.out == 'ABC'
+
+
 def test_display_null_term_string_crlf(capsys):
 
     sim = M68K()
@@ -120,10 +145,3 @@ def test_read_null_term_string(capsys):
     exec = Trap(TrapVectors.IO)
     exec.use_debug_input = True
     exec.debug_input = 'test123!'
-
-    #with patch('easier68k.core.util.input.get_input', return_value='test123!'):
-    #    exec.execute(sim)
-
-    # exec.execute(sim)
-    #
-    # assert sim.memory.get(8, 0x1000) == 0
