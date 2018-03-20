@@ -133,12 +133,13 @@ class Trap(Opcode):
         :param data:
         :return:
         """
+        if len(data) < 2:
+            return None  # len must be at least 1 word
 
-        if len(data) != 2:
-            return None  # len must be 1 word
+        first_word = int.from_bytes(data[0:2], byteorder='big')
 
         [opcode_bin, task_num] = split_bits(
-            int.from_bytes(data, byteorder='big', signed=False),
+            first_word,
             [12, 4])
 
         # didnt match
