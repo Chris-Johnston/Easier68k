@@ -94,6 +94,10 @@ class Trap(Opcode):
                 value = 0xFF & value
                 print(chr(value), end='')
 
+            if task is TrapTask.Terminate:
+                # same as SIMHALT
+                simulator.halt()
+
         # increment the program counter
         simulator.increment_program_counter(OpSize.WORD.value)
 
