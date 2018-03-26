@@ -82,7 +82,6 @@ class Add(Opcode):
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
-
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
 
@@ -112,15 +111,14 @@ class Add(Opcode):
         if self.dest.mode in [EAMode.AbsoluteWordAddress]:
             to_increment += OpSize.WORD.value
 
-
         total = src_val + dest_val
 
         # these will be implemented later
-        #simulator.set_condition_status_code(ConditionStatusCode.X, )
-        #simulator.set_condition_status_code(ConditionStatusCode.N, )
+        # simulator.set_condition_status_code(ConditionStatusCode.X, False)
+        simulator.set_condition_status_code(ConditionStatusCode.N, total < 0)
         simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
-        #simulator.set_condition_status_code(ConditionStatusCode.V, )
-        #simulator.set_condition_status_code(ConditionStatusCode.C, )
+        # simulator.set_condition_status_code(ConditionStatusCode.V, False)
+        # simulator.set_condition_status_code(ConditionStatusCode.C, False)
 
         # and set the value
         self.dest.set_value(simulator, total, val_length)

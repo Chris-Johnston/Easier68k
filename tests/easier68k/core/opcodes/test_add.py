@@ -10,6 +10,7 @@ from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
 from easier68k.core.enum.condition_status_code import ConditionStatusCode
+from easier68k.core.util.parsing import parse_assembly_parameter
 
 def test_add():
     """
@@ -23,9 +24,9 @@ def test_add():
 
     params = [AssemblyParameter(EAMode.IMM, 0b101), AssemblyParameter(EAMode.DRD, 2)]
 
-    _or = Add(params, OpSize.BYTE)
+    add = Add(params, OpSize.BYTE)
 
-    _or.execute(sim)
+    add.execute(sim)
 
     assert sim.get_register_value(Register.D2) == 0b101
 
@@ -39,6 +40,73 @@ def test_add():
     assert sim.get_condition_status_code(ConditionStatusCode.Z) == 0
     assert sim.get_condition_status_code(ConditionStatusCode.N) == 0
     assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+
+
+def test_add_negative():
+    """
+    Test to see that or works as intended
+    :return:
+    """
+
+    sim = M68K()
+
+    sim.set_program_counter_value(0x1000)
+
+    negative = parse_assembly_parameter('#-1')
+
+    print(negative)
+
+    params = [negative, AssemblyParameter(EAMode.DRD, 2)]
+
+    add = Add(params, OpSize.BYTE)
+
+    add.execute(sim)
+
+    assert sim.get_register_value(Register.D2) == 255
+
+    assert sim.get_program_counter_value() == (0x1000 + 4)
+
+    # check the CCR
+
+    # changed by execution
+    assert sim.get_condition_status_code(ConditionStatusCode.C) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.V) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.N) == 1
+    assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+
+
+def test_add_zero():
+    """
+    Test to see that or works as intended
+    :return:
+    """
+
+    sim = M68K()
+
+    sim.set_program_counter_value(0x1000)
+
+    negative = parse_assembly_parameter('#0')
+
+    params = [negative, AssemblyParameter(EAMode.DRD, 2)]
+
+    add = Add(params, OpSize.BYTE)
+
+    add.execute(sim)
+
+    assert sim.get_register_value(Register.D2) == 0
+
+    assert sim.get_program_counter_value() == (0x1000 + 4)
+
+    # check the CCR
+
+    # changed by execution
+    assert sim.get_condition_status_code(ConditionStatusCode.C) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.V) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) == 1
+    assert sim.get_condition_status_code(ConditionStatusCode.N) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+
 
 def test_add_disassembles():
     """
