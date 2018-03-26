@@ -9,7 +9,9 @@ valid_opcode_classes = [
     'easier68k.core.opcodes.simhalt.Simhalt',
     'easier68k.core.opcodes.dc.DC',
     'easier68k.core.opcodes.lea.Lea',
-    'easier68k.core.opcodes.trap.Trap'
+    'easier68k.core.opcodes.trap.Trap',
+    'easier68k.core.opcodes.opcode_or.Or',
+    'easier68k.core.opcodes.add.Add'
 ]
 
 valid_opcodes = [

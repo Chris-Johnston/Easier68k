@@ -4,5 +4,7 @@ __all__ = [
     'lea',
     'simhalt',
     'trap',
-    'opcode'
+    'opcode',
+    'opcode_or',
+    'add'
 ]
