@@ -17,6 +17,8 @@ test_modules = [
     'easier68k.core.util.split_bits',
     'easier68k.assembler.assembler',
     'easier68k.core.opcodes.move',
+    'easier68k.core.opcodes.or',
+    'easier68k.core.opcodes.add',
     'easier68k.core.opcodes.dc',
     'easier68k.core.opcodes.lea',
     'easier68k.core.opcodes.simhalt',
