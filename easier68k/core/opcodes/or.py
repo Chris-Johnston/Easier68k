@@ -46,7 +46,6 @@ class Or(Opcode):
         """
         tr = '1000'
 
-
         if(self.src == EAMode.DRD):
             tr += '{0:03b}'.format(self.src.data)
             if self.size == OpSize.BYTE:
@@ -291,27 +290,27 @@ class Or(Opcode):
         if opmode_bin == 0b100:
             size = OpSize.BYTE
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, False, data[words_used * 2:])[0]
         elif opmode_bin == 0b101:
             size = OpSize.WORD
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, False, data[words_used * 2:])[0]
         elif opmode_bin == 0b110:
             size = OpSize.LONG
             src = AssemblyParameter(EAMode.DRD, register_bin)
-            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            dest = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, False, data[words_used * 2:])[0]
         elif opmode_bin == 0b000:
             size = OpSize.BYTE
             dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, True, data[words_used * 2:])[0]
         elif opmode_bin == 0b001:
             size = OpSize.WORD
             dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, True, data[words_used * 2:])[0]
         elif opmode_bin == 0b010:
             size = OpSize.LONG
             dest = AssemblyParameter(EAMode.DRD, register_bin)
-            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, data[words_used * 2:])[0]
+            src = parse_ea_from_binary(ea_mode_bin, ea_reg_bin, size, True, data[words_used * 2:])[0]
         else:
             return None
 
