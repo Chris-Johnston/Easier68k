@@ -53,10 +53,7 @@ def test_add_disassembles():
     # ADD D0, D1
     data = bytearray.fromhex('D2 40')
 
-    print(data)
-
     result = Add.disassemble_instruction(data)
-
 
     assert result is not None
 
@@ -69,3 +66,19 @@ def test_add_disassembles():
     assert sim.get_register_value(Register.D1) == 123
 
     assert sim.get_program_counter_value() == 2
+
+
+def test_add_assemble():
+    """
+    Check that assembly is the same as the input
+    :return:
+    """
+
+    # ADD D0, D1
+    data = bytearray.fromhex('D2 40')
+
+    result = Add.disassemble_instruction(data)
+
+    assm = result.assemble()
+
+    assert data == assm
