@@ -160,9 +160,6 @@ class Add(Opcode):
         elif self.size is OpSize.LONG:
             original_negative = src_val & 0x80000000 > 0
 
-        print(src_val, '->', total)
-        print(original_negative, '->', negative)
-
         # set the same as the carry bit
         simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
         # result is negative
