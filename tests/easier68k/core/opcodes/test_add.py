@@ -35,11 +35,11 @@ def test_add():
     # check the CCR
 
     # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.V) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.N) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_add_negative():
@@ -69,11 +69,11 @@ def test_add_negative():
     # check the CCR
 
     # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.V) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.N) == 1
-    assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
+    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_add_zero():
@@ -101,11 +101,11 @@ def test_add_zero():
     # check the CCR
 
     # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.V) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) == 1
-    assert sim.get_condition_status_code(ConditionStatusCode.N) == 0
-    assert sim.get_condition_status_code(ConditionStatusCode.X) == 0
+    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
+    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_add_disassembles():
@@ -134,6 +134,88 @@ def test_add_disassembles():
     assert sim.get_register_value(Register.D1) == 123
 
     assert sim.get_program_counter_value() == 2
+
+
+def test_ccr_carry():
+    """
+    Tests to see that the carry bit is set correctly
+
+    Example case of this
+
+    MOVE #1, D0
+    MOVE #FFFF, D1
+    ADD D0, D1 ; C bit will be set
+    :return:
+    """
+
+    sim = M68K()
+
+    # 0x0001
+    sim.set_register_value(Register.D0, 1)
+    # 0xFFFF as a 16 bit signed int is -1
+    sim.set_register_value(Register.D1, 0xFFFF)
+
+    # D0, D1
+    params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
+
+    # Add D0, D1
+    add = Add(params, OpSize.WORD)
+
+    add.execute(sim)
+
+    # result in D1 should be 0
+    assert sim.get_register_value(Register.D1) == 0
+
+    # carries over and value is zero
+    assert sim.get_condition_status_code(ConditionStatusCode.X)
+    assert sim.get_condition_status_code(ConditionStatusCode.Z)
+    assert sim.get_condition_status_code(ConditionStatusCode.C)
+
+    # not negative
+    assert not sim.get_condition_status_code(ConditionStatusCode.N)
+    # no overflow
+    assert not sim.get_condition_status_code(ConditionStatusCode.V)
+
+
+def test_ccr_overflow():
+    """
+    Tests to see that the carry bit is set correctly
+
+    Example case of this
+
+    MOVE #1, D0
+    MOVE #7FFF, D1
+    ADD D0, D1 ; C bit will be set
+    :return:
+    """
+
+    sim = M68K()
+
+    # 0x0001
+    sim.set_register_value(Register.D0, 1)
+    # 0x7FFF as a 16 bit signed int is 32767
+    sim.set_register_value(Register.D1, 0x7FFF)
+
+    # D0, D1
+    params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
+
+    # Add D0, D1
+    add = Add(params, OpSize.WORD)
+
+    add.execute(sim)
+
+    # result in D1 should be 0
+    assert sim.get_register_value(Register.D1) == 0x8000
+
+    # does not carry over and not zero
+    assert not sim.get_condition_status_code(ConditionStatusCode.X)
+    assert not sim.get_condition_status_code(ConditionStatusCode.Z)
+    assert not sim.get_condition_status_code(ConditionStatusCode.C)
+
+    # negative
+    assert sim.get_condition_status_code(ConditionStatusCode.N)
+    # overflow
+    assert sim.get_condition_status_code(ConditionStatusCode.V)
 
 
 def test_add_assemble():
