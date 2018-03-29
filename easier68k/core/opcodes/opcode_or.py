@@ -117,7 +117,7 @@ class Or(Opcode):
         mask = 1 << num_bits
 
         simulator.set_condition_status_code(ConditionStatusCode.N, mask & result != 0)
-        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
+        simulator.set_condition_status_code(ConditionStatusCode.Z, result == 0)
         simulator.set_condition_status_code(ConditionStatusCode.V, False)
         simulator.set_condition_status_code(ConditionStatusCode.C, False)
 

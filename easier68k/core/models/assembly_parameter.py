@@ -160,6 +160,19 @@ class AssemblyParameter:
         if self.mode is EAMode.DRD:
             # set the value for the data register
             assert 0 <= self.data <= 7
+
+            # if value is negative, then need to take 2s comp
+            if value < 0:
+                mask = 0xFF
+                if length is 2:
+                    mask = 0xFFFF
+                if length is 4:
+                    mask = 0xFFFFFFFF
+
+                value = value ^ mask
+                value += 1
+                value = abs(value)
+
             assert 0 <= value <= 0xFFFFFFFF, 'The value must fit in a long word'
             data_register = Register(self.data)
             simulator.set_register_value(data_register, value)

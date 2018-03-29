@@ -82,7 +82,7 @@ class Add(Opcode):
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
-
+        print(src_val)
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
 
@@ -112,15 +112,64 @@ class Add(Opcode):
         if self.dest.mode in [EAMode.AbsoluteWordAddress]:
             to_increment += OpSize.WORD.value
 
+        # mask to apply to the source
+        mask = 0xFF
 
-        total = src_val + dest_val
+        if self.size is OpSize.BYTE:
+            mask = 0xFF
+        if self.size is OpSize.WORD:
+            mask = 0xFFFF
+        if self.size is OpSize.LONG:
+            mask = 0xFFFFFFFF
 
-        # these will be implemented later
-        #simulator.set_condition_status_code(ConditionStatusCode.X, )
-        #simulator.set_condition_status_code(ConditionStatusCode.N, )
-        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
-        #simulator.set_condition_status_code(ConditionStatusCode.V, )
-        #simulator.set_condition_status_code(ConditionStatusCode.C, )
+        # which bits of the total should not be modified
+        inverted_mask = 0xFFFFFFFF ^ mask
+
+        # preserve the upper bits of the operation if they aren't used
+        preserve = dest_val & inverted_mask
+
+        raw_total = (src_val + dest_val)
+        total = (raw_total & mask) | preserve
+
+        carry_bit = False
+
+        # if the total is greater than the maximum size for the operation
+        # then the carry bit will be set
+        if self.size is OpSize.BYTE and raw_total > 0xFF:
+            carry_bit = True
+        if self.size is OpSize.WORD and raw_total > 0xFFFF:
+            carry_bit = True
+        if self.size is OpSize.LONG and raw_total > 0xFFFFFFFF:
+            carry_bit = True
+
+        negative = False
+
+        if self.size is OpSize.BYTE:
+            negative = total & 0x80 > 0
+        elif self.size is OpSize.WORD:
+            negative = total & 0x8000 > 0
+        elif self.size is OpSize.LONG:
+            negative = total & 0x80000000 > 0
+
+        original_negative = False
+
+        if self.size is OpSize.BYTE:
+            original_negative = src_val & 0x80 > 0
+        elif self.size is OpSize.WORD:
+            original_negative = src_val & 0x8000 > 0
+        elif self.size is OpSize.LONG:
+            original_negative = src_val & 0x80000000 > 0
+
+        # set the same as the carry bit
+        simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
+        # result is negative
+        simulator.set_condition_status_code(ConditionStatusCode.N, negative)
+        # result is zeor
+        simulator.set_condition_status_code(ConditionStatusCode.Z, (raw_total & mask) == 0)
+        # set if an overflow is generated, cleared otherwise
+        simulator.set_condition_status_code(ConditionStatusCode.V, negative != original_negative)
+        # set if a carry is generated, cleared otherwise
+        simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
         # and set the value
         self.dest.set_value(simulator, total, val_length)
