@@ -12,4 +12,3 @@ setup(
     python_requires='>=3'
 )
 
-print('done')
