@@ -4,6 +4,27 @@ Easier68k is a python library that assembles and simulates the Motorola 68k CPU 
 
 NOTE: Easier68k is currently under heavy production and is not stable.
 
+### Future Development Roadmap
+
+Currently Easier68k is incomplete and is lacking in some ways that prevent it from being considered
+"fully featured".
+
+Some goals for future development are:
+
+ - Complete implementation of 68k opcodes.
+    - Complete implementation of everything floating point related.
+    - Further development of alternative TRAP interaction. (Including graphics and sounds.)
+ - Implementation of accurate clock cycle measurement.
+ - Interface development:
+    - Development of editor plugins for IDEs. Options considered were Atom and VSCode.
+    - Development of GUI and editor software that directly interacts with the core package.
+    - Further development of the interactive CLI shell.
+    - Development of non-interactive command line tools. (Ones that don't run in a shell.)
+ - Simplification of the installation and packaging process, as well as any other quality of life
+ enhancements for users wishing to install the software.
+
+Specific tasks for development are found on the Issues tab.
+
 ### Motivation
 
 There are very few 68K simulators and assemblers and the ones that exist were all found to be lacking in some areas.
