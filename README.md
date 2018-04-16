@@ -1,4 +1,4 @@
-# Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k)
+# Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k) [![Discord](https://discordapp.com/api/guilds/435529550756052992/widget.png)](https://discord.gg/MXeTCjY)
 
 Easier68k is a python library that assembles and simulates the Motorola 68k CPU Architecture.
 
