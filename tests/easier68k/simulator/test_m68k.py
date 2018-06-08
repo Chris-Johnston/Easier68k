@@ -4,6 +4,8 @@ from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS, DATA_REGISTERS
 from easier68k.core.models.list_file import ListFile
 from easier68k.simulator.memory import Memory
+from easier68k.core.models.memory_value import MemoryValue
+from easier68k.core.enum.op_size import OpSize
 
 def test_address_registers():
     """
@@ -145,22 +147,17 @@ def test_condition_code_register():
     # registers
     a = M68K()
 
-    # test initial value
-    assert a.get_register_value(Register.ConditionCodeRegister) == 0
-    assert a.get_register_value(Register.CCR) == 0
+    assert a.get_register(Register.CCR) == 0
+    assert a.get_register(Register.ConditionCodeRegister) == 0
 
-    # test setting a value in bounds
-    a.set_register_value(Register.CCR, 0xAF)
+    val = MemoryValue(OpSize.BYTE)
+    val.set_value_unsigned_int(0xAF)
+
+    a.set_register(Register.ConditionCodeRegister, val)
 
     # after this can assume that the enums are correctly equal to each other
-    assert a.get_register_value(Register.ConditionCodeRegister) == 0xAF
-    assert a.get_register_value(Register.CCR) == 0xAF
-
-    # now test invalid input
-    with pytest.raises(AssertionError):
-        a.set_register_value(Register.CCR, -1)
-    with pytest.raises(AssertionError):
-        a.set_register_value(Register.CCR, 0xFF + 1)
+    assert a.get_register(Register.ConditionCodeRegister) == 0xAF
+    assert a.get_register(Register.CCR) == 0xAF
 
 def test_full_integration():
     m68k = M68K()

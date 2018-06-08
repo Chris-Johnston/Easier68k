@@ -11,6 +11,7 @@ from ..core.enum.system_status_code import SystemStatusCode
 from ..core.models.list_file import ListFile
 import typing
 from ..core.models.memory_value import MemoryValue
+from ..core.enum.op_size import OpSize
 
 class UnalignedMemoryAccessError(Exception):
     pass
@@ -22,18 +23,15 @@ class AssignWrongMemorySizeError(Exception):
     pass
 
 class Memory:
-    Byte = 1
-    Word = 2
-    Long = 4
 
-    def __validateLocation(self, size: int, location: int):
+    def __validateLocation(self, size: OpSize, location: int):
         """
         Helper function which throws an error if the location is either
         not aligned or out of bounds
         """
-        if(location % size != 0):
+        if(location % size.get_number_of_bytes() != 0):
             raise UnalignedMemoryAccessError
-        if(location < 0 or location+size > len(self.memory)):
+        if(location < 0 or (location + size.get_number_of_bytes()) > len(self.memory)):
             raise OutOfBoundsMemoryError
 
     def __init__(self):
@@ -86,22 +84,31 @@ class Memory:
 
             for i in range(0, len(values), 1):
                 # set one byte at a time
-                self.set(1, location + i, values[i:i+1])
+                val = MemoryValue(OpSize.BYTE)
+                val.set_value_bytes(values[i:i+1])
+                self.set(OpSize.BYTE, val)
 
-    def get(self, size: int, location: int) -> MemoryValue:
+    def get(self, size: OpSize, location: int) -> MemoryValue:
         """
         gets the memory at the given location index of size
         """
         self.__validateLocation(size, location)
         ret = MemoryValue(size)
-        ret.set_value_bytes(self.memory[location:location+size])
+        end = location + size.value
+        b = None
+        try:
+            b = self.memory[location:end]
+        except TypeError:
+            print(location, type(location))
+            print(end, type(location))
+        ret.set_value_bytes(b)
         return ret
 
-    def set(self, size: int, location: int, value: MemoryValue):
+    def set(self, size: OpSize, location: int, value: MemoryValue):
         """
         sets the memory at the given location index of size
         """
         self.__validateLocation(size, location)
-        if value.get_size().get_number_of_bytes() != size:
+        if value.get_size() != size:
             raise AssignWrongMemorySizeError
-        self.memory[location:location+size] = value.get_value_bytes()
+        self.memory[location:location+size.get_number_of_bytes()] = value.get_value_bytes()
