@@ -34,6 +34,8 @@ class MemoryValue:
         :param unsigned_int the value to set as an unsigned int
         :param bytes the value to set as a bytearray
         """
+        # use OpSize for length in bytes
+        self.length = len
 
         if signed_int is not None:
             self.set_value_signed_int(signed_int)
@@ -46,8 +48,7 @@ class MemoryValue:
             # this should be an UNSIGNED value
             self.unsigned_value = 0
 
-        # use OpSize for length in bytes
-        self.length = len
+
 
         # consider adding CCR bits for the last operation?
         # or just have CCR bit getters, in the ops just compare before and after

@@ -179,45 +179,45 @@ class AssemblyParameter:
         if self.mode is EAMode.AddressRegisterDirect:
             # set the value for the address register
             assert 0 <= self.data <= 7
-            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
-            simulator.set_register_value(addr_register, value)
+            simulator.set_register(addr_register, value)
 
         if self.mode is EAMode.AddressRegisterIndirect:
             # sets the value in memory that the address register points to
             assert 0 <= self.data <= 7
-            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
-            location = simulator.get_register_value(addr_register)
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            location = simulator.get_register(addr_register).get_value_unsigned()
+            simulator.memory.set(value.length, location.get_value_unsigned(), value)
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
             # sets the value in memory that the address register points to
             assert 0 <= self.data <= 7
-            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
-            location = simulator.get_register_value(addr_register)
-            location -= length
-            simulator.set_register_value(addr_register, location)
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            location = simulator.get_register(addr_register).get_value_unsigned()
+            location -= value.length
+            simulator.set_register(addr_register, location)
+            simulator.memory.set(value.length, location, value)
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
             # sets the value in memory that the address register points to
             assert 0 <= self.data <= 7
-            assert 0 <= value <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
+            assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
 
             addr_register = Register(self.data + Register.A0)
-            location = simulator.get_register_value(addr_register)
+            location = simulator.get_register(addr_register)
 
-            simulator.memory.set(length, location, value.to_bytes(length, 'big'))
+            simulator.memory.set(value.length, location.get_value_unsigned(), value)
 
-            location += length
-            simulator.set_register_value(addr_register, location)
+            location += value.length
+            simulator.set_register(addr_register, location)
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # assert that the value fits in the bounds of memory
             assert 0 <= self.data <= MAX_MEMORY_LOCATION
-            assert 0 <= value <= 0xFFFFFFFF, 'The value must fit inside of a long word!'
+            assert 0 <= value.get_value_unsigned() <= 0xFFFFFFFF, 'The value must fit inside of a long word!'
 
             # if the mode is a word
             if self.mode is EAMode.AbsoluteWordAddress:
@@ -225,4 +225,4 @@ class AssemblyParameter:
                 value = to_word(value)
 
             # set the value in memory to that
-            simulator.memory.set(length, self.data, value.to_bytes(length, 'big'))
+            simulator.memory.set(value.length, self.data, value)

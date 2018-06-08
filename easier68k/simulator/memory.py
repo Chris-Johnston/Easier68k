@@ -84,9 +84,8 @@ class Memory:
 
             for i in range(0, len(values), 1):
                 # set one byte at a time
-                val = MemoryValue(OpSize.BYTE)
-                val.set_value_bytes(values[i:i+1])
-                self.set(OpSize.BYTE, val)
+                val = MemoryValue(OpSize.BYTE, bytes=values[i:i+1])
+                self.set(OpSize.BYTE, location + i, val)
 
     def get(self, size: OpSize, location: int) -> MemoryValue:
         """

@@ -78,14 +78,11 @@ class Move(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
-        # get the length
-        val_length = self.size.get_number_of_bytes()
-
         # get the value of src from the simulator
-        src_val = self.src.get_value(simulator, val_length)
+        src_val = self.src.get_value(simulator, self.size)
 
         # and set the value
-        self.dest.set_value(simulator, src_val, val_length)
+        self.dest.set_value(simulator, src_val)
 
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value

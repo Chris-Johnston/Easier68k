@@ -103,38 +103,38 @@ def _test_single_data_register(sim: M68K, reg: Register):
     mv.set_value_unsigned_int(0xAF)
     sim.set_register(reg, mv)
     # ensure the values are accurate
-    assert sim.get_register(reg) == 0xAF
+    assert sim.get_register(reg).get_value_unsigned() == 0xAF
 
     mv = MemoryValue(OpSize.BYTE)
     mv.set_value_unsigned_int(0xFF)
     sim.set_register(reg, mv)
 
-    assert sim.get_register(reg) == 0xFF
+    assert sim.get_register(reg).get_value_unsigned() == 0xFF
 
     # hasn't died yet (hopefully)
     # so move on to 2 bytes
-    mv = MemoryValue(OpSize.WORD, signed_int=0xBEEF)
+    mv = MemoryValue(OpSize.WORD, unsigned_int=0xBEEF)
     sim.set_register(reg, mv)
-    assert sim.get_register(reg) == 0xBEEF
-    mv = MemoryValue(OpSize.WORD, signed_int=0xFFFF)
+    assert sim.get_register(reg).get_value_unsigned() == 0xBEEF
+    mv = MemoryValue(OpSize.WORD, unsigned_int=0xFFFF)
     sim.set_register(reg, mv)
-    assert sim.get_register(reg) == 0xFFFF
+    assert sim.get_register(reg).get_value_unsigned() == 0xFFFF
 
     # 3
-    mv = MemoryValue(OpSize.LONG, signed_int=0x00BEEFFE)
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0x00BEEFFE)
     sim.set_register(reg, mv)
     assert sim.get_register(reg) == 0xBEEFFE
-    mv = MemoryValue(OpSize.LONG, signed_int=0x00FFFFFF)
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0x00FFFFFF)
     sim.set_register(reg, mv)
     assert sim.get_register(reg) == 0xFFFFFF
 
     # set all 4 bytes including max value
-    mv = MemoryValue(OpSize.LONG, signed_int=0xDEADBEEF)
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0xDEADBEEF)
     sim.set_register(reg, mv)
-    assert sim.get_register(reg) == 0xDEADBEEF
-    mv = MemoryValue(OpSize.LONG, signed_int=0xFFFFFFFF)
+    assert sim.get_register(reg).get_value_unsigned() == 0xDEADBEEF
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0xFFFFFFFF)
     sim.set_register(reg, mv)
-    assert sim.get_register(reg) == 0xFFFFFFFF
+    assert sim.get_register(reg).get_value_unsigned() == 0xFFFFFFFF
 
     # should not check for out of range setting, because
     # this is handled byy MemoryValue already
@@ -159,8 +159,8 @@ def test_condition_code_register():
     a.set_register(Register.ConditionCodeRegister, val)
 
     # after this can assume that the enums are correctly equal to each other
-    assert a.get_register(Register.ConditionCodeRegister) == 0xAF
-    assert a.get_register(Register.CCR) == 0xAF
+    assert a.get_register(Register.ConditionCodeRegister).get_value_unsigned() == 0xAF
+    assert a.get_register(Register.CCR).get_value_unsigned() == 0xAF
 
 def test_full_integration():
     m68k = M68K()
@@ -195,10 +195,10 @@ START:
 
     m68k.load_list_file(list_file)
     assert(m68k.get_program_counter_value() == 1024)
-    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('0000'))
+    assert(m68k.memory.get(OpSize.WORD, 0x00aaaaaa).get_value_unsigned() == 0x0000)
     m68k.step_instruction()
     assert(m68k.get_program_counter_value() == 1032)
-    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('abcd'))
+    assert(m68k.memory.get(OpSize.WORD, 0x00aaaaaa).get_value_unsigned() == 0xABCD)
     m68k.step_instruction()
     assert m68k.get_program_counter_value() == 1036
     assert m68k.halted
