@@ -59,20 +59,13 @@ def _test_single_address_register(a :M68K, reg: Register):
     assert a.get_register(reg) == 0
 
     # try setting w/o errors
-    a.set_register_value(reg, 0x3200)
+    a.set_register(reg, MemoryValue(OpSize.WORD, unsigned_int=0x3200))
 
     # ensure that this value can be retrieved without error
     assert a.get_register(reg) == 0x3200
 
-    # test of invalid input
-    with pytest.raises(AssertionError):
-        a.set_register_value(reg, -1)
-
-    a.set_register_value(reg, 16777216)
-
-    with pytest.raises(AssertionError):
-        # 1 beyond the max value
-        a.set_register_value(reg, 16777216 + 1)
+    # set the max size without error
+    a.set_register(reg, MemoryValue(OpSize.LONG, unsigned_int=16777216))
 
 def test_data_registers():
     """

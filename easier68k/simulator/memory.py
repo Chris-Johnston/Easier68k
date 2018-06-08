@@ -29,6 +29,8 @@ class Memory:
         Helper function which throws an error if the location is either
         not aligned or out of bounds
         """
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
         if(location % size.get_number_of_bytes() != 0):
             raise UnalignedMemoryAccessError
         if(location < 0 or (location + size.get_number_of_bytes()) > len(self.memory)):
@@ -91,6 +93,8 @@ class Memory:
         """
         gets the memory at the given location index of size
         """
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
         self.__validateLocation(size, location)
         ret = MemoryValue(size)
         end = location + size.value
@@ -98,8 +102,9 @@ class Memory:
         try:
             b = self.memory[location:end]
         except TypeError:
-            print(location, type(location))
-            print(end, type(location))
+            # print(location, type(location))
+            # print(end, type(location))
+            pass
         ret.set_value_bytes(b)
         return ret
 
@@ -107,6 +112,12 @@ class Memory:
         """
         sets the memory at the given location index of size
         """
+        if not isinstance(value, MemoryValue):
+            raise AssertionError("The value parameter must be of type MemoryValue")
+
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
+
         self.__validateLocation(size, location)
         if value.get_size() != size:
             raise AssignWrongMemorySizeError

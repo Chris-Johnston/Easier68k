@@ -27,7 +27,7 @@ def test_or():
 
     _or.execute(sim)
 
-    assert sim.get_register_value(Register.D2) == 0b101
+    assert sim.get_register(Register.D2).get_value_unsigned() == 0b101
 
     assert sim.get_program_counter_value() == (0x1000 + 4)
 

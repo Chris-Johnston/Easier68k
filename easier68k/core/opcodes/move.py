@@ -49,15 +49,15 @@ class Move(Opcode):
 
         # add the size
         ret_opcode |= MoveSize.from_op_size(self.size) << 12
-        print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
+        # print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
 
         # add the destination reg and dest mode
         ret_opcode |= ea_mode_bin.parse_from_ea_mode_regfirst(self.dest) << 6
-        print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
+        # print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
 
         # add the src mode and src reg
         ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
-        print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
+        # print(bin(ret_opcode), hex(ret_opcode), bin(0x303c), hex(0x303c))
 
         # convert the opcode word to bytes
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))

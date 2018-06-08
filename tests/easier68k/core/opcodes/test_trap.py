@@ -5,6 +5,8 @@ from easier68k.core.enum.register import Register
 from easier68k.core.enum.trap_task import TrapTask
 import easier68k.core.util.input as inp
 from easier68k.core.enum.trap_vector import TrapVectors
+from easier68k.core.models.memory_value import MemoryValue
+from easier68k.core.enum.op_size import OpSize
 
 def test_disassemble_instruction():
     val = 0b0100111001001111.to_bytes(2, byteorder='big', signed=False)
@@ -25,12 +27,10 @@ def test_display_null_term_string(capsys):
     sim = M68K()
 
     # null term string ABC\0
-    sim.memory.set(4, 0x1000, bytearray([
-        0x41, 0x42, 0x43, 0x00
-    ]))
+    sim.memory.set(4, 0x1000, MemoryValue(OpSize.LONG, bytes=bytearray([0x41, 0x42, 0x43, 0x00])))
 
-    sim.set_register_value(Register.A1, 0x1000)
-    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermString)
+    sim.set_register(Register.A1, MemoryValue(OpSize.WORD, unsigned_int=0x1000))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplayNullTermString))
 
     exec = Trap(TrapVectors.IO)
 
@@ -46,12 +46,10 @@ def test_display_test_increment_pc(capsys):
     sim = M68K()
 
     # null term string ABC\0
-    sim.memory.set(4, 0x1000, bytearray([
-        0x41, 0x42, 0x43, 0x00
-    ]))
+    sim.memory.set(4, 0x1000, MemoryValue(OpSize.LONG, bytes=bytearray([0x41, 0x42, 0x43, 0x00])))
 
-    sim.set_register_value(Register.A1, 0x1000)
-    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermString)
+    sim.set_register(Register.A1, MemoryValue(OpSize.WORD, unsigned_int=0x1000))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplayNullTermString))
 
     exec = Trap(TrapVectors.IO)
 
@@ -71,12 +69,10 @@ def test_display_null_term_string_crlf(capsys):
     sim = M68K()
 
     # null term string ABC\0
-    sim.memory.set(4, 0x1000, bytearray([
-        0x41, 0x42, 0x43, 0x00
-    ]))
+    sim.memory.set(OpSize.LONG, 0x1000, MemoryValue(OpSize.LONG, bytes=bytearray([0x41, 0x42, 0x43, 0x00])))
 
-    sim.set_register_value(Register.A1, 0x1000)
-    sim.set_register_value(Register.D0, TrapTask.DisplayNullTermStringWithCRLF)
+    sim.set_register(Register.A1, MemoryValue(OpSize.WORD, unsigned_int=0x1000))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplayNullTermStringWithCRLF))
 
     exec = Trap(TrapVectors.IO)
 
@@ -89,8 +85,8 @@ def test_display_null_term_string_crlf(capsys):
 def test_display_signed_number(capsys):
     sim = M68K()
 
-    sim.set_register_value(Register.D1, 123)
-    sim.set_register_value(Register.D0, TrapTask.DisplaySignedNumber)
+    sim.set_register(Register.D1, MemoryValue(OpSize.WORD, signed_int=123))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplaySignedNumber))
 
     exec = Trap(TrapVectors.IO)
 
@@ -103,14 +99,8 @@ def test_display_signed_number(capsys):
 def test_display_signed_number_negative(capsys):
     sim = M68K()
 
-    # 2's comp of 123
-    x = 123
-    mask = 0xFFFFFFFF
-    x = x ^ mask
-    x += 1
-
-    sim.set_register_value(Register.D1, x)
-    sim.set_register_value(Register.D0, TrapTask.DisplaySignedNumber)
+    sim.set_register(Register.D1, MemoryValue(OpSize.BYTE, signed_int=-123))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplaySignedNumber))
 
     exec = Trap(TrapVectors.IO)
 
@@ -124,8 +114,8 @@ def test_display_signed_number_negative(capsys):
 def test_display_single_character(capsys):
     sim = M68K()
 
-    sim.set_register_value(Register.D1, ord('a'))
-    sim.set_register_value(Register.D0, TrapTask.DisplaySingleCharacter)
+    sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=ord('a')))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplaySingleCharacter))
 
     exec = Trap(TrapVectors.IO)
 
@@ -139,8 +129,8 @@ def test_display_single_character(capsys):
 def test_read_null_term_string(capsys):
     sim = M68K()
 
-    sim.set_register_value(Register.A1, 0x1000)
-    sim.set_register_value(Register.D0, TrapTask.ReadNullTermString)
+    sim.set_register(Register.A1, MemoryValue(OpSize.WORD, unsigned_int=0x1000))
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=TrapTask.DisplaySingleCharacter))
 
     exec = Trap(TrapVectors.IO)
     exec.use_debug_input = True

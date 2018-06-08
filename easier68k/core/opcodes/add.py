@@ -10,7 +10,7 @@ from ..util.parsing import parse_assembly_parameter
 from ..models.assembly_parameter import AssemblyParameter
 from ..enum.condition_status_code import ConditionStatusCode
 import binascii
-
+from ..models.memory_value import MemoryValue
 
 class Add(Opcode):  # Forward declaration
     pass
@@ -139,9 +139,9 @@ class Add(Opcode):
         inverted_mask = 0xFFFFFFFF ^ mask
 
         # preserve the upper bits of the operation if they aren't used
-        preserve = dest_val & inverted_mask
+        preserve = dest_val.get_value_unsigned() & inverted_mask
 
-        raw_total = (src_val + dest_val)
+        raw_total = (src_val.get_value_unsigned() + dest_val.get_value_unsigned())
         total = (raw_total & mask) | preserve
 
         carry_bit = False
@@ -185,7 +185,7 @@ class Add(Opcode):
         simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
         # and set the value
-        self.dest.set_value(simulator, total, val_length)
+        self.dest.set_value(simulator, MemoryValue(self.size, unsigned_int=total))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)

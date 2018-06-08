@@ -52,7 +52,7 @@ def test_memory_set_get():
     with pytest.raises(UnalignedMemoryAccessError):
         memory.get(OpSize.WORD, 0x000001)
     with pytest.raises(UnalignedMemoryAccessError):
-        memory.set(OpSize.LONG, 0x000001, b'\xDE\xAD')
+        memory.set(OpSize.LONG, 0x000001, MemoryValue(OpSize.WORD, bytes=b'\xDE\xAD'))
 
     with pytest.raises(OutOfBoundsMemoryError):
         memory.get(OpSize.LONG, 0xFFFFFF4)

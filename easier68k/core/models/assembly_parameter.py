@@ -97,12 +97,6 @@ class AssemblyParameter:
             # in memory where the target value is
             register_value = simulator.get_register(addr_register)
             # now get the value in memory of that register
-
-            print(register_value)
-
-            a = register_value.get_value_unsigned()
-
-            print(length.value, a)
             return simulator.memory.get(length, register_value.get_value_unsigned())
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
@@ -118,7 +112,6 @@ class AssemblyParameter:
             val = simulator.memory.get(length, register_value.get_value_unsigned())
             # do the post increment
             simulator.set_register(addr_register, register_value + length)
-            # return the value
             return val
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
@@ -153,7 +146,7 @@ class AssemblyParameter:
                 addr = to_word(addr)
 
             # now get the value of that absolute long address
-            return addr
+            return MemoryValue(OpSize.LONG, unsigned_int=addr)
 
         # if nothing was done by now, surely something must be wrong
         assert False, 'Invalid effective addressing mode!'
@@ -166,6 +159,8 @@ class AssemblyParameter:
         :param length: the number of bits associated for this instruction, must be 1 2 or 4
         :return:
         """
+        if not isinstance(value, MemoryValue):
+            raise AssertionError("The value parameter must be of type MemoryValue")
 
         if self.mode is EAMode.Immediate:
             assert False, 'Cannot set the value of an immediate.'
@@ -189,7 +184,7 @@ class AssemblyParameter:
             assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register(addr_register).get_value_unsigned()
-            simulator.memory.set(value.length, location.get_value_unsigned(), value)
+            simulator.memory.set(value.length, location, value)
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
             # sets the value in memory that the address register points to
@@ -197,8 +192,8 @@ class AssemblyParameter:
             assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register(addr_register).get_value_unsigned()
-            location -= value.length
-            simulator.set_register(addr_register, location)
+            location -= value.length.get_number_of_bytes()
+            simulator.set_register(addr_register, MemoryValue(OpSize.LONG, unsigned_int=location))
             simulator.memory.set(value.length, location, value)
 
         if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
@@ -207,12 +202,12 @@ class AssemblyParameter:
             assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
 
             addr_register = Register(self.data + Register.A0)
-            location = simulator.get_register(addr_register)
+            location = simulator.get_register(addr_register).get_value_unsigned()
 
-            simulator.memory.set(value.length, location.get_value_unsigned(), value)
+            simulator.memory.set(value.length, location, value)
 
-            location += value.length
-            simulator.set_register(addr_register, location)
+            location += value.length.get_number_of_bytes()
+            simulator.set_register(addr_register, MemoryValue(OpSize.LONG, unsigned_int=location))
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # assert that the value fits in the bounds of memory

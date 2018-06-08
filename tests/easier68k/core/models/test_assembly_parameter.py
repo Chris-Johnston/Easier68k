@@ -138,24 +138,24 @@ def test_get_value():
             # now set up the parameter to get the value that the address reg points to
             ap = AssemblyParameter(EAMode.AddressRegisterIndirect, r)
             # ensure that the value matches
-            assert ap.get_value(sim) == 2 * x
+            assert ap.get_value(sim).get_value_unsigned() == (2 * x)
 
     # test that address register indirect post increment and pre decrement
     # work properly
 
-    sim.set_register_value(Register.A0, 0x1000)
+    sim.set_register(Register.A0, MemoryValue(OpSize.WORD, unsigned_int=0x1000))
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 0)
     assert ap.get_value(sim) == 2 * 0x1000
 
-    assert sim.get_register_value(Register.A0) == 0x1000 + 4
+    assert sim.get_register(Register.A0).get_value_unsigned() == 0x1000 + 4
 
     # pre decrement
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPreDecrement, 0)
     assert ap.get_value(sim) == 2 * 0x1000
 
-    assert sim.get_register_value(Register.A0) == 0x1000
+    assert sim.get_register(Register.A0).get_value_unsigned() == 0x1000
 
     # test absolute long / word address
     ap = AssemblyParameter(EAMode.AbsoluteWordAddress, 0x1000)
@@ -200,15 +200,15 @@ def test_assembly_parameter_set_value():
 
     assert sim.get_register(Register.A5) == 0x120
 
-    val = MemoryValue(OpSize.WORD)
+    val = MemoryValue(OpSize.LONG)
     val.set_value_unsigned_int(0x1ABBAABB)
 
     # set some memory at 0x123
-    sim.memory.set(OpSize.WORD, 0x120, val)
+    sim.memory.set(OpSize.LONG, 0x120, val)
 
     # ensure set proper
     # assert sim.memory.get(OpSize.WORD, 0x120).get_value_unsigned() == 0x1ABBAABB
-    assert sim.memory.get(OpSize.WORD, 0x120) == 0x1ABBAABB
+    assert sim.memory.get(OpSize.LONG, 0x120) == 0x1ABBAABB
 
     # now test address register indirect
     ap = AssemblyParameter(EAMode.AddressRegisterIndirect, 5)
@@ -219,17 +219,17 @@ def test_assembly_parameter_set_value():
     ap.set_value(sim, mv)
 
     # ensure that it changed
-    assert sim.memory.get(OpSize.WORD, 0x120).get_value_unsigned() == 0x123123
+    assert sim.memory.get(OpSize.LONG, 0x120).get_value_unsigned() == 0x123123
 
     # test address register indirect pre and post
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 5)
-    ap.set_value(sim, 0xAA)
+    ap.set_value(sim, MemoryValue(OpSize.LONG, unsigned_int=0xAA))
 
     assert sim.memory.get(OpSize.WORD, 0x120).get_value_unsigned() == 0xAA
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPreDecrement, 5)
-    ap.set_value(sim, 0xBB)
+    ap.set_value(sim, MemoryValue(OpSize.LONG, unsigned_int=0xBB))
 
     assert sim.memory.get(OpSize.WORD, 0x120).get_value_unsigned() == 0xBB
 

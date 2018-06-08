@@ -74,6 +74,8 @@ class MemoryValue:
         :param signed_int:
         :return:
         """
+        if not isinstance(signed_int, int):
+            raise AssertionError('The signed_int parameter must be an integer!')
 
         # assert that the value can fit within the possible range for the size
         if self.length is OpSize.BYTE:
@@ -95,6 +97,9 @@ class MemoryValue:
         :param unsigned_int:
         :return:
         """
+        if not isinstance(unsigned_int, int):
+            raise AssertionError('The unsigned_int parameter must be an integer!')
+
         # assert that the value can fit within the possible range for the size
         if self.length is OpSize.LONG:
             assert (0 <= unsigned_int <= 0xFFFFFFFF), 'Value must fit in the range [0, 0xFFFFFFFF].'
@@ -111,6 +116,9 @@ class MemoryValue:
         :param bytes_value:
         :return:
         """
+        if not (isinstance(bytes_value, bytes) or isinstance(bytes_value, bytearray)):
+            raise AssertionError('The bytes_value parameter must be bytes or bytearray!')
+
         # optional, should we trim the input bytes to fit to the length of this
         # get the value from bytes
         val = int.from_bytes(bytes=bytes_value, byteorder='big', signed=False)

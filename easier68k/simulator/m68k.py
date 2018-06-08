@@ -99,24 +99,26 @@ class M68K:
 
     def get_program_counter_value(self) -> int:
         """
-        Gets the 32-bit integer value for the program counter value
+        Gets the 32-bit unsigned integer value for the program counter value
         :return:
         """
-        return self.get_register(Register.ProgramCounter).get_value_unsigned()
+        mv = self.get_register(Register.ProgramCounter)
+        ret = mv.get_value_unsigned()
+        return ret
 
 
-    def set_address_register_value(self, reg: Register, new_value: int):
+    def set_address_register_value(self, reg: Register, new_value: MemoryValue):
         """
         Sets the value of an address register, so the PC or A0-A7
         :param reg:
         :param new_value:
         :return:
         """
-        assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
+        assert 0 <= new_value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
         assert reg in MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
 
         # now set the value of the register
-        self.registers[reg].set_value_unsigned_int(new_value)
+        self.registers[reg].set_value_unsigned_int(new_value.get_value_unsigned())
 
 
     def set_program_counter_value(self, new_value: int):
@@ -126,7 +128,7 @@ class M68K:
         :param new_value:
         :return:
         """
-        self.set_address_register_value(Register.ProgramCounter, new_value)
+        self.set_address_register_value(Register.ProgramCounter, MemoryValue(OpSize.LONG, unsigned_int=new_value))
 
     def increment_program_counter(self, inc: int):
         """
@@ -145,7 +147,7 @@ class M68K:
         """
         ccr = self.get_register(Register.CCR).get_value_unsigned()
         # ccr is only 1 byte, bit mask away the bit being looked for
-        return (ccr[0] & code) > 0
+        return (ccr & code) > 0
 
     def set_condition_status_code(self, code: ConditionStatusCode, value: bool):
         """
@@ -154,13 +156,15 @@ class M68K:
         :return:
         """
         ccr = self.get_register(Register.CCR)
-        
-        if(value):
-            # set bit to 1
-            self._set_condition_code_register_value(ccr[0] | code)
+
+        v = ccr.get_value_unsigned()
+
+        if value:
+            v |= code
         else:
-            # set bit to 0
-            self._set_condition_code_register_value(ccr[0] & ~code)
+            v = v & (not code)
+
+        self._set_condition_code_register_value(MemoryValue(OpSize.BYTE, unsigned_int=v))
 
     def run(self):
         """
@@ -206,6 +210,7 @@ class M68K:
                 # note: this currently has the edge case that it will fail unintelligibly
                 # if encountered at the end of memory
                 pc_val = self.get_program_counter_value()
+                print(pc_val)
                 op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
                 if op is not None:
                     op.execute(self)

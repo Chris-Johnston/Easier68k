@@ -10,7 +10,7 @@ from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
 from ..util.parsing import parse_assembly_parameter
 from ..enum.condition_status_code import ConditionStatusCode
-
+from ..models.memory_value import MemoryValue
 
 class Or(Opcode):  # Forward declaration
     pass
@@ -110,19 +110,20 @@ class Or(Opcode):
             to_increment += OpSize.WORD.value
 
         result = src_val | dest_val
+        result_unsigned = result.get_value_unsigned()
 
         # set status codes
         num_bits = OpSize.LONG.value*8
         to_shift = num_bits-1 # this is how far to shift to get most significant bit
         mask = 1 << num_bits
 
-        simulator.set_condition_status_code(ConditionStatusCode.N, mask & result != 0)
-        simulator.set_condition_status_code(ConditionStatusCode.Z, result == 0)
+        simulator.set_condition_status_code(ConditionStatusCode.N, mask & result_unsigned != 0)
+        simulator.set_condition_status_code(ConditionStatusCode.Z, result_unsigned == 0)
         simulator.set_condition_status_code(ConditionStatusCode.V, False)
         simulator.set_condition_status_code(ConditionStatusCode.C, False)
 
         # and set the value
-        self.dest.set_value(simulator, result, val_length)
+        self.dest.set_value(simulator, result)
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
