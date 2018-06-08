@@ -91,7 +91,7 @@ class M68K:
         """
         # ensure that the value is within bounds
         # since the CCR is just a single byte
-        assert 0 <= val <= 0xFF, 'The value for the CCR must fit in a single byte!'
+        assert 0 <= val.get_value_unsigned() <= 0xFF, 'The value for the CCR must fit in a single byte!'
 
         # now set the value
         self.registers[Register.ConditionCodeRegister] = val

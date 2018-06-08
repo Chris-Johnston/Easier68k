@@ -56,13 +56,13 @@ def _test_single_address_register(a :M68K, reg: Register):
     """
 
     # ensure that its value defaults to zero
-    assert a.get_register_value(reg) == 0
+    assert a.get_register(reg) == 0
 
     # try setting w/o errors
     a.set_register_value(reg, 0x3200)
 
     # ensure that this value can be retrieved without error
-    assert a.get_register_value(reg) == 0x3200
+    assert a.get_register(reg) == 0x3200
 
     # test of invalid input
     with pytest.raises(AssertionError):
@@ -97,44 +97,47 @@ def _test_single_data_register(sim: M68K, reg: Register):
     """
 
     # test that the initial value is zero
-    assert sim.get_register_value(reg) == 0
+    assert sim.get_register(reg) == 0
     # now try setting a single byte value to the register
-    sim.set_register_value(reg, 0xAF)
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_unsigned_int(0xAF)
+    sim.set_register(reg, mv)
     # ensure the values are accurate
-    assert sim.get_register_value(reg) == 0xAF
+    assert sim.get_register(reg) == 0xAF
 
-    sim.set_register_value(reg, 0xFF)
-    assert sim.get_register_value(reg) == 0xFF
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_unsigned_int(0xFF)
+    sim.set_register(reg, mv)
+
+    assert sim.get_register(reg) == 0xFF
 
     # hasn't died yet (hopefully)
     # so move on to 2 bytes
-    sim.set_register_value(reg, 0xBEEF)
-    assert sim.get_register_value(reg) == 0xBEEF
-    sim.set_register_value(reg, 0xFFFF)
-    assert sim.get_register_value(reg) == 0xFFFF
+    mv = MemoryValue(OpSize.WORD, signed_int=0xBEEF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xBEEF
+    mv = MemoryValue(OpSize.WORD, signed_int=0xFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xFFFF
 
     # 3
-    sim.set_register_value(reg, 0xBEEFFE)
-    assert sim.get_register_value(reg) == 0xBEEFFE
-    sim.set_register_value(reg, 0xFFFFFF)
-    assert sim.get_register_value(reg) == 0xFFFFFF
+    mv = MemoryValue(OpSize.LONG, signed_int=0x00BEEFFE)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xBEEFFE
+    mv = MemoryValue(OpSize.LONG, signed_int=0x00FFFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xFFFFFF
 
     # set all 4 bytes including max value
-    sim.set_register_value(reg, 0xDEADBEEF)
-    assert sim.get_register_value(reg) == 0xDEADBEEF
-    sim.set_register_value(reg, 0xFFFFFFFF)
-    assert sim.get_register_value(reg) == 0xFFFFFFFF
+    mv = MemoryValue(OpSize.LONG, signed_int=0xDEADBEEF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xDEADBEEF
+    mv = MemoryValue(OpSize.LONG, signed_int=0xFFFFFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xFFFFFFFF
 
-    # mess with out of bounds setting
-    with pytest.raises(AssertionError):
-        sim.set_register_value(reg, -1)
-
-    with pytest.raises(AssertionError):
-        sim.set_register_value(reg, 0xFFFFFFFF + 1)
-
-    # ensure that the resulting value is still accurate after errors
-    assert sim.get_register_value(reg) == 0xFFFFFFFF
-
+    # should not check for out of range setting, because
+    # this is handled byy MemoryValue already
 
 def test_condition_code_register():
     """

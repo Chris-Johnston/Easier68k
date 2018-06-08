@@ -21,17 +21,30 @@ class MemoryValue:
     Representation of some value in memory
     """
 
-    def __init__(self, len: OpSize = OpSize.WORD):
+    def __init__(self, len: OpSize = OpSize.WORD, *,
+                 signed_int: int = None,
+                 unsigned_int: int = None,
+                 bytes: bytearray = None):
         """
         Constructor
 
         Sets the initial value to zero with a length of OpSize.Word
         :param len the length in bytes of this memory value
+        :param signed_int the value to set as a signed int
+        :param unsigned_int the value to set as an unsigned int
+        :param bytes the value to set as a bytearray
         """
 
-        # use integers as the interal storage of the value
-        # this should be an UNSIGNED value
-        self.unsigned_value = 0
+        if signed_int is not None:
+            self.set_value_signed_int(signed_int)
+        elif unsigned_int is not None:
+            self.set_value_unsigned_int(unsigned_int)
+        elif bytes is not None:
+            self.set_value_bytes(bytes)
+        else:
+            # use integers as the interal storage of the value
+            # this should be an UNSIGNED value
+            self.unsigned_value = 0
 
         # use OpSize for length in bytes
         self.length = len
