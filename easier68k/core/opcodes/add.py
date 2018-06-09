@@ -99,7 +99,6 @@ class Add(Opcode):
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
 
-
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
 
@@ -139,9 +138,9 @@ class Add(Opcode):
         inverted_mask = 0xFFFFFFFF ^ mask
 
         # preserve the upper bits of the operation if they aren't used
-        preserve = dest_val.get_value_unsigned() & inverted_mask
+        preserve = dest_val.get_value_signed() & inverted_mask
+        raw_total = src_val.get_value_unsigned() + dest_val.get_value_unsigned()
 
-        raw_total = (src_val.get_value_unsigned() + dest_val.get_value_unsigned())
         total = (raw_total & mask) | preserve
 
         carry_bit = False
@@ -164,28 +163,21 @@ class Add(Opcode):
         elif self.size is OpSize.LONG:
             negative = total & 0x80000000 > 0
 
-        original_negative = False
-
-        if self.size is OpSize.BYTE:
-            original_negative = src_val & 0x80 > 0
-        elif self.size is OpSize.WORD:
-            original_negative = src_val & 0x8000 > 0
-        elif self.size is OpSize.LONG:
-            original_negative = src_val & 0x80000000 > 0
+        original_negative = src_val.get_negative()
 
         # set the same as the carry bit
         simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
         # result is negative
         simulator.set_condition_status_code(ConditionStatusCode.N, negative)
-        # result is zeor
-        simulator.set_condition_status_code(ConditionStatusCode.Z, (raw_total & mask) == 0)
+        # result is zero
+        simulator.set_condition_status_code(ConditionStatusCode.Z, (total & mask) == 0)
         # set if an overflow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.V, negative != original_negative)
         # set if a carry is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
         # and set the value
-        self.dest.set_value(simulator, MemoryValue(self.size, unsigned_int=total))
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=(total & mask )))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)

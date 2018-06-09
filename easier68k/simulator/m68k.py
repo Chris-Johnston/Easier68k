@@ -146,6 +146,7 @@ class M68K:
         :return:
         """
         ccr = self.get_register(Register.CCR).get_value_unsigned()
+        print(hex(ccr), ' for code ', code)
         # ccr is only 1 byte, bit mask away the bit being looked for
         return (ccr & code) > 0
 
@@ -156,13 +157,12 @@ class M68K:
         :return:
         """
         ccr = self.get_register(Register.CCR)
-
         v = ccr.get_value_unsigned()
 
         if value:
             v |= code
         else:
-            v = v & (not code)
+            v &= ~code
 
         self._set_condition_code_register_value(MemoryValue(OpSize.BYTE, unsigned_int=v))
 

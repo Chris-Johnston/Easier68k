@@ -195,7 +195,7 @@ def test_ccr_overflow():
     # 0x0001
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=1))
     # 0x7FFF as a 16 bit signed int is 32767
-    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=0x7FFF))
+    sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=0x7FFF))
 
     # D0, D1
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
@@ -203,10 +203,14 @@ def test_ccr_overflow():
     # Add D0, D1
     add = Add(params, OpSize.WORD)
 
+    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
     add.execute(sim)
+    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
 
     # result in D1 should be result of the addition 0x8000
     assert sim.get_register(Register.D1).get_value_unsigned() == 0x8000
+
+    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
 
     # does not carry over and not zero
     assert not sim.get_condition_status_code(ConditionStatusCode.X)
@@ -214,7 +218,9 @@ def test_ccr_overflow():
     assert not sim.get_condition_status_code(ConditionStatusCode.C)
 
     # negative
-    assert sim.get_condition_status_code(ConditionStatusCode.N)
+    p = sim.get_condition_status_code(ConditionStatusCode.N)
+    print(p)
+    assert p is True
     # overflow
     assert sim.get_condition_status_code(ConditionStatusCode.V)
 

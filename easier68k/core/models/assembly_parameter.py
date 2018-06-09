@@ -6,7 +6,7 @@ this is the new 'EAMode' class
 """
 
 from ..enum.ea_mode import EAMode
-from ..enum.register import Register
+from ..enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS
 from ...simulator.m68k import M68K
 from ..util.conversions import to_word
 from ..models.memory_value import MemoryValue
@@ -42,7 +42,6 @@ class AssemblyParameter:
             # ensure that the value isn't too large, cannot be larger than a long word
             # negative values need to be converted into unsigned integers
             assert -2147483648 <= data <= 2147483647 or 0 <= data <= 0xFFFFFFFF, 'Value must fit inside a long word!'
-
         # set values
         self.mode = mode
         self.data = data
@@ -61,6 +60,7 @@ class AssemblyParameter:
         :param length: the length in bytes associated with this operation, must be 1 2 or 4
         :return: the value associated with this assembly parameter
         """
+        # print('getting ', self.mode, 'data', self.data, 'len', length)
         # this check is probably useless now that the enum is being used
         assert length in [OpSize.BYTE, OpSize.WORD, OpSize.LONG], 'The length for this operation must be 1 2 or 4 bytes!'
 
@@ -90,28 +90,39 @@ class AssemblyParameter:
         if self.mode is EAMode.AddressRegisterIndirect:
             # address register indirect gets the value that the register points to
             # check that the register number is valid
-            assert Register.A0 <= self.data + Register.A0 <= Register.A7
+            assert Register.A0.value <= self.data + Register.A0.value <= Register.A7.value
             # offset the value to compensate for the enum offset
-            addr_register = Register(self.data + Register.A0)
-            # this gets the value of the register, which points to a location
-            # in memory where the target value is
-            register_value = simulator.get_register(addr_register)
-            # now get the value in memory of that register
-            return simulator.memory.get(length, register_value.get_value_unsigned())
-
-        if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
-            # address register indirect gets the value that the register points to
-            # check that the register number is valid
-            assert Register.A0 <= self.data + Register.A0 <= Register.A7
-            # offset the value to compensate for the enum offset
-            addr_register = Register(self.data + Register.A0)
+            addr_register = Register(self.data + Register.A0.value)
             # this gets the value of the register, which points to a location
             # in memory where the target value is
             register_value = simulator.get_register(addr_register)
             # now get the value in memory of that register
             val = simulator.memory.get(length, register_value.get_value_unsigned())
+            return val
+
+        if self.mode is EAMode.AddressRegisterIndirectPostIncrement:
+            # address register indirect gets the value that the register points to
+            # check that the register number is valid
+            assert Register.A0.value <= self.data + Register.A0.value <= Register.A7.value
+            # offset the value to compensate for the enum offset
+            addr_register = Register(self.data + Register.A0.value)
+            # this gets the value of the register, which points to a location
+            # in memory where the target value is
+            register_value = simulator.get_register(addr_register)
+            print('register_value', register_value, 'for register', addr_register)
+            # now get the value in memory of that register
+            val = simulator.memory.get(OpSize.LONG, register_value.get_value_unsigned())
+            print(length.value)
+            print(self.data)
+            total = register_value.get_value_unsigned() + OpSize.LONG.value
+            mv = MemoryValue(OpSize.LONG, unsigned_int=total)
+
+            print('total', total, 'mv', mv)
+
             # do the post increment
-            simulator.set_register(addr_register, register_value + length)
+            simulator.set_register(addr_register, mv)
+            print(val)
+
             return val
 
         if self.mode is EAMode.AddressRegisterIndirectPreDecrement:
@@ -124,12 +135,19 @@ class AssemblyParameter:
             # in memory where the target value is
             register_value = simulator.get_register(addr_register)
 
+            total = register_value.get_value_unsigned() - OpSize.LONG.value
+            mv = MemoryValue(OpSize.LONG, unsigned_int=total)
+
             # do the pre decrement (this does not update the value of register_value)
-            simulator.set_register(addr_register, register_value - length)
+            # simulator.set_register(addr_register, register_value - length)
+            # simulator.set_register(addr_register, MemoryValue(OpSize.LONG, unsigned_int=(register_value.get_value_unsigned())))
+            simulator.set_register(addr_register, mv)
 
             # now get the value in memory of that register
             # and return that value
-            return simulator.memory.get(length, register_value.get_value_unsigned() - length)
+            #return simulator.memory.get(length, register_value.get_value_unsigned() - OpSize.LONG.value)
+            val = simulator.memory.get(OpSize.LONG, register_value.get_value_unsigned())
+            return val
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # if mode is absolute long or word address
@@ -203,11 +221,10 @@ class AssemblyParameter:
 
             addr_register = Register(self.data + Register.A0)
             location = simulator.get_register(addr_register).get_value_unsigned()
-
             simulator.memory.set(value.length, location, value)
-
             location += value.length.get_number_of_bytes()
             simulator.set_register(addr_register, MemoryValue(OpSize.LONG, unsigned_int=location))
+
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # assert that the value fits in the bounds of memory
@@ -217,7 +234,7 @@ class AssemblyParameter:
             # if the mode is a word
             if self.mode is EAMode.AbsoluteWordAddress:
                 # mask it to only be a word
-                value = to_word(value)
+                value = MemoryValue(value.length, unsigned_int=to_word(value.get_value_unsigned()))
 
             # set the value in memory to that
             simulator.memory.set(value.length, self.data, value)

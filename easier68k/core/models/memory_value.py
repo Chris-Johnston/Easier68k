@@ -162,6 +162,13 @@ class MemoryValue:
         # otherwise, is positive and don't have to convert
         return self.unsigned_value
 
+    def get_negative(self):
+        """
+        Gets the negative flag for the memory value
+        :return:
+        """
+        return self.get_msb()
+
     def get_value_bytes(self) -> bytes:
         """
         Get the bytes value
