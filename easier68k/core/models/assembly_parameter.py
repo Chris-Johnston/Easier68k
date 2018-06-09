@@ -139,15 +139,11 @@ class AssemblyParameter:
             mv = MemoryValue(OpSize.LONG, unsigned_int=total)
 
             # do the pre decrement (this does not update the value of register_value)
-            # simulator.set_register(addr_register, register_value - length)
-            # simulator.set_register(addr_register, MemoryValue(OpSize.LONG, unsigned_int=(register_value.get_value_unsigned())))
             simulator.set_register(addr_register, mv)
 
             # now get the value in memory of that register
             # and return that value
-            #return simulator.memory.get(length, register_value.get_value_unsigned() - OpSize.LONG.value)
-            val = simulator.memory.get(OpSize.LONG, register_value.get_value_unsigned())
-            return val
+            return simulator.memory.get(OpSize.LONG, register_value.get_value_unsigned())
 
         if self.mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
             # if mode is absolute long or word address
