@@ -11,5 +11,5 @@ script:
   - cd tests
   - python run_doctest.py
   - python run_pytest.py
-  - (find src -iname "*.py" | xargs pylint) || true
+  - (find easier68k -iname "*.py" | xargs pylint) || true
   - (find tests -iname "*.py" | xargs pylint) || true
