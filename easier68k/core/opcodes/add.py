@@ -12,12 +12,12 @@ from ..enum.condition_status_code import ConditionStatusCode
 import binascii
 from ..models.memory_value import MemoryValue
 
+
 class Add(Opcode):  # Forward declaration
     pass
 
 
 class Add(Opcode):
-
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
@@ -33,14 +33,13 @@ class Add(Opcode):
         # check the dest param is valid
 
         # one of the modes must be DRD
-        if(params[0].mode != EAMode.DRD):
+        if (params[0].mode != EAMode.DRD):
             assert params[1].mode == EAMode.DRD
         assert params[1] != EAMode.ARD and params[1] != EAMode.IMM
         self.dest = params[1]
 
         assert size in Add.valid_sizes
         self.size = size
-
 
     def assemble(self) -> bytearray:
         """
@@ -49,15 +48,10 @@ class Add(Opcode):
         """
 
         # 1101 Dn xxx D x S xx M xxx Xn xxx
-        # 3 1 2 3 3
-
-        # Create a binary string to append to, which we'll convert to hex at the end
-        # tr = '1101'  # Opcode
-
+        # ret_opcode is the binary value which represents the assembled instruction
         ret_opcode = 0b1101 << 12
 
-        if(self.src == EAMode.DRD):
-
+        if self.src == EAMode.DRD:
             ret_opcode |= self.src.data << 9
 
             if self.size == OpSize.BYTE:
@@ -68,7 +62,7 @@ class Add(Opcode):
                 ret_opcode |= 0b110 << 6
 
             ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
-        else: # dest must be DRD
+        else:  # dest must be DRD
             ret_opcode |= self.dest.data << 9
 
             if self.size == OpSize.BYTE:
@@ -95,7 +89,7 @@ class Add(Opcode):
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
-        
+
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
 
@@ -177,11 +171,10 @@ class Add(Opcode):
         simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
         # and set the value
-        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=(total & mask )))
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=(total & mask)))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
-
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -219,7 +212,6 @@ class Add(Opcode):
 
         >>> Add.get_word_length('ADD.W', '#$AAAA, ($BBBB).L')
         4
-
 
         Gets what the end length of this command will be in memory
         :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
@@ -289,7 +281,8 @@ class Add(Opcode):
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
         return opcode_util.n_param_is_valid(command, parameters, "ADD", 2, param_invalid_modes=[[EAMode.ARD],
-                                              [EAMode.ARD, EAMode.IMM]])[:2]
+                                                                                                [EAMode.ARD,
+                                                                                                 EAMode.IMM]])[:2]
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> Opcode:
