@@ -16,6 +16,7 @@ integers, hex strings and byte arrays.
 
 from ..enum.op_size import OpSize
 
+
 class MemoryValue:
     """
     Representation of some value in memory
@@ -47,8 +48,6 @@ class MemoryValue:
             # use integers as the interal storage of the value
             # this should be an UNSIGNED value
             self.unsigned_value = 0
-
-
 
         # consider adding CCR bits for the last operation?
         # or just have CCR bit getters, in the ops just compare before and after
