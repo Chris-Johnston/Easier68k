@@ -60,7 +60,6 @@ class AssemblyParameter:
         :param length: the length in bytes associated with this operation, must be 1 2 or 4
         :return: the value associated with this assembly parameter
         """
-        # print('getting ', self.mode, 'data', self.data, 'len', length)
         # this check is probably useless now that the enum is being used
         assert length in [OpSize.BYTE, OpSize.WORD, OpSize.LONG], 'The length for this operation must be 1 2 or 4 bytes!'
 
@@ -109,19 +108,13 @@ class AssemblyParameter:
             # this gets the value of the register, which points to a location
             # in memory where the target value is
             register_value = simulator.get_register(addr_register)
-            print('register_value', register_value, 'for register', addr_register)
             # now get the value in memory of that register
             val = simulator.memory.get(OpSize.LONG, register_value.get_value_unsigned())
-            print(length.value)
-            print(self.data)
             total = register_value.get_value_unsigned() + OpSize.LONG.value
             mv = MemoryValue(OpSize.LONG, unsigned_int=total)
 
-            print('total', total, 'mv', mv)
-
             # do the post increment
             simulator.set_register(addr_register, mv)
-            print(val)
 
             return val
 

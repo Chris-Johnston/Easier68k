@@ -27,7 +27,6 @@ def test_assembly_parameter():
     ap = AssemblyParameter(EAMode.IMM, 0xFFFF)
     ap = AssemblyParameter(EAMode.IMM, 0xFFFFFFFF)
 
-    #with pytest.raises(AssertionError):
     # values can be negative
     AssemblyParameter(EAMode.IMM, -1)
 
@@ -129,9 +128,7 @@ def test_get_value():
 
             sim.set_register(r, val)
             # set the register value to a memory location
-            # sim.set_register(Register(r + Register.A0), x)
             # ensure it set
-            # assert sim.get_register_value(Register(r + Register.A0)) == x
             assert sim.get_register(r).get_value_unsigned() == x
 
             # now set up the parameter to get the value that the address reg points to
@@ -146,7 +143,7 @@ def test_get_value():
 
     ap = AssemblyParameter(EAMode.AddressRegisterIndirectPostIncrement, 0)
     v = ap.get_value(sim)
-    print(v)
+
     assert v.get_value_unsigned() == 2 * 0x1000
 
     assert sim.get_register(Register.A0).get_value_unsigned() == 0x1000 + 4
@@ -157,7 +154,6 @@ def test_get_value():
     assert ap.get_value(sim).get_value_unsigned() == 2 * 0x1000
 
     assert sim.get_register(Register.A0).get_value_unsigned() == 0x1000
-
     # test absolute long / word address
     ap = AssemblyParameter(EAMode.AbsoluteWordAddress, 0x1000)
     assert ap.get_value(sim).get_value_unsigned() == 0x1000
@@ -208,7 +204,6 @@ def test_assembly_parameter_set_value():
     sim.memory.set(OpSize.LONG, 0x120, val)
 
     # ensure set proper
-    # assert sim.memory.get(OpSize.WORD, 0x120).get_value_unsigned() == 0x1ABBAABB
     assert sim.memory.get(OpSize.LONG, 0x120) == 0x1ABBAABB
 
     # now test address register indirect
@@ -249,6 +244,3 @@ def test_assembly_parameter_set_value():
     ap.set_value(sim, mv)
 
     assert sim.memory.get(OpSize.LONG, 0x120).get_value_unsigned() == 0xDD
-
-
-

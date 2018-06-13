@@ -55,8 +55,6 @@ def test_add_negative():
 
     negative = parse_assembly_parameter('#-1')
 
-    print(negative)
-
     params = [negative, AssemblyParameter(EAMode.DRD, 2)]
 
     add = Add(params, OpSize.BYTE)
@@ -202,16 +200,9 @@ def test_ccr_overflow():
 
     # Add D0, D1
     add = Add(params, OpSize.WORD)
-
-    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
     add.execute(sim)
-    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
-
     # result in D1 should be result of the addition 0x8000
     assert sim.get_register(Register.D1).get_value_unsigned() == 0x8000
-
-    print('ccr ', sim.get_register(Register.CCR).get_value_unsigned())
-
     # does not carry over and not zero
     assert not sim.get_condition_status_code(ConditionStatusCode.X)
     assert not sim.get_condition_status_code(ConditionStatusCode.Z)
@@ -219,7 +210,6 @@ def test_ccr_overflow():
 
     # negative
     p = sim.get_condition_status_code(ConditionStatusCode.N)
-    print(p)
     assert p is True
     # overflow
     assert sim.get_condition_status_code(ConditionStatusCode.V)

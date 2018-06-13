@@ -60,8 +60,6 @@ class Lea(Opcode):
         # get the value of the source
         src_val = self.src.get_value(simulator, val_len)
 
-        print(src_val)
-
         # set the value in the dest
         self.dest.set_value(simulator, src_val)
 

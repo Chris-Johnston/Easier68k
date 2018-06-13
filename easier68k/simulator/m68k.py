@@ -146,7 +146,6 @@ class M68K:
         :return:
         """
         ccr = self.get_register(Register.CCR).get_value_unsigned()
-        print(hex(ccr), ' for code ', code)
         # ccr is only 1 byte, bit mask away the bit being looked for
         return (ccr & code) > 0
 
@@ -210,7 +209,6 @@ class M68K:
                 # note: this currently has the edge case that it will fail unintelligibly
                 # if encountered at the end of memory
                 pc_val = self.get_program_counter_value()
-                print(pc_val)
                 op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
                 if op is not None:
                     op.execute(self)

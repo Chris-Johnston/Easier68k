@@ -29,7 +29,7 @@ class MemoryValue:
         """
         Constructor
 
-        Sets the initial value to zero with a length of OpSize.Word
+        Sets the initial value to zero with a length of OpSize.Wordprint
         :param len the length in bytes of this memory value
         :param signed_int the value to set as a signed int
         :param unsigned_int the value to set as an unsigned int

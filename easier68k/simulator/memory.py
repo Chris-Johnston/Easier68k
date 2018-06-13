@@ -102,8 +102,6 @@ class Memory:
         try:
             b = self.memory[location:end]
         except TypeError:
-            # print(location, type(location))
-            # print(end, type(location))
             pass
         ret.set_value_bytes(b)
         return ret
