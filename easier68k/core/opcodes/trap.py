@@ -75,7 +75,6 @@ class Trap(Opcode):
                 location = simulator.get_register(Register.A1).get_value_unsigned()
                 value = simulator.memory.get(1, location).get_value_unsigned()
                 while value != 0:
-                    print('TRAP ', end='')
                     print(chr(value), end='')
                     location += 1
                     value = simulator.memory.get(1, location).get_value_unsigned()
