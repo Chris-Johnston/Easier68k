@@ -35,6 +35,9 @@ class DC(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
+
+        # DC does not implement execute because it is processed in the
+        # assembly stage and effectively removed
         pass
 
     def __str__(self):

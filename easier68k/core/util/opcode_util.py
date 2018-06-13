@@ -1,7 +1,7 @@
 from ..enum.ea_mode import EAMode
 from ..util.parsing import parse_assembly_parameter, from_str_util
 from ..enum.op_size import OpSize
-
+from ..models.memory_value import MemoryValue
 
 def command_matches(command: str, template: str) -> bool:
     """
@@ -115,79 +115,61 @@ def check_valid_command(command: str, template: str, can_take_size=True,
     return True
 
 
-def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> str:
+def ea_to_binary_post_op(ea: EAMode, size: OpSize) -> MemoryValue:
     """
     Gets the binary (if any) of an EA Mode to append after the command itself. For example, if we were to do
     'MOVE.B #$42, D0', the immediate would need to be appended after the command: this returns the part that
     needs to be appended.
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.BYTE)
-    '0000000001000010'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.BYTE))
+    'WORD MemoryValue 0x42'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('D0'), OpSize.WORD)
-    ''
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('D0'), OpSize.WORD))
+    'None'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.LONG)
-    '00000000000000000000000001000010'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('#$42'), OpSize.LONG))
+    'LONG MemoryValue 0x42'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).W'), OpSize.WORD)
-    '0000001001000010'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('($242).W'), OpSize.WORD))
+    'WORD MemoryValue 0x242'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('($242).L'), OpSize.LONG)
-    '00000000000000000000001001000010'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('($242).L'), OpSize.LONG))
+    'LONG MemoryValue 0x242'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#-1'), OpSize.BYTE)
-    '1111111111111111'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('#-1'), OpSize.BYTE))
+    'WORD MemoryValue 0xffff'
 
-    >>> ea_to_binary_post_op(parse_assembly_parameter('#-113442343'), OpSize.LONG)
-    '11111001001111010000000111011001'
+    >>> str(ea_to_binary_post_op(parse_assembly_parameter('#-113442343'), OpSize.LONG))
+    'LONG MemoryValue 0xf93d01d9'
 
     :param ea: The effective address that needs to be converted
     :param size: The size of the operation
     :return: The binary that needs to be appended, in string form (or an empty string)
     """
     if ea.mode == EAMode.IMM:
-        if size is OpSize.LONG:
-            str = ''
-
-            val = ea.data
-
+        if size == OpSize.LONG:
+            n = MemoryValue(OpSize.LONG)
             if ea.data < 0:
-                mask = 0xFFFFFFFF
-                comp = ea.data ^ mask
-                comp += 1
-                val = abs(comp)
-
-            bytes = val.to_bytes(4, byteorder='big', signed=False)
-
-            # convert the value to a bytearray of len 4
-            for byte in bytes:
-                str += bin(byte)[2:].zfill(8) # trim the first two characters '0b'
-            return str
+                n.set_value_signed_int(ea.data)
+            else:
+                n.set_value_unsigned_int(ea.data)
+            return n
         else:
-            str = ''
-
-            val = ea.data
-
+            n = MemoryValue(OpSize.WORD)
             if ea.data < 0:
-                mask = 0xFFFF
-                comp = ea.data ^ mask
-                comp += 1
-                val = abs(comp)
-
-            bytes = val.to_bytes(2, byteorder='big', signed=False)
-
-            # convert the value to a bytearray of len 2
-            for byte in bytes:
-                str += bin(byte)[2:].zfill(8) # trim '0b'
-            return str
+                n.set_value_signed_int(ea.data)
+            else:
+                n.set_value_unsigned_int(ea.data)
+            return n
 
     if ea.mode == EAMode.AWA:
-        return '{0:016b}'.format(ea.data)
+        n = MemoryValue(OpSize.WORD)
+        n.set_value_unsigned_int(ea.data)
+        return n
     if ea.mode == EAMode.ALA:
-        return '{0:032b}'.format(ea.data)
-
-    return ''  # This EA doesn't have a necessary post-op
+        n = MemoryValue(OpSize.LONG)
+        n.set_value_unsigned_int(ea.data)
+        return n
 
 
 def n_param_is_valid(command: str, parameters: str, opcode: str, n: int=2, valid_sizes=[OpSize.LONG, OpSize.WORD, OpSize.BYTE],

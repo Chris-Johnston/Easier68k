@@ -11,6 +11,7 @@ from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
 from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.util.parsing import parse_assembly_parameter
+from easier68k.core.models.memory_value import MemoryValue
 
 def test_add():
     """
@@ -28,7 +29,7 @@ def test_add():
 
     add.execute(sim)
 
-    assert sim.get_register_value(Register.D2) == 0b101
+    assert sim.get_register(Register.D2).get_value_unsigned() == 0b101
 
     assert sim.get_program_counter_value() == (0x1000 + 4)
 
@@ -54,15 +55,13 @@ def test_add_negative():
 
     negative = parse_assembly_parameter('#-1')
 
-    print(negative)
-
     params = [negative, AssemblyParameter(EAMode.DRD, 2)]
 
     add = Add(params, OpSize.BYTE)
 
     add.execute(sim)
-
-    assert sim.get_register_value(Register.D2) == 255
+    
+    assert sim.get_register(Register.D2).get_value_unsigned() == 255
 
     assert sim.get_program_counter_value() == (0x1000 + 4)
 
@@ -94,7 +93,7 @@ def test_add_zero():
 
     add.execute(sim)
 
-    assert sim.get_register_value(Register.D2) == 0
+    assert sim.get_register(Register.D2).get_value_unsigned() == 0
 
     assert sim.get_program_counter_value() == (0x1000 + 4)
 
@@ -127,11 +126,11 @@ def test_add_disassembles():
 
     sim = M68K()
 
-    sim.set_register_value(Register.D0, 123)
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=123))
 
     result.execute(sim)
 
-    assert sim.get_register_value(Register.D1) == 123
+    assert sim.get_register(Register.D1).get_value_unsigned() == 123
 
     assert sim.get_program_counter_value() == 2
 
@@ -151,9 +150,9 @@ def test_ccr_carry():
     sim = M68K()
 
     # 0x0001
-    sim.set_register_value(Register.D0, 1)
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=1))
     # 0xFFFF as a 16 bit signed int is -1
-    sim.set_register_value(Register.D1, 0xFFFF)
+    sim.set_register(Register.D1, MemoryValue(OpSize.WORD, signed_int=-1))
 
     # D0, D1
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
@@ -164,7 +163,7 @@ def test_ccr_carry():
     add.execute(sim)
 
     # result in D1 should be 0
-    assert sim.get_register_value(Register.D1) == 0
+    assert sim.get_register(Register.D1).get_value_unsigned() == 0
 
     # carries over and value is zero
     assert sim.get_condition_status_code(ConditionStatusCode.X)
@@ -192,28 +191,26 @@ def test_ccr_overflow():
     sim = M68K()
 
     # 0x0001
-    sim.set_register_value(Register.D0, 1)
+    sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=1))
     # 0x7FFF as a 16 bit signed int is 32767
-    sim.set_register_value(Register.D1, 0x7FFF)
+    sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=0x7FFF))
 
     # D0, D1
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
 
     # Add D0, D1
     add = Add(params, OpSize.WORD)
-
     add.execute(sim)
-
-    # result in D1 should be 0
-    assert sim.get_register_value(Register.D1) == 0x8000
-
+    # result in D1 should be result of the addition 0x8000
+    assert sim.get_register(Register.D1).get_value_unsigned() == 0x8000
     # does not carry over and not zero
     assert not sim.get_condition_status_code(ConditionStatusCode.X)
     assert not sim.get_condition_status_code(ConditionStatusCode.Z)
     assert not sim.get_condition_status_code(ConditionStatusCode.C)
 
     # negative
-    assert sim.get_condition_status_code(ConditionStatusCode.N)
+    p = sim.get_condition_status_code(ConditionStatusCode.N)
+    assert p is True
     # overflow
     assert sim.get_condition_status_code(ConditionStatusCode.V)
 

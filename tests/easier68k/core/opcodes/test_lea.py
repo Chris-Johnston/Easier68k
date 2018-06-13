@@ -29,4 +29,4 @@ def test_lea():
 
     lea.execute(a)
 
-    assert a.get_register_value(Register.A3) == 124
+    assert a.get_register(Register.A3).get_value_unsigned() == 124

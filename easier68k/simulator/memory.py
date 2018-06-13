@@ -10,6 +10,8 @@ from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.enum.system_status_code import SystemStatusCode
 from ..core.models.list_file import ListFile
 import typing
+from ..core.models.memory_value import MemoryValue
+from ..core.enum.op_size import OpSize
 
 class UnalignedMemoryAccessError(Exception):
     pass
@@ -21,18 +23,17 @@ class AssignWrongMemorySizeError(Exception):
     pass
 
 class Memory:
-    Byte = 1
-    Word = 2
-    Long = 4
 
-    def __validateLocation(self, size: int, location: int):
+    def __validateLocation(self, size: OpSize, location: int):
         """
         Helper function which throws an error if the location is either
         not aligned or out of bounds
         """
-        if(location % size != 0):
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
+        if(location % size.get_number_of_bytes() != 0):
             raise UnalignedMemoryAccessError
-        if(location < 0 or location+size > len(self.memory)):
+        if(location < 0 or (location + size.get_number_of_bytes()) > len(self.memory)):
             raise OutOfBoundsMemoryError
 
     def __init__(self):
@@ -85,21 +86,37 @@ class Memory:
 
             for i in range(0, len(values), 1):
                 # set one byte at a time
-                self.set(1, location + i, values[i:i+1])
+                val = MemoryValue(OpSize.BYTE, bytes=values[i:i+1])
+                self.set(OpSize.BYTE, location + i, val)
 
-
-    def get(self, size: int, location: int) -> bytearray:
+    def get(self, size: OpSize, location: int) -> MemoryValue:
         """
         gets the memory at the given location index of size
         """
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
         self.__validateLocation(size, location)
-        return self.memory[location:location+size]
+        ret = MemoryValue(size)
+        end = location + size.value
+        b = None
+        try:
+            b = self.memory[location:end]
+        except TypeError:
+            pass
+        ret.set_value_bytes(b)
+        return ret
 
-    def set(self, size: int, location: int, value: bytearray):
+    def set(self, size: OpSize, location: int, value: MemoryValue):
         """
         sets the memory at the given location index of size
         """
+        if not isinstance(value, MemoryValue):
+            raise AssertionError("The value parameter must be of type MemoryValue")
+
+        if not isinstance(size, OpSize):
+            size = OpSize(size)
+
         self.__validateLocation(size, location)
-        if(len(value) != size):
+        if value.get_size() != size:
             raise AssignWrongMemorySizeError
-        self.memory[location:location+size] = value
+        self.memory[location:location+size.get_number_of_bytes()] = value.get_value_bytes()

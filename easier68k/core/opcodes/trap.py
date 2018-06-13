@@ -24,7 +24,7 @@ class Trap(Opcode):
         self.use_debug_input = False
         self.debug_input = 'debug input'
 
-    def assemble(self) -> bytearray:
+    def assemble(self) -> bytes:
         """
         Assembles this opcode into hex to be inserted
         into memory
@@ -48,51 +48,50 @@ class Trap(Opcode):
         """
         if self.trpVector.value == TrapVectors.IO:
 
-            task = TrapTask(simulator.get_register_value(Register.D0))
+            task = TrapTask(simulator.get_register(Register.D0).get_value_unsigned())
 
             if task is TrapTask.DisplayNullTermString:
 
                 # get the value of A1
-                location = simulator.get_register_value(Register.A1)
-                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                location = simulator.get_register(Register.A1).get_value_unsigned()
+                value = simulator.memory.get(1, location).get_value_unsigned()
                 while value != 0:
                     print(chr(value), end='')
                     location += 1
-                    value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                    value = simulator.memory.get(1, location).get_value_unsigned()
 
             if task is TrapTask.DisplayNullTermStringWithCRLF:
                 # get the value of A1
-                location = simulator.get_register_value(Register.A1)
-                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                location = simulator.get_register(Register.A1).get_value_unsigned()
+                value = simulator.memory.get(1, location).get_value_unsigned()
                 while value != 0:
                     print(chr(value), end='')
                     location += 1
-                    value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                    value = simulator.memory.get(1, location).get_value_unsigned()
                 print('')
 
             if task is TrapTask.DisplayNullTermStringAndReadNumberFromKeyboard:
                 # get the value of A1
-                location = simulator.get_register_value(Register.A1)
-                value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                location = simulator.get_register(Register.A1).get_value_unsigned()
+                value = simulator.memory.get(1, location).get_value_unsigned()
                 while value != 0:
                     print(chr(value), end='')
                     location += 1
-                    value = int.from_bytes(simulator.memory.get(1, location), byteorder='big', signed=False)
+                    value = simulator.memory.get(1, location).get_value_unsigned()
 
                 # read a number from the keyboard
 
             if task is TrapTask.DisplaySignedNumber:
                 # get the value of D1.L
                 value = simulator.get_register(Register.D1)
-                int_val = int.from_bytes(value, byteorder='big', signed=True)
-                print(int_val, end='')
+                print(value.get_value_signed(), end='')
 
             if task is TrapTask.DisplaySingleCharacter:
                 # get the value of D1.B
-                value = simulator.get_register_value(Register.D1)
+                value = simulator.get_register(Register.D1).get_value_unsigned()
                 # mask it
-                value = 0xFF & value
-                print(chr(value), end='')
+                v = 0xFF & value
+                print(chr(v), end='')
 
             if task is TrapTask.Terminate:
                 # same as SIMHALT
@@ -100,7 +99,6 @@ class Trap(Opcode):
 
         # increment the program counter
         simulator.increment_program_counter(OpSize.WORD.value)
-
 
     def __str__(self):
         return 'TRAP {}'.format(self.trpVector)

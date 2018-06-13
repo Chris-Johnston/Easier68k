@@ -4,6 +4,8 @@ from easier68k.simulator.m68k import M68K
 from easier68k.core.enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS, DATA_REGISTERS
 from easier68k.core.models.list_file import ListFile
 from easier68k.simulator.memory import Memory
+from easier68k.core.models.memory_value import MemoryValue
+from easier68k.core.enum.op_size import OpSize
 
 def test_address_registers():
     """
@@ -54,23 +56,16 @@ def _test_single_address_register(a :M68K, reg: Register):
     """
 
     # ensure that its value defaults to zero
-    assert a.get_register_value(reg) == 0
+    assert a.get_register(reg) == 0
 
     # try setting w/o errors
-    a.set_register_value(reg, 0x3200)
+    a.set_register(reg, MemoryValue(OpSize.WORD, unsigned_int=0x3200))
 
     # ensure that this value can be retrieved without error
-    assert a.get_register_value(reg) == 0x3200
+    assert a.get_register(reg) == 0x3200
 
-    # test of invalid input
-    with pytest.raises(AssertionError):
-        a.set_register_value(reg, -1)
-
-    a.set_register_value(reg, 16777216)
-
-    with pytest.raises(AssertionError):
-        # 1 beyond the max value
-        a.set_register_value(reg, 16777216 + 1)
+    # set the max size without error
+    a.set_register(reg, MemoryValue(OpSize.LONG, unsigned_int=16777216))
 
 def test_data_registers():
     """
@@ -95,44 +90,47 @@ def _test_single_data_register(sim: M68K, reg: Register):
     """
 
     # test that the initial value is zero
-    assert sim.get_register_value(reg) == 0
+    assert sim.get_register(reg) == 0
     # now try setting a single byte value to the register
-    sim.set_register_value(reg, 0xAF)
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_unsigned_int(0xAF)
+    sim.set_register(reg, mv)
     # ensure the values are accurate
-    assert sim.get_register_value(reg) == 0xAF
+    assert sim.get_register(reg).get_value_unsigned() == 0xAF
 
-    sim.set_register_value(reg, 0xFF)
-    assert sim.get_register_value(reg) == 0xFF
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_unsigned_int(0xFF)
+    sim.set_register(reg, mv)
+
+    assert sim.get_register(reg).get_value_unsigned() == 0xFF
 
     # hasn't died yet (hopefully)
     # so move on to 2 bytes
-    sim.set_register_value(reg, 0xBEEF)
-    assert sim.get_register_value(reg) == 0xBEEF
-    sim.set_register_value(reg, 0xFFFF)
-    assert sim.get_register_value(reg) == 0xFFFF
+    mv = MemoryValue(OpSize.WORD, unsigned_int=0xBEEF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg).get_value_unsigned() == 0xBEEF
+    mv = MemoryValue(OpSize.WORD, unsigned_int=0xFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg).get_value_unsigned() == 0xFFFF
 
     # 3
-    sim.set_register_value(reg, 0xBEEFFE)
-    assert sim.get_register_value(reg) == 0xBEEFFE
-    sim.set_register_value(reg, 0xFFFFFF)
-    assert sim.get_register_value(reg) == 0xFFFFFF
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0x00BEEFFE)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xBEEFFE
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0x00FFFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg) == 0xFFFFFF
 
     # set all 4 bytes including max value
-    sim.set_register_value(reg, 0xDEADBEEF)
-    assert sim.get_register_value(reg) == 0xDEADBEEF
-    sim.set_register_value(reg, 0xFFFFFFFF)
-    assert sim.get_register_value(reg) == 0xFFFFFFFF
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0xDEADBEEF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg).get_value_unsigned() == 0xDEADBEEF
+    mv = MemoryValue(OpSize.LONG, unsigned_int=0xFFFFFFFF)
+    sim.set_register(reg, mv)
+    assert sim.get_register(reg).get_value_unsigned() == 0xFFFFFFFF
 
-    # mess with out of bounds setting
-    with pytest.raises(AssertionError):
-        sim.set_register_value(reg, -1)
-
-    with pytest.raises(AssertionError):
-        sim.set_register_value(reg, 0xFFFFFFFF + 1)
-
-    # ensure that the resulting value is still accurate after errors
-    assert sim.get_register_value(reg) == 0xFFFFFFFF
-
+    # should not check for out of range setting, because
+    # this is handled byy MemoryValue already
 
 def test_condition_code_register():
     """
@@ -145,22 +143,17 @@ def test_condition_code_register():
     # registers
     a = M68K()
 
-    # test initial value
-    assert a.get_register_value(Register.ConditionCodeRegister) == 0
-    assert a.get_register_value(Register.CCR) == 0
+    assert a.get_register(Register.CCR) == 0
+    assert a.get_register(Register.ConditionCodeRegister) == 0
 
-    # test setting a value in bounds
-    a.set_register_value(Register.CCR, 0xAF)
+    val = MemoryValue(OpSize.BYTE)
+    val.set_value_unsigned_int(0xAF)
+
+    a.set_register(Register.ConditionCodeRegister, val)
 
     # after this can assume that the enums are correctly equal to each other
-    assert a.get_register_value(Register.ConditionCodeRegister) == 0xAF
-    assert a.get_register_value(Register.CCR) == 0xAF
-
-    # now test invalid input
-    with pytest.raises(AssertionError):
-        a.set_register_value(Register.CCR, -1)
-    with pytest.raises(AssertionError):
-        a.set_register_value(Register.CCR, 0xFF + 1)
+    assert a.get_register(Register.ConditionCodeRegister).get_value_unsigned() == 0xAF
+    assert a.get_register(Register.CCR).get_value_unsigned() == 0xAF
 
 def test_full_integration():
     m68k = M68K()
@@ -195,10 +188,10 @@ START:
 
     m68k.load_list_file(list_file)
     assert(m68k.get_program_counter_value() == 1024)
-    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('0000'))
+    assert(m68k.memory.get(OpSize.WORD, 0x00aaaaaa).get_value_unsigned() == 0x0000)
     m68k.step_instruction()
     assert(m68k.get_program_counter_value() == 1032)
-    assert(m68k.memory.get(Memory.Word, 0x00aaaaaa) == bytearray.fromhex('abcd'))
+    assert(m68k.memory.get(OpSize.WORD, 0x00aaaaaa).get_value_unsigned() == 0xABCD)
     m68k.step_instruction()
     assert m68k.get_program_counter_value() == 1036
     assert m68k.halted

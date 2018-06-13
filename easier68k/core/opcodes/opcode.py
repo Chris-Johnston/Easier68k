@@ -6,7 +6,7 @@ class Opcode:
 
 
 class Opcode:
-    def assemble(self) -> bytearray:
+    def assemble(self) -> bytes:
         """
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
@@ -54,7 +54,7 @@ class Opcode:
         """
 
     @classmethod
-    def disassemble_instruction(cls, data: bytearray) -> Opcode:
+    def disassemble_instruction(cls, data: bytes) -> Opcode:
         """
         Parses some raw data into an instance of the opcode class
 

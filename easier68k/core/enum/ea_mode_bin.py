@@ -54,53 +54,67 @@ VALID_DEST_EA_111_REGISTERS = [EAModeBinary.REGISTER_ALA, EAModeBinary.REGISTER_
 # currently missing the offset modes
 VALID_SRC_EA_111_REGISTERS = VALID_DEST_EA_111_REGISTERS + [EAModeBinary.REGISTER_IMM]
 
+def get_mode_and_register_values(mode: EAMode) -> (int, int):
+    """
+    Gets the integer value representing the mode and register values for a given EAMode
+    for use in the assembly process
+    :param mode: EAMode to produce binary from
+    :return:(the integer value of the assembled mode bits, the integer value of the assembled register bits)
+    """
+    return_mode = 0
+    return_register = 0
 
-def parse_from_ea_mode_modefirst(mode: EAMode) -> str:
+    # get the return value for the register
+    if mode.mode in [EAMode.DRD, EAMode.ARD, EAMode.ARI, EAMode.ARIPI, EAMode.ARIPD, EAMode.ARIPD]:
+        return_register = mode.data
+    elif mode.mode == EAMode.IMM:
+        return_register = 0b100
+    elif mode.mode == EAMode.ALA:
+        return_register = 0b001
+    elif mode.mode == EAMode.ALA:
+        return_register = 0b000
+
+    # get the return value for the mode by converting EAMode into EAModeBinary
+    # this should instead a util method of EAMode
+    if mode.mode == EAMode.DRD:
+        return_mode = EAModeBinary.MODE_DRD
+    if mode.mode == EAMode.ARD:
+        return_mode = EAModeBinary.MODE_ARD
+    if mode.mode == EAMode.ARI:
+        return_mode = EAModeBinary.MODE_ARI
+    if mode.mode == EAMode.ARIPI:
+        return_mode = EAModeBinary.MODE_ARIPI
+    if mode.mode == EAMode.ARIPD:
+        return_mode = EAModeBinary.MODE_ARIPD
+    if mode.mode == EAMode.IMM:
+        return_mode = EAModeBinary.MODE_IMM
+    if mode.mode == EAMode.ALA:
+        return_mode = EAModeBinary.MODE_ALA
+    if mode.mode == EAMode.AWA:
+        return_mode = EAModeBinary.MODE_AWA
+
+    # return both
+    return return_mode, return_register
+
+
+def parse_from_ea_mode_modefirst(mode: EAMode) -> int:
     """
     Parses binary EA mode text from an EAMode class, returning the mode data first.
     :param mode: The EAMode to produce binary from
     :return: The parsed binary
     """
-    if mode.mode == EAMode.DRD:
-        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_DRD, mode.data)
-    if mode.mode == EAMode.ARD:
-        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARD, mode.data)
-    if mode.mode == EAMode.ARI:
-        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARI, mode.data)
-    if mode.mode == EAMode.ARIPI:
-        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPI, mode.data)
-    if mode.mode == EAMode.ARIPD:
-        return "{0:03b}{1:03b}".format(EAModeBinary.MODE_ARIPD, mode.data)
-    if mode.mode == EAMode.IMM:
-        return "{0:03b}100".format(EAModeBinary.MODE_IMM)
-    if mode.mode == EAMode.ALA:
-        return "{0:03b}001".format(EAModeBinary.MODE_ALA)
-    if mode.mode == EAMode.AWA:
-        return "{0:03b}000".format(EAModeBinary.MODE_AWA)
 
+    mode, reg = get_mode_and_register_values(mode)
+    return mode << 3 | reg
 
-def parse_from_ea_mode_regfirst(mode: EAMode) -> str:
+def parse_from_ea_mode_regfirst(mode: EAMode) -> int:
     """
     Parses binary EA mode text from an EAMode class, returning the Xn data first.
     :param mode: The EAMode to produce binary from
     :return: The parsed binary
     """
-    if mode.mode == EAMode.DRD:
-        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_DRD)
-    if mode.mode == EAMode.ARD:
-        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARD)
-    if mode.mode == EAMode.ARI:
-        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARI)
-    if mode.mode == EAMode.ARIPI:
-        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPI)
-    if mode.mode == EAMode.ARIPD:
-        return "{0:03b}{1:03b}".format(mode.data, EAModeBinary.MODE_ARIPD)
-    if mode.mode == EAMode.IMM:
-        return "100{0:03b}".format(EAModeBinary.MODE_IMM)
-    if mode.mode == EAMode.ALA:
-        return "001{0:03b}".format(EAModeBinary.MODE_ALA)
-    if mode.mode == EAMode.AWA:
-        return "000{0:03b}".format(EAModeBinary.MODE_AWA)
+    mode, reg = get_mode_and_register_values(mode)
+    return reg << 3 | mode
 
 
 def parse_ea_from_binary(mode: int, register: int, size: OpSize, is_source: bool, data : bytearray) -> (EAMode, int):

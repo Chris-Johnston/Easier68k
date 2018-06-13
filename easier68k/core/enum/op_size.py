@@ -176,6 +176,12 @@ class OpSize(Enum):
     WORD = 2
     LONG = 4
 
+    def __eq__(self, other):
+        if isinstance(other, OpSize):
+            return self.get_number_of_bytes() == other.get_number_of_bytes()
+        elif isinstance(other, int):
+            return self.get_number_of_bytes() == other
+
     def get_number_of_bytes(self) -> int:
         """
         Gets the number of bytes associated with an opsize

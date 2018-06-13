@@ -1,52 +1,71 @@
 import pytest
 
 from easier68k.simulator.memory import Memory, UnalignedMemoryAccessError, OutOfBoundsMemoryError
+from easier68k.core.models.memory_value import MemoryValue
+from easier68k.core.enum.op_size import OpSize
 
 def test_memory_set_get():
     memory = Memory()
 
     # should start all zeroed out
     # also test get returns appropriate sizes
-    assert memory.get(Memory.Long, 0x00) == b'\x00\x00\x00\x00'
-    assert memory.get(Memory.Word, 0x100000) == b'\x00\x00'
-    assert memory.get(Memory.Byte, 0xFFFFFF) == b'\x00'
+    a = MemoryValue(OpSize.LONG)
+    a.set_value_bytes(b'\x00\x00\x00\x00')
 
+    assert memory.get(OpSize.LONG, 0x00).get_value_bytes() == b'\x00\x00\x00\x00'
+    assert memory.get(OpSize.WORD, 0x100000).get_value_bytes() == b'\x00\x00'
+    assert memory.get(OpSize.BYTE, 0xFFFFFF).get_value_bytes() == b'\x00'
+
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_bytes(b'\xFF')
 
     # some basic set tests
-    memory.set(Memory.Byte, 0x00, b'\xFF')
-    assert memory.get(Memory.Byte, 0x00) == b'\xFF'
-    assert memory.get(Memory.Word, 0x00) == b'\xFF\x00'
-    assert memory.get(Memory.Long, 0x00) == b'\xFF\x00\x00\x00'
+    memory.set(OpSize.BYTE, 0x00, mv)
+    assert memory.get(OpSize.BYTE, 0x00).get_value_bytes() == b'\xFF'
+    assert memory.get(OpSize.WORD, 0x00).get_value_bytes() == b'\xFF\x00'
+    assert memory.get(OpSize.LONG, 0x00).get_value_bytes() == b'\xFF\x00\x00\x00'
 
-    memory.set(Memory.Byte, 0x000002, b'\xBE')
-    memory.set(Memory.Byte, 0x000003, b'\xEF')
-    assert memory.get(Memory.Long, 0x00) == b'\xFF\x00\xBE\xEF'
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_bytes(b'\xBE')
+    memory.set(OpSize.BYTE, 0x000002, mv)
 
-    memory.set(Memory.Word, 0x001000, b'\x01\x23')
-    assert memory.get(Memory.Long, 0x001000) == b'\x01\x23\x00\x00'
+    mv = MemoryValue(OpSize.BYTE)
+    mv.set_value_bytes(b'\xEF')
+    memory.set(OpSize.BYTE, 0x000003, mv)
 
-    memory.set(Memory.Long, 0x100000, b'\x45\x67\x89\xAB')
-    assert memory.get(Memory.Long, 0x100000) == b'\x45\x67\x89\xAB'
+    assert memory.get(OpSize.LONG, 0x00).get_value_bytes() == b'\xFF\x00\xBE\xEF'
+
+    mv = MemoryValue(OpSize.WORD)
+    mv.set_value_bytes(b'\x01\x23')
+    memory.set(OpSize.WORD, 0x001000, mv)
+
+    assert memory.get(OpSize.LONG, 0x001000).get_value_bytes() == b'\x01\x23\x00\x00'
+
+    mv = MemoryValue(OpSize.LONG)
+    mv.set_value_bytes(b'\x45\x67\x89\xAB')
+    memory.set(OpSize.LONG, 0x100000, mv)
+
+    assert memory.get(OpSize.LONG, 0x100000).get_value_bytes() == b'\x45\x67\x89\xAB'
 
 
     # test some error handling
     with pytest.raises(UnalignedMemoryAccessError):
-        memory.get(Memory.Word, 0x000001)
+        memory.get(OpSize.WORD, 0x000001)
     with pytest.raises(UnalignedMemoryAccessError):
-        memory.set(Memory.Long, 0x000001, b'\xDE\xAD')
+        memory.set(OpSize.LONG, 0x000001, MemoryValue(OpSize.WORD, bytes=b'\xDE\xAD'))
 
     with pytest.raises(OutOfBoundsMemoryError):
-        memory.get(Memory.Long, 0xFFFFFF4)
+        memory.get(OpSize.LONG, 0xFFFFFF4)
     with pytest.raises(OutOfBoundsMemoryError):
-        memory.get(Memory.Word, 0xFFFFFF2)
+        memory.get(OpSize.WORD, 0xFFFFFF2)
 
     with pytest.raises(OutOfBoundsMemoryError):
-        memory.get(Memory.Byte, -1)
+        memory.get(OpSize.BYTE, -1)
 
     # no exception here
-    memory.get(Memory.Byte, 0xFFFFFF)
-    memory.get(Memory.Word, 0xFFFFFE)
-    memory.get(Memory.Long, 0xFFFFFC)
+    memory.get(OpSize.BYTE, 0xFFFFFF)
+    memory.get(OpSize.WORD, 0xFFFFFE)
+    memory.get(OpSize.LONG, 0xFFFFFC)
 
 
 def test_memory_save_load(tmpdir):
@@ -54,9 +73,14 @@ def test_memory_save_load(tmpdir):
     memory = Memory()
     path = tmpdir.join('memoryDump.raw').strpath
 
-    memory.set(Memory.Long, 0x00, b'\xFF\x00\xBE\xEF')
-    memory.set(Memory.Long, 0x001000, b'\x01\x23\x00\x00')
-    memory.set(Memory.Long, 0x100000, b'\x45\x67\x89\xAB')
+    var = MemoryValue(OpSize.LONG)
+    var.set_value_unsigned_int(0xFF00BEEF)
+
+    memory.set(OpSize.LONG, 0x00, var)
+    var.set_value_unsigned_int(0x01230000)
+    memory.set(OpSize.LONG, 0x001000, var)
+    var.set_value_unsigned_int(0x456789AB)
+    memory.set(OpSize.LONG, 0x100000, var)
 
     memory.save_memory(open(path, 'wb'))
 
@@ -64,6 +88,6 @@ def test_memory_save_load(tmpdir):
     load_test = Memory()
     load_test.load_memory(open(path, 'rb'))
 
-    assert load_test.get(Memory.Long, 0x00) == b'\xFF\x00\xBE\xEF'
-    assert load_test.get(Memory.Long, 0x001000) == b'\x01\x23\x00\x00'
-    assert load_test.get(Memory.Long, 0x100000) == b'\x45\x67\x89\xAB'
+    assert load_test.get(OpSize.LONG, 0x00).get_value_unsigned() == 0xFF00BEEF
+    assert load_test.get(OpSize.LONG, 0x001000).get_value_unsigned() == 0x01230000
+    assert load_test.get(OpSize.LONG, 0x100000).get_value_unsigned() == 0x456789AB

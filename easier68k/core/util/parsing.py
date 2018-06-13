@@ -73,6 +73,9 @@ def parse_assembly_parameter(addr: str) -> AssemblyParameter:
     >>> str(parse_assembly_parameter('#$FF'))
     'EA Mode: EAMode.IMM, Data: 255'
 
+    >>> str(parse_assembly_parameter('#$ABCD'))
+    'EA Mode: EAMode.IMM, Data: 43981'
+
     >>> str(parse_assembly_parameter('#-1'))
     'EA Mode: EAMode.IMM, Data: -1'
 

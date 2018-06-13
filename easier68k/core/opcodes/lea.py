@@ -33,17 +33,20 @@ class Lea(Opcode):
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        # Create a binary string to append to, which we'll convert to hex at the end
-        tr = '0100'  # Opcode
-        tr += '{0:03b}'.format(self.dest.data)
-        tr += '111'
-        tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
-        # Append after the command
-        # Size doesn't matter if it's not an immediate so we'll just give it W
-        tr += opcode_util.ea_to_binary_post_op(self.src, OpSize.LONG if self.src.mode == EAMode.ALA else OpSize.WORD)
+        # create the opcode
+        ret_opcode = 0b0100 << 12
+        ret_opcode |= self.dest.data << 9
+        ret_opcode |= 0b111 << 6
+        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
 
-        to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
-        return to_return
+        ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
+
+        ret_bytes.extend(
+            opcode_util.ea_to_binary_post_op(self.src,
+                                             OpSize.LONG if self.src.mode == EAMode.ALA else OpSize.WORD)
+        .get_value_bytearray())
+
+        return ret_bytes
 
     def execute(self, simulator: M68K):
         """
@@ -58,7 +61,7 @@ class Lea(Opcode):
         src_val = self.src.get_value(simulator, val_len)
 
         # set the value in the dest
-        self.dest.set_value(simulator, src_val, val_len)
+        self.dest.set_value(simulator, src_val)
 
         # increment the program counter by at least 2 bytes (1 word)
         to_increment = 2

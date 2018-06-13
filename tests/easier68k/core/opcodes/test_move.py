@@ -31,7 +31,7 @@ def test_move():
 
     mv.execute(a)
 
-    assert a.get_register_value(Register.D2) == 123
+    assert a.get_register(Register.D2).get_value_unsigned() == 123
 
     # assert that the program counter advanced by 2 words
     assert a.get_program_counter_value() == (0x1000 + 4)

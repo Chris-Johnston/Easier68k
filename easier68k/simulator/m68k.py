@@ -8,6 +8,8 @@ from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.models.list_file import ListFile
 import typing
 import binascii
+from ..core.models.memory_value import MemoryValue
+from ..core.enum.op_size import OpSize
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -41,13 +43,13 @@ class M68K:
 
         # loop through all of the full size registers which are just 32 bits / 4 bytes long
         for register in FULL_SIZE_REGISTERS:
-            self.registers[register] = bytearray(4)
+            self.registers[register] = MemoryValue(OpSize.LONG)
 
         # set up all of the odd registers (in this case, just the Condition Code Register)
         # which just uses 5 bits out of the lowermost byte (do we want to allocate it an entire word instead?)
-        self.registers[Register.ConditionCodeRegister] = bytearray(1)
+        self.registers[Register.ConditionCodeRegister] = MemoryValue(OpSize.BYTE)
 
-    def get_register(self, register: Register) -> bytearray:
+    def get_register(self, register: Register) -> MemoryValue:
         """
         Gets the entire value of a register
         :param register:
@@ -55,17 +57,7 @@ class M68K:
         """
         return self.registers[register]
 
-    def get_register_value(self, register: Register) -> int:
-        """
-        Return the value contained in a register as a 32-bit unsigned integer
-        :param register:
-        :return:
-        """
-        # convert the contents of the byte array to hex, and then convert
-        # that into an int
-        return int(self.get_register(register).hex(), 16)
-
-    def set_register_value(self, register: Register, val: int):
+    def set_register(self, register: Register, val: MemoryValue):
         """
         Sets the value of a register using a 32-bit int
         :param register:
@@ -86,12 +78,12 @@ class M68K:
         # now for all other registers
         # ensure that the value is within bounds
         # actual negative numbers will need to be converted into 32-bit numbers
-        assert 0 <= val <= 0xFFFFFFFF, 'The value for registers must fit into 4 bytes!'
+        assert 0 <= val.get_value_unsigned() <= 0xFFFFFFFF, 'The value for registers must fit into 4 bytes!'
 
         # set the value
-        self.registers[register] = bytearray(val.to_bytes(4, 'big'))
+        self.registers[register] = val
 
-    def _set_condition_code_register_value(self, val: int):
+    def _set_condition_code_register_value(self, val: MemoryValue):
         """
         Sets the value for the condition code register
         :param val:
@@ -99,32 +91,34 @@ class M68K:
         """
         # ensure that the value is within bounds
         # since the CCR is just a single byte
-        assert 0 <= val <= 0xFF, 'The value for the CCR must fit in a single byte!'
+        assert 0 <= val.get_value_unsigned() <= 0xFF, 'The value for the CCR must fit in a single byte!'
 
         # now set the value
-        self.registers[Register.ConditionCodeRegister] = bytearray(val.to_bytes(1, 'big'))
+        self.registers[Register.ConditionCodeRegister] = val
 
 
     def get_program_counter_value(self) -> int:
         """
-        Gets the 32-bit integer value for the program counter value
+        Gets the 32-bit unsigned integer value for the program counter value
         :return:
         """
-        return self.get_register_value(Register.ProgramCounter)
+        mv = self.get_register(Register.ProgramCounter)
+        ret = mv.get_value_unsigned()
+        return ret
 
 
-    def set_address_register_value(self, reg: Register, new_value: int):
+    def set_address_register_value(self, reg: Register, new_value: MemoryValue):
         """
         Sets the value of an address register, so the PC or A0-A7
         :param reg:
         :param new_value:
         :return:
         """
-        assert 0 <= new_value <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
+        assert 0 <= new_value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
         assert reg in MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
 
         # now set the value of the register
-        self.registers[reg] = bytearray(new_value.to_bytes(4, 'big'))
+        self.registers[reg].set_value_unsigned_int(new_value.get_value_unsigned())
 
 
     def set_program_counter_value(self, new_value: int):
@@ -134,7 +128,7 @@ class M68K:
         :param new_value:
         :return:
         """
-        self.set_address_register_value(Register.ProgramCounter, new_value)
+        self.set_address_register_value(Register.ProgramCounter, MemoryValue(OpSize.LONG, unsigned_int=new_value))
 
     def increment_program_counter(self, inc: int):
         """
@@ -151,9 +145,9 @@ class M68K:
         :param code:
         :return:
         """
-        ccr = self.get_register(Register.CCR)
+        ccr = self.get_register(Register.CCR).get_value_unsigned()
         # ccr is only 1 byte, bit mask away the bit being looked for
-        return (ccr[0] & code) > 0
+        return (ccr & code) > 0
 
     def set_condition_status_code(self, code: ConditionStatusCode, value: bool):
         """
@@ -162,14 +156,14 @@ class M68K:
         :return:
         """
         ccr = self.get_register(Register.CCR)
-        
-        if(value):
-            # set bit to 1
-            self._set_condition_code_register_value(ccr[0] | code)
-        else:
-            # set bit to 0
-            self._set_condition_code_register_value(ccr[0] & ~code)
+        v = ccr.get_value_unsigned()
 
+        if value:
+            v |= code
+        else:
+            v &= ~code
+
+        self._set_condition_code_register_value(MemoryValue(OpSize.BYTE, unsigned_int=v))
 
     def run(self):
         """

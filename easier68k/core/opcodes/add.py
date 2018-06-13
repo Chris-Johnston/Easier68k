@@ -10,6 +10,7 @@ from ..util.parsing import parse_assembly_parameter
 from ..models.assembly_parameter import AssemblyParameter
 from ..enum.condition_status_code import ConditionStatusCode
 import binascii
+from ..models.memory_value import MemoryValue
 
 
 class Add(Opcode):  # Forward declaration
@@ -17,7 +18,6 @@ class Add(Opcode):  # Forward declaration
 
 
 class Add(Opcode):
-
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
@@ -33,7 +33,7 @@ class Add(Opcode):
         # check the dest param is valid
 
         # one of the modes must be DRD
-        if(params[0].mode != EAMode.DRD):
+        if (params[0].mode != EAMode.DRD):
             assert params[1].mode == EAMode.DRD
         assert params[1] != EAMode.ARD and params[1] != EAMode.IMM
         self.dest = params[1]
@@ -41,35 +41,42 @@ class Add(Opcode):
         assert size in Add.valid_sizes
         self.size = size
 
-
     def assemble(self) -> bytearray:
         """
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        # Create a binary string to append to, which we'll convert to hex at the end
-        tr = '1101'  # Opcode
 
-        if(self.src == EAMode.DRD):
-            tr += '{0:03b}'.format(self.src.data)
-            if self.size == OpSize.BYTE:
-                tr += '100'
-            elif self.size == OpSize.WORD:
-                tr += '101'
-            elif self.size == OpSize.LONG:
-                tr += '110'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
-        else: # dest must be DRD
-            tr += '{0:03b}'.format(self.dest.data)
-            if self.size == OpSize.BYTE:
-                tr += '000'
-            elif self.size == OpSize.WORD:
-                tr += '001'
-            elif self.size == OpSize.LONG:
-                tr += '010'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+        # 1101 Dn xxx D x S xx M xxx Xn xxx
+        # ret_opcode is the binary value which represents the assembled instruction
+        ret_opcode = 0b1101 << 12
 
-        return bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
+        if self.src == EAMode.DRD:
+            ret_opcode |= self.src.data << 9
+
+            if self.size == OpSize.BYTE:
+                ret_opcode |= 0b100 << 6
+            elif self.size == OpSize.WORD:
+                ret_opcode |= 0b101 << 6
+            elif self.size == OpSize.LONG:
+                ret_opcode |= 0b110 << 6
+
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
+        else:  # dest must be DRD
+            ret_opcode |= self.dest.data << 9
+
+            if self.size == OpSize.BYTE:
+                # don't have to do anything, |= wouldn't do anything
+                pass
+            elif self.size == OpSize.WORD:
+                ret_opcode |= 0b001 << 6
+            elif self.size == OpSize.LONG:
+                ret_opcode |= 0b010 << 6
+
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+
+        # convert the int to a bytes, then to a mutable bytearray
+        return bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
     def execute(self, simulator: M68K):
         """
@@ -82,10 +89,9 @@ class Add(Opcode):
 
         # get the value of src from the simulator
         src_val = self.src.get_value(simulator, val_length)
-        print(src_val)
+
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
-
 
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
@@ -126,9 +132,9 @@ class Add(Opcode):
         inverted_mask = 0xFFFFFFFF ^ mask
 
         # preserve the upper bits of the operation if they aren't used
-        preserve = dest_val & inverted_mask
+        preserve = dest_val.get_value_signed() & inverted_mask
+        raw_total = src_val.get_value_unsigned() + dest_val.get_value_unsigned()
 
-        raw_total = (src_val + dest_val)
         total = (raw_total & mask) | preserve
 
         carry_bit = False
@@ -151,32 +157,24 @@ class Add(Opcode):
         elif self.size is OpSize.LONG:
             negative = total & 0x80000000 > 0
 
-        original_negative = False
-
-        if self.size is OpSize.BYTE:
-            original_negative = src_val & 0x80 > 0
-        elif self.size is OpSize.WORD:
-            original_negative = src_val & 0x8000 > 0
-        elif self.size is OpSize.LONG:
-            original_negative = src_val & 0x80000000 > 0
+        original_negative = src_val.get_negative()
 
         # set the same as the carry bit
         simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
         # result is negative
         simulator.set_condition_status_code(ConditionStatusCode.N, negative)
-        # result is zeor
-        simulator.set_condition_status_code(ConditionStatusCode.Z, (raw_total & mask) == 0)
+        # result is zero
+        simulator.set_condition_status_code(ConditionStatusCode.Z, (total & mask) == 0)
         # set if an overflow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.V, negative != original_negative)
         # set if a carry is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
         # and set the value
-        self.dest.set_value(simulator, total, val_length)
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=(total & mask)))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
-
 
     def __str__(self):
         # Makes this a bit easier to read in doctest output
@@ -214,7 +212,6 @@ class Add(Opcode):
 
         >>> Add.get_word_length('ADD.W', '#$AAAA, ($BBBB).L')
         4
-
 
         Gets what the end length of this command will be in memory
         :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
@@ -284,7 +281,8 @@ class Add(Opcode):
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
         return opcode_util.n_param_is_valid(command, parameters, "ADD", 2, param_invalid_modes=[[EAMode.ARD],
-                                              [EAMode.ARD, EAMode.IMM]])[:2]
+                                                                                                [EAMode.ARD,
+                                                                                                 EAMode.IMM]])[:2]
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> Opcode:

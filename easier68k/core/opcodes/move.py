@@ -15,7 +15,6 @@ class Move(Opcode):  # Forward declaration
 
 
 class Move(Opcode):
-
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
@@ -28,7 +27,8 @@ class Move(Opcode):
         self.src = params[0]
 
         # Check that the destination is of a proper type
-        assert params[1].mode != EAMode.ARD and params[1].mode != EAMode.IMM  # Can't take address register direct or immediates
+        assert params[1].mode != EAMode.ARD and params[
+            1].mode != EAMode.IMM  # Can't take address register direct or immediates
         self.dest = params[1]
 
         # Check that this is a valid size (for example, 'MOVEA.B' is not a valid command)
@@ -41,17 +41,33 @@ class Move(Opcode):
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        # Create a binary string to append to, which we'll convert to hex at the end
-        tr = '00'  # Opcode
-        tr += '{0:02b}'.format(MoveSize.from_op_size(self.size))  # Size bits
-        tr += ea_mode_bin.parse_from_ea_mode_regfirst(self.dest)  # Destination first
-        tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
-        # Append immediates/absolute addresses after the command
-        tr += opcode_util.ea_to_binary_post_op(self.src, self.size)
-        tr += opcode_util.ea_to_binary_post_op(self.dest, self.size)
+        # 00 <size> <dest reg> <dest mode> <src mode> <src reg>
 
-        to_return = bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
-        return to_return
+        ret_opcode = 0
+        # can ignore the zero MSB
+        # ret_opcode = 00 << 13
+
+        # add the size
+        ret_opcode |= MoveSize.from_op_size(self.size) << 12
+
+        # add the destination reg and dest mode
+        ret_opcode |= ea_mode_bin.parse_from_ea_mode_regfirst(self.dest) << 6
+
+        # add the src mode and src reg
+        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+
+        # convert the opcode word to bytes
+        ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
+
+        # append the immediates / absolute addresses after the command opcode
+        # this data can be done if the value is not an immediate or absolute addr
+        data_to_append = (opcode_util.ea_to_binary_post_op(self.src, self.size),
+                          opcode_util.ea_to_binary_post_op(self.dest, self.size))
+        for data in data_to_append:
+            if data is not None:
+                ret_bytes.extend(data.get_value_bytearray())
+
+        return ret_bytes
 
     def execute(self, simulator: M68K):
         """
@@ -59,14 +75,11 @@ class Move(Opcode):
         :param simulator: The simulator to execute the command on
         :return: Nothing
         """
-        # get the length
-        val_length = self.size.get_number_of_bytes()
-
         # get the value of src from the simulator
-        src_val = self.src.get_value(simulator, val_length)
+        src_val = self.src.get_value(simulator, self.size)
 
         # and set the value
-        self.dest.set_value(simulator, src_val, val_length)
+        self.dest.set_value(simulator, src_val)
 
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
@@ -210,7 +223,8 @@ class Move(Opcode):
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
         return opcode_util.n_param_is_valid(command, parameters, "MOVE", 2, param_invalid_modes=[[EAMode.ARD],
-                                              [EAMode.ARD, EAMode.IMM]])
+                                                                                                 [EAMode.ARD,
+                                                                                                  EAMode.IMM]])
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> Opcode:
@@ -268,11 +282,11 @@ class Move(Opcode):
         first_word = int.from_bytes(data[0:2], 'big')
 
         [opcode_bin,
-        size_bin,
-        destination_register_bin,
-        destination_mode_bin,
-        source_mode_bin,
-        source_register_bin] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
+         size_bin,
+         destination_register_bin,
+         destination_mode_bin,
+         source_mode_bin,
+         source_register_bin] = split_bits(first_word, [2, 2, 3, 3, 3, 3])
 
         # check opcode
         if opcode_bin != 0b00:
@@ -287,10 +301,11 @@ class Move(Opcode):
 
         wordsUsed = 1
 
-        src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed*2:])
+        src_EA = parse_ea_from_binary(source_mode_bin, source_register_bin, size, True, data[wordsUsed * 2:])
         wordsUsed += src_EA[1]
 
-        dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False, data[wordsUsed*2:])
+        dest_EA = parse_ea_from_binary(destination_mode_bin, destination_register_bin, size, False,
+                                       data[wordsUsed * 2:])
 
         # when making the new Move, need to convert that MoveSize back into an OpSize
         return cls((src_EA[0], dest_EA[0]), size)

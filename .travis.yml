@@ -14,3 +14,6 @@ script:
   - cd tests
   - python run_doctest.py
   - python run_pytest.py
+  - cd /home/travis/build/Chris-Johnston/Easier68k
+  - (find easier68k -iname "*.py" | xargs pylint) || true
+  - (find tests/ -iname "*.py" | xargs pylint) || true
