@@ -8,6 +8,7 @@ from ...core.util import opcode_util
 from ..util.parsing import parse_assembly_parameter
 from ...core.enum.op_size import OpSize
 from ..util.split_bits import split_bits
+from ..models.memory_value import MemoryValue
 
 class Adda(Opcode):
     pass
@@ -39,15 +40,18 @@ class Adda(Opcode):
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        # Create a binary string to append to, which we'll convert to hex at the end
-        tr = '1101'  # Opcode
-        tr += '{0:03b}'.format(self.dest.data)
-        tr += '0' if self.size == OpSize.WORD else '1' + '11'     # Append ether '0' or '1' depending on size
-        tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)  # Source second
-        # Append immediate/absolute addresses after the command
-        tr += opcode_util.ea_to_binary_post_op(self.src, self.size)
+        # create the opcode
+        ret_opcode = 0b1101 << 12
+        ret_opcode |= self.dest.data << 9
+        ret_opcode |= (0b011 if self.size == OpSize.WORD else 0b111) << 6
+        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src) << 0
 
-        return bytearray.fromhex(hex(int(tr, 2))[2:])  # Convert to a bytearray
+        ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
+
+        if self.src.mode == EAMode.IMM or self.src.mode == EAMode.AWA or self.src.mode == EAMode.ALA:
+            ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.src, self.size).get_value_bytearray())
+
+        return ret_bytes
 
     def execute(self, simulator: M68K):
         """
@@ -79,11 +83,20 @@ class Adda(Opcode):
         if self.src.mode in [EAMode.AbsoluteWordAddress]:
             to_increment += OpSize.WORD.value
 
+        # mask to apply to the complement
+        mask = (0xFFFF0000 if self.size == OpSize.WORD else 0xFFFFFFFF)
+
         # Calculate the total
         total = src_val + dest_val
 
+        raw_total = total.get_value_unsigned()
+
+        # Logic should go here to take the proper two's complement of the
+        if src_val.get_value_signed() < 0:
+            raw_total = raw_total | mask
+
         # set the value
-        self.dest.set_value(simulator, total, val_length)
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=raw_total))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
