@@ -3,7 +3,7 @@ Motorola 68k chip definition
 """
 
 from .memory import Memory
-from ..core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_ADDRESS_REGISTERS
+from ..core.enum.register import Register, FULL_SIZE_REGISTERS, ALL_ADDRESS_REGISTERS
 from ..core.enum.condition_status_code import ConditionStatusCode
 from ..core.models.list_file import ListFile
 import typing
@@ -71,7 +71,7 @@ class M68K:
             return
 
         # if the register is an address register that is limited to fit in the bounds of memory
-        if register in MEMORY_LIMITED_ADDRESS_REGISTERS:
+        if register in ALL_ADDRESS_REGISTERS:
             self.set_address_register_value(register, val)
             return
 
@@ -114,8 +114,9 @@ class M68K:
         :param new_value:
         :return:
         """
-        assert 0 <= new_value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value of address registers must be in the range [0, 2^24]'
-        assert reg in MEMORY_LIMITED_ADDRESS_REGISTERS, 'The register given is not an address register!'
+        # no longer assert that the address register value is a pointer to memory
+        # since address register direct modes don't consider the amount of memory
+        assert reg in ALL_ADDRESS_REGISTERS, 'The register given is not an address register!'
 
         # now set the value of the register
         self.registers[reg].set_value_unsigned_int(new_value.get_value_unsigned())
