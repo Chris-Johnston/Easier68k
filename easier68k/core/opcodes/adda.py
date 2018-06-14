@@ -22,8 +22,7 @@ class Adda(Opcode):
         assert len(params) == 2
         assert isinstance(params[0], AssemblyParameter)
         assert isinstance(params[1], AssemblyParameter)
-        # Can't take data register, address register, or ARI with modifications
-        # assert params[0].mode not in [EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI, EAMode.IMM]
+
         self.src = params[0]
 
         # Check that the destination is of a proper type
