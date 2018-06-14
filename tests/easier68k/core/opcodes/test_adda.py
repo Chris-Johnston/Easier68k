@@ -6,6 +6,7 @@ from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
 from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.util.parsing import parse_assembly_parameter
+from easier68k.core.models.memory_value import MemoryValue
 
 
 def test_adda():
@@ -24,7 +25,7 @@ def test_adda():
     adda.execute(sim)
 
     # Does it contain the correct value?
-    assert sim.get_register_value(Register.A2) == 0b101
+    assert sim.get_register(Register.A2).get_value_unsigned() == 0b101
 
     # Did the program counter correctly increment?
     assert sim.get_program_counter_value() == (0x1000 + 4)
@@ -39,13 +40,13 @@ def test_adda():
 def test_adda_negative():
     """
     Test to see that ADDA works as intended
-    Example OPCODE used: ADDA.W #-1,A2
+    Example OPCODE used: ADDA.W #-1234,A2
     """
     sim = M68K()
 
     sim.set_program_counter_value(0x1000)
 
-    negative = parse_assembly_parameter('#-1')
+    negative = parse_assembly_parameter('#-1234')
 
     params = [negative, AssemblyParameter(EAMode.ARD, 2)]
 
@@ -54,7 +55,7 @@ def test_adda_negative():
     adda.execute(sim)
 
     # Does it contain the correct value?
-    assert sim.get_register_value(Register.A2) == 0xFFFFFFFF
+    assert sim.get_register(Register.A2).get_value_unsigned() == 0xFFFFFB2E
 
     # Did the program counter correctly increment?
     assert sim.get_program_counter_value() == (0x1000 + 4)
@@ -65,7 +66,6 @@ def test_adda_negative():
     assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
     assert sim.get_condition_status_code(ConditionStatusCode.N) is False
     assert sim.get_condition_status_code(ConditionStatusCode.X) is False
-
 
 def test_adda_zero():
     """
@@ -83,7 +83,7 @@ def test_adda_zero():
     adda.execute(sim)
 
     # Does it contain the correct value?
-    assert sim.get_register_value(Register.A5) == 0b0
+    assert sim.get_register(Register.A5).get_value_unsigned() == 0b0
 
     # Did the program counter correctly increment?
     assert sim.get_program_counter_value() == (0x1000 + 4)
@@ -95,15 +95,38 @@ def test_adda_zero():
     assert sim.get_condition_status_code(ConditionStatusCode.N) is False
     assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
-
 def test_adda_disassembles():
     """
     Test to see that ADDA works as intended
     """
-    return None     # TODO
+    # ADDA.W A0, A1
+    data = bytearray.fromhex('D2C8')
+
+    result = Adda.disassemble_instruction(data)
+
+    assert result is not None
+
+    sim = M68K()
+
+    # Load value into A0
+    sim.set_register(Register.A0, MemoryValue(OpSize.WORD, unsigned_int=123))
+
+    result.execute(sim)
+
+    assert sim.get_register(Register.A1).get_value_unsigned() == 123
+
+    assert sim.get_program_counter_value() == 2
+
 
 def test_adda_assemble():
     """
     Test to see that ADDA works as intended
     """
-    return None     # TODO
+    # ADDA.W A0,A1
+    data = bytearray.fromhex('D2C8')
+
+    result = Adda.disassemble_instruction(data)
+
+    assm = result.assemble()
+
+    assert data == assm
