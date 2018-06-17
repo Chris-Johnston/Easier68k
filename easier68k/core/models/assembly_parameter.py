@@ -6,7 +6,7 @@ this is the new 'EAMode' class
 """
 
 from ..enum.ea_mode import EAMode
-from ..enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS
+from ..enum.register import Register, ALL_ADDRESS_REGISTERS
 from ...simulator.m68k import M68K
 from ..util.conversions import to_word
 from ..models.memory_value import MemoryValue
@@ -180,8 +180,10 @@ class AssemblyParameter:
 
         if self.mode is EAMode.AddressRegisterDirect:
             # set the value for the address register
+            # only ensure that it is referring to a valid address register
+            # since this is a direct addressing mode, and not treated as a 'pointer'
+            # to memory, this is not bounded by the number of address lines
             assert 0 <= self.data <= 7
-            assert 0 <= value.get_value_unsigned() <= MAX_MEMORY_LOCATION, 'The value must fit in the memory space [0, 2^24]'
             addr_register = Register(self.data + Register.A0)
             simulator.set_register(addr_register, value)
 

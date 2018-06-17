@@ -7,7 +7,7 @@ import pytest
 from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.simulator.m68k import M68K
-from easier68k.core.enum.register import Register, FULL_SIZE_REGISTERS, MEMORY_LIMITED_ADDRESS_REGISTERS
+from easier68k.core.enum.register import Register, FULL_SIZE_REGISTERS, ALL_ADDRESS_REGISTERS
 from easier68k.core.models.memory_value import MemoryValue
 from easier68k.core.enum.op_size import OpSize
 
