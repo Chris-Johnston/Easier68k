@@ -1,7 +1,7 @@
 import pytest
 
 from easier68k.simulator.m68k import M68K
-from easier68k.core.enum.register import Register, MEMORY_LIMITED_ADDRESS_REGISTERS, DATA_REGISTERS
+from easier68k.core.enum.register import Register, ALL_ADDRESS_REGISTERS, DATA_REGISTERS
 from easier68k.core.models.list_file import ListFile
 from easier68k.simulator.memory import Memory
 from easier68k.core.models.memory_value import MemoryValue
@@ -17,7 +17,7 @@ def test_address_registers():
 
     # test all of the 4 byte registers (32 bit)
     # exclude the program counter due to its restrictions
-    normal_registers = MEMORY_LIMITED_ADDRESS_REGISTERS
+    normal_registers = ALL_ADDRESS_REGISTERS
     for reg in normal_registers:
         _test_single_address_register(a, reg)
 
@@ -42,13 +42,9 @@ def test_program_counter():
     with pytest.raises(AssertionError):
         a.set_program_counter_value(-1)
 
-    a.set_program_counter_value(16777216)
-
-    with pytest.raises(AssertionError):
-        # 1 beyond the max value
-        a.set_program_counter_value(16777216 + 1)
-
-
+    # setting the upper edge is fine, this can go beyond 2^24
+    a.set_program_counter_value(16777216 + 1)
+''
 def _test_single_address_register(a :M68K, reg: Register):
     """
     Tests for the address registers that are limited by the size of memory

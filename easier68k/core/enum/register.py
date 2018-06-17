@@ -36,13 +36,15 @@ class Register(IntEnum):
 # constants that group together the registers
 DATA_REGISTERS = [Register.D0, Register.D1, Register.D2, Register.D3,
                   Register.D4, Register.D5, Register.D6, Register.D7]
+
+# all of the An registers
 ADDRESS_REGISTERS = [Register.A0, Register.A1, Register.A2, Register.A3,
                      Register.A4, Register.A5, Register.A6, Register.A7]
 
-# all of the address registers that are limited to fit within the bounds of memory 2^24
-MEMORY_LIMITED_ADDRESS_REGISTERS = [Register.A0, Register.A1, Register.A2, Register.A3,
-                                    Register.A4, Register.A5, Register.A6, Register.A7,
-                                    Register.PC]
+# all of the address registers, incluing PC
+ALL_ADDRESS_REGISTERS = [Register.A0, Register.A1, Register.A2, Register.A3,
+                         Register.A4, Register.A5, Register.A6, Register.A7,
+                         Register.PC]
 
 # all of the 32 bit registers
 FULL_SIZE_REGISTERS = [Register.D0, Register.D1, Register.D2, Register.D3, Register.D4,

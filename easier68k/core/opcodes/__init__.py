@@ -7,5 +7,6 @@ __all__ = [
     'opcode',
     'opcode_or',
     'add',
-    'sub'
+    'sub',
+    'adda'
 ]
