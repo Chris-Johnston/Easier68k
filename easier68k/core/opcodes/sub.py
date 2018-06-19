@@ -136,15 +136,8 @@ class Sub(Opcode):
 
         total = (raw_total & mask) | preserve
 
-        carry_bit = False
-
-        # TODO This currently does not work to correctly identify the carry bit
-        if self.size is OpSize.BYTE and raw_total > 0xFF:
-            carry_bit = True
-        if self.size is OpSize.WORD and raw_total > 0xFFFF:
-            carry_bit = True
-        if self.size is OpSize.LONG and raw_total > 0xFFFFFFFF:
-            carry_bit = True
+        # If the raw total is negative, then a borrow has been generated
+        carry_bit = raw_total < 0
 
         negative = False
 
@@ -155,7 +148,7 @@ class Sub(Opcode):
         elif self.size is OpSize.LONG:
             negative = total & 0x80000000 > 0
 
-        original_negative = src_val.get_negative()
+        overflow = False    # TODO Can't find a test case where this is set for SUB
 
         # set the same as the carry bit
         simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
@@ -164,7 +157,7 @@ class Sub(Opcode):
         # result is zero
         simulator.set_condition_status_code(ConditionStatusCode.Z, (total & mask) == 0)
         # set if an overflow is generated, cleared otherwise
-        simulator.set_condition_status_code(ConditionStatusCode.V, negative != original_negative)
+        simulator.set_condition_status_code(ConditionStatusCode.V, overflow)
         # set if a carry is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
 
