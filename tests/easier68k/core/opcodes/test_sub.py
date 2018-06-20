@@ -175,6 +175,41 @@ def test_ccr_carry():
     assert sim.get_condition_status_code(ConditionStatusCode.V) is False
 
 
+def test_ccr_overflow():
+    """
+    Tests to see that the overflow bit is set correctly
+
+    Example case used:
+        MOVE.B #125,D0
+        MOVE.L #-4,D1
+        SUB.B  D0,D1
+    """
+
+    sim = M68K()
+
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_register(Register.D0, MemoryValue(OpSize.BYTE, unsigned_int=125))
+    sim.set_register(Register.D1, MemoryValue(OpSize.LONG, signed_int=-4))
+
+    params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
+
+    sub = Sub(params, OpSize.BYTE)  # SUB.B D0,D1
+
+    sub.execute(sim)
+
+    assert sim.get_register(Register.D1).get_value_unsigned() == 0xFFFFFF7F  # result in D1 should be -129
+
+    assert sim.get_program_counter_value() == (0x1000 + 2)  # 1 OPCODE used
+
+    # changed by execution
+    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    assert sim.get_condition_status_code(ConditionStatusCode.V) is True
+
+
 def test_ccr_zero():
     """
     Tests to see that the zero bit is set correctly
