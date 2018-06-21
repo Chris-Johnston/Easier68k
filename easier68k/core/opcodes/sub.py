@@ -146,21 +146,32 @@ class Sub(Opcode):
         elif self.size is OpSize.LONG:
             negative = total & 0x80000000 > 0
 
-        overflow = False    # TODO Find a test case where this is set for SUB
+        set_val = total & mask   # The value that will be set in destination
+
+        # Overflow occurs when a sign change occurs where it shouldn't occur.
+        # For example: positive - negative != negative.
+        # This doesn't make sense, so an overflow occurs
+        overflow = False
+
+        if src_val.get_negative() is False:
+            if dest_val.get_negative() is True:
+                if raw_total > 0 and raw_total & 0x80000000 > 0:
+                    overflow = True
+                    set_val = total      # The value overflowed, so return the entire amount
 
         # set the same as the 'C' bit
         simulator.set_condition_status_code(ConditionStatusCode.X, borrow_bit)
         # set if result is negative
         simulator.set_condition_status_code(ConditionStatusCode.N, negative)
         # set if result is zero
-        simulator.set_condition_status_code(ConditionStatusCode.Z, (total & mask) == 0)
+        simulator.set_condition_status_code(ConditionStatusCode.Z, set_val == 0)
         # set if an overflow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.V, overflow)
         # set if a borrow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.C, borrow_bit)
 
         # and set the value
-        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=(total & mask)))
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=set_val))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
