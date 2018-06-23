@@ -52,11 +52,11 @@ class Subq(Opcode):
         #     ret_opcode |= self.src.data << 9
         #
         if self.size == OpSize.BYTE:
-            ret_opcode |= 0b100 << 6
+            ret_opcode |= 0b00 << 6
         elif self.size == OpSize.WORD:
-            ret_opcode |= 0b101 << 6
+            ret_opcode |= 0b01 << 6
         elif self.size == OpSize.LONG:
-            ret_opcode |= 0b110 << 6
+            ret_opcode |= 0b10 << 6
 
         #     ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
         # else:  # dest must be DRD
@@ -136,10 +136,16 @@ class Subq(Opcode):
         preserve = dest_val.get_value_signed() & inverted_mask
         raw_total = dest_val.get_value_unsigned() - src_val.get_value_unsigned()
 
+        print(str(dest_val.get_value_unsigned()))
+        print(str(src_val.get_value_unsigned()))
+
         total = (raw_total & mask) | preserve
 
+        print(str(total))
+
         # If the raw total is negative, then a borrow has been generated
-        borrow_bit = raw_total < 0
+        # TODO Borrow bit not working properly
+        borrow_bit = False  # raw_total < 0
 
         negative = False
 
@@ -150,32 +156,30 @@ class Subq(Opcode):
         elif self.size is OpSize.LONG:
             negative = total & 0x80000000 > 0
 
-        set_val = total & mask   # The value that will be set in destination
-
         # Overflow occurs when a sign change occurs where it shouldn't occur.
         # For example: positive - negative != negative.
         # This doesn't make sense, so an overflow occurs
         overflow = False
 
-        if src_val.get_negative() is False:
-            if dest_val.get_negative() is True:
-                if raw_total > 0 and raw_total & 0x80000000 > 0:
-                    overflow = True
-                    set_val = total      # The value overflowed, so return the entire amount
+        # TODO overflow not working properly
+        # if src_val.get_value_signed() > 0:
+        #     if dest_val.get_value_signed() < 0:
+        #         if negative:
+        #             overflow = True
 
         # set the same as the 'C' bit
         simulator.set_condition_status_code(ConditionStatusCode.X, borrow_bit)
         # set if result is negative
         simulator.set_condition_status_code(ConditionStatusCode.N, negative)
         # set if result is zero
-        simulator.set_condition_status_code(ConditionStatusCode.Z, set_val == 0)
+        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
         # set if an overflow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.V, overflow)
         # set if a borrow is generated, cleared otherwise
         simulator.set_condition_status_code(ConditionStatusCode.C, borrow_bit)
 
         # and set the value
-        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=set_val))
+        self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=total))
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
