@@ -241,7 +241,7 @@ def test_ccr_zero():
     assert sim.get_condition_status_code(ConditionStatusCode.V) is False
 
 
-def test_add_assemble():
+def test_sub_assemble():
     """
     Check that assembly is the same as the input
 
