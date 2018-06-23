@@ -9,8 +9,9 @@ from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
-from easier68k.core.enum.condition_status_code import ConditionStatusCode
+# from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.models.memory_value import MemoryValue
+from tests.easier68k.core.opcodes.test_opcode_helper import run_opcode_test
 
 
 def test_sub():
@@ -32,18 +33,20 @@ def test_sub():
 
     sub = Sub(params, OpSize.WORD)  # SUB.W #52,D0
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D0, 71, 4, [0, 0, 0, 0, 0])
 
-    assert sim.get_register(Register.D0).get_value_unsigned() == 71  # Result should be 71
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    # sub.execute(sim)
+    #
+    # assert sim.get_register(Register.D0).get_value_unsigned() == 71  # Result should be 71
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_sub_negative():
@@ -65,18 +68,20 @@ def test_sub_negative():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B #-1,D2
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D2, 3, 4, [1, 0, 0, 0, 1])
 
-    assert sim.get_register(Register.D2).get_value_signed() == 3    # 2 - (-1) = 3
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is True
+    # sub.execute(sim)
+    #
+    # assert sim.get_register(Register.D2).get_value_signed() == 3    # 2 - (-1) = 3
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is True
 
 
 def test_sub_zero():
@@ -95,18 +100,20 @@ def test_sub_zero():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B #0,D2
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D2, 0, 4, [0, 0, 1, 0, 0])
 
-    assert sim.get_register(Register.D2).get_value_unsigned() == 0
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    # sub.execute(sim)
+    #
+    # assert sim.get_register(Register.D2).get_value_unsigned() == 0
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_sub_disassembles():
@@ -128,18 +135,20 @@ def test_sub_disassembles():
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=123))
     sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=65535))
 
-    result.execute(sim)
+    run_opcode_test(sim, result, Register.D1, 0xFF84, 2, [0, 1, 0, 0, 0])
 
-    assert sim.get_register(Register.D1).get_value_unsigned() == 65412  # FF84, or (FFFF - 123)
-
-    assert sim.get_program_counter_value() == 2
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    # result.execute(sim)
+    #
+    # assert sim.get_register(Register.D1).get_value_unsigned() == 65412  # FF84, or (FFFF - 123)
+    #
+    # assert sim.get_program_counter_value() == 2
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 
 def test_ccr_carry():
@@ -161,18 +170,20 @@ def test_ccr_carry():
 
     sub = Sub(params, OpSize.WORD)  # SUB.W #$100,D0
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D0, 0xFFFF, 4, [1, 1, 0, 0, 1])
 
-    assert sim.get_register(Register.D0).get_value_unsigned() == 65535  # result in D0 should be FFFF
+    # sub.execute(sim)
 
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_register(Register.D0).get_value_unsigned() == 65535  # result in D0 should be FFFF
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
 
 
 def test_ccr_overflow():
@@ -196,18 +207,20 @@ def test_ccr_overflow():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B D0,D1
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D1, 0xFFFFFF7F, 2, [0, 0, 0, 1, 0])
 
-    assert sim.get_register(Register.D1).get_value_unsigned() == 0xFFFFFF7F  # result in D1 should be -129
-
-    assert sim.get_program_counter_value() == (0x1000 + 2)  # 1 OPCODE used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is True
+    # sub.execute(sim)
+    #
+    # assert sim.get_register(Register.D1).get_value_unsigned() == 0xFFFFFF7F  # result in D1 should be -129
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 2)  # 1 OPCODE used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is True
 
 
 def test_ccr_zero():
@@ -224,21 +237,22 @@ def test_ccr_zero():
 
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
 
-
     sub = Sub(params, OpSize.WORD)  # SUB.W D0,D1
 
-    sub.execute(sim)
+    run_opcode_test(sim, sub, Register.D1, 0x0, 2, [0, 0, 1, 0, 0])
 
-    assert sim.get_register(Register.D1).get_value_unsigned() == 0x0
+    # sub.execute(sim)
 
-    assert sim.get_program_counter_value() == (0x1000 + 2)      # 1 OPCODE used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    # assert sim.get_register(Register.D1).get_value_unsigned() == 0x0
+    #
+    # assert sim.get_program_counter_value() == (0x1000 + 2)      # 1 OPCODE used
+    #
+    # # changed by execution
+    # assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
+    # assert sim.get_condition_status_code(ConditionStatusCode.C) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.N) is False
+    # assert sim.get_condition_status_code(ConditionStatusCode.V) is False
 
 
 def test_sub_assemble():
