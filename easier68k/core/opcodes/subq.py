@@ -224,16 +224,16 @@ class Subq(Opcode):
         :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
         """
 
-        parts = command.split('.')  # Split the command by period to get the size of the command
-        if len(parts) == 1:  # Use the default size
-            size = OpSize.WORD
-        else:
-            size = OpSize.parse(parts[1])
+        # parts = command.split('.')  # Split the command by period to get the size of the command
+        # if len(parts) == 1:  # Use the default size
+        #     size = OpSize.WORD
+        # else:
+        #     size = OpSize.parse(parts[1])
 
         # Split the parameters into EA modes
         params = parameters.split(',')
 
-        src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
+        # src = parse_assembly_parameter(params[0].strip())  # Parse the source and make sure it parsed right
         dest = parse_assembly_parameter(params[1].strip())
 
         length = 1  # Always 1 word not counting additions to end
