@@ -166,7 +166,7 @@ def test_ccr_overflow():
 
     subq.execute(sim)
 
-    assert sim.get_register(Register.D0).get_value_unsigned() == 0xFFFFFF7F  # result in D1 should be -129
+    assert sim.get_register(Register.D0).get_value_signed() == -129  # result in D1 should be -129
 
     assert sim.get_program_counter_value() == (0x1000 + 2)  # 1 OPCODE used
 
@@ -191,7 +191,7 @@ def test_ccr_zero():
 
     sim.set_program_counter_value(0x1000)
 
-    sim.set_register(Register.D0, MemoryValue(OpSize.LONG, unsigned_int=1))
+    sim.set_register(Register.D1, MemoryValue(OpSize.LONG, unsigned_int=1))
 
     params = [AssemblyParameter(EAMode.IMM, 1), AssemblyParameter(EAMode.DRD, 1)]
 
