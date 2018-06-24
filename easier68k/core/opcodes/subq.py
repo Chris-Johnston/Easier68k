@@ -108,9 +108,9 @@ class Subq(Opcode):
 
         total = (raw_total & mask) | preserve
 
-        # If the raw total is negative, then a borrow has been generated
-        # TODO Borrow bit not working properly
-        borrow_bit = False  # raw_total < 0
+        # If the subtraction of the masked destination and source value is
+        # negative, then a borrow has been generated.
+        borrow_bit = (mask & dest_val.get_value_unsigned()) - src_val.get_value_unsigned() < 0
 
         negative_bit = 0
 
