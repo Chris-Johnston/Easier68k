@@ -304,7 +304,7 @@ class Subq(Opcode):
          ea_mode_binary,
          ea_reg_bin] = split_bits(first_word, [4, 3, 1, 2, 3, 3])
 
-        if opcode_bin != 0b0101:
+        if opcode_bin != 0b0101 or one_bin != 0b1:
             return None
 
         src = None
