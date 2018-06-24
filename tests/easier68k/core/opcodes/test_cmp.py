@@ -16,6 +16,11 @@ from easier68k.core.models.memory_value import MemoryValue
 def test_cmp():
     """
     Test to see that CMP sets the CCR bits
+
+    MOVE.L #$00C0FFEE, D0
+    MOVE.W #123, D1
+    CMP.B D0, D1
+
     :return:
     """
     sim = M68K()
@@ -29,7 +34,6 @@ def test_cmp():
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
     cmp = Cmp(params, OpSize.BYTE)
     cmp.execute(sim)
-
     # check that the program counter moved ahead by 2 bytes (1 word)
     # which is how long the CMP.B D0, D1 instruction is
     assert sim.get_program_counter_value() == (0x1000 + 2)

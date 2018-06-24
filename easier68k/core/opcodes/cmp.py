@@ -96,29 +96,23 @@ class Cmp(Opcode):
         dest_val = self.dest.get_value(simulator, self.size.get_number_of_bytes())
 
         comparison = src_val.get_value_signed() - dest_val.get_value_signed()
-        comp_mv = src_val - dest_val
+        comp_mv = dest_val - src_val
 
         # mask out only the bits we need/want
-        comp_mv = MemoryValue(self.size,
-                              unsigned_int=mask_value_for_length(self.size, comp_mv.get_value_unsigned()))
-
+        result_mv_masked = MemoryValue(self.size,
+                                       unsigned_int=mask_value_for_length(self.size, comp_mv.get_value_unsigned()))
         overflow = False
-        print('src', src_val.get_msb(self.size), 'dest', dest_val.get_msb(self.size))
-
-        # if the two values have the same MSB (in the size of this opcode)
-        if src_val.get_msb(self.size) == dest_val.get_msb(self.size):
-            print('aaa')
+        # if the two values have different MSB (in the size of this opcode)
+        if src_val.get_msb(self.size) != dest_val.get_msb(self.size):
             # and after subtracting have a different MSB
             # then there has been an overflow
-            if src_val.get_negative() != comp_mv.get_negative():
+            if src_val.get_negative() != result_mv_masked.get_negative():
                 overflow = True
 
         # ignore the carry bit
 
-        print(hex(comp_mv.get_value_unsigned()))
-
         # set negative w/ (dest - src) < 0
-        simulator.set_condition_status_code(ConditionStatusCode.Negative, comp_mv.get_negative())
+        simulator.set_condition_status_code(ConditionStatusCode.Negative, result_mv_masked.get_negative())
         # set zero w/ (dest_val - src_val) == 0
         simulator.set_condition_status_code(ConditionStatusCode.Zero, comparison == 0)
         # set if an overflow occurs
