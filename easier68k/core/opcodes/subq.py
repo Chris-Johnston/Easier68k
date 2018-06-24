@@ -106,12 +106,7 @@ class Subq(Opcode):
         preserve = dest_val.get_value_signed() & inverted_mask
         raw_total = dest_val.get_value_unsigned() - src_val.get_value_unsigned()
 
-        print(str(dest_val.get_value_unsigned()))
-        print(str(src_val.get_value_unsigned()))
-
         total = (raw_total & mask) | preserve
-
-        print(str(total))
 
         # If the raw total is negative, then a borrow has been generated
         # TODO Borrow bit not working properly
