@@ -10,7 +10,7 @@ from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
 from easier68k.core.models.memory_value import MemoryValue
-from tests.easier68k.core.opcodes.test_opcode_helper import run_opcode_test
+from .test_opcode_helper import run_opcode_test
 
 
 def test_sub():
