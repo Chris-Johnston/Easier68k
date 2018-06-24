@@ -48,27 +48,12 @@ class Subq(Opcode):
         ret_opcode |= self.src.data << 9
         ret_opcode |= 0b1 << 8
 
-        # if self.src == EAMode.DRD:
-        #     ret_opcode |= self.src.data << 9
-        #
         if self.size == OpSize.BYTE:
             ret_opcode |= 0b00 << 6
         elif self.size == OpSize.WORD:
             ret_opcode |= 0b01 << 6
         elif self.size == OpSize.LONG:
             ret_opcode |= 0b10 << 6
-
-        #     ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
-        # else:  # dest must be DRD
-        #     ret_opcode |= self.dest.data << 9
-        #
-        #     if self.size == OpSize.BYTE:
-        #         # don't have to do anything, |= wouldn't do anything
-        #         pass
-        #     elif self.size == OpSize.WORD:
-        #         ret_opcode |= 0b001 << 6
-        #     elif self.size == OpSize.LONG:
-        #         ret_opcode |= 0b010 << 6
 
         ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest) << 0
 
@@ -96,21 +81,6 @@ class Subq(Opcode):
 
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
-
-        # if self.src.mode in [EAMode.Immediate]:
-        #     # add the length of the size of the operation, in words
-        #     if self.size is OpSize.BYTE:
-        #         to_increment += OpSize.WORD.value
-        #     else:
-        #         to_increment += self.size.value
-
-        # # if followed by a long addr, add the length of the long
-        # if self.src.mode in [EAMode.AbsoluteLongAddress]:
-        #     to_increment += OpSize.LONG.value
-        #
-        # # same goes with a word
-        # if self.src.mode in [EAMode.AbsoluteWordAddress]:
-        #     to_increment += OpSize.WORD.value
 
         # repeat for the dest
         if self.dest.mode in [EAMode.AbsoluteLongAddress]:
@@ -224,12 +194,6 @@ class Subq(Opcode):
         :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered
         """
 
-        # parts = command.split('.')  # Split the command by period to get the size of the command
-        # if len(parts) == 1:  # Use the default size
-        #     size = OpSize.WORD
-        # else:
-        #     size = OpSize.parse(parts[1])
-
         # Split the parameters into EA modes
         params = parameters.split(',')
 
@@ -237,18 +201,6 @@ class Subq(Opcode):
         dest = parse_assembly_parameter(params[1].strip())
 
         length = 1  # Always 1 word not counting additions to end
-
-        # if src.mode == EAMode.IMM:  # If we're moving an immediate we have to append the value afterwards
-        #     if size == OpSize.LONG:
-        #         length += 2  # Longs are 2 words long
-        #     else:
-        #         length += 1  # This is a word or byte, so only 1 word
-
-        # if dest.mode == EAMode.AWA:  # Appends a word
-        #     length += 1
-        #
-        # if dest.mode == EAMode.ALA:  # Appends a long, so 2 words
-        #     length += 2
 
         if dest.mode == EAMode.AWA:  # Appends a word
             length += 1
@@ -374,34 +326,6 @@ class Subq(Opcode):
 
         # populate destination data
         dest = dest = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, False, data[2:])[0]
-        # words_used = 1
-
-        # if opmode_bin == 0b100:
-        #     size = OpSize.BYTE
-        #     src = AssemblyParameter(EAMode.DRD, register_bin)
-        #     dest = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, False, data[words_used * 2:])[0]
-        # elif opmode_bin == 0b101:
-        #     size = OpSize.WORD
-        #     src = AssemblyParameter(EAMode.DRD, register_bin)
-        #     dest = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, False, data[words_used * 2:])[0]
-        # elif opmode_bin == 0b110:
-        #     size = OpSize.LONG
-        #     src = AssemblyParameter(EAMode.DRD, register_bin)
-        #     dest = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, False, data[words_used * 2:])[0]
-        # elif opmode_bin == 0b000:
-        #     size = OpSize.BYTE
-        #     dest = AssemblyParameter(EAMode.DRD, register_bin)
-        #     src = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, True, data[words_used * 2:])[0]
-        # elif opmode_bin == 0b001:
-        #     size = OpSize.WORD
-        #     dest = AssemblyParameter(EAMode.DRD, register_bin)
-        #     src = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, True, data[words_used * 2:])[0]
-        # elif opmode_bin == 0b010:
-        #     size = OpSize.LONG
-        #     dest = AssemblyParameter(EAMode.DRD, register_bin)
-        #     src = parse_ea_from_binary(ea_mode_binary, ea_reg_bin, size, True, data[words_used * 2:])[0]
-        # else:
-        #     return None
 
         return cls([src, dest], size)
 
