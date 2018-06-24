@@ -117,25 +117,25 @@ class Subq(Opcode):
         # TODO Borrow bit not working properly
         borrow_bit = False  # raw_total < 0
 
-        negative = False
+        negative_bit = 0
 
         if self.size is OpSize.BYTE:
-            negative = total & 0x80 > 0
+            negative_bit = 0x80
         elif self.size is OpSize.WORD:
-            negative = total & 0x8000 > 0
+            negative_bit = 0x8000
         elif self.size is OpSize.LONG:
-            negative = total & 0x80000000 > 0
+            negative_bit = 0x80000000
+
+        negative = total & negative_bit > 0
 
         # Overflow occurs when a sign change occurs where it shouldn't occur.
         # For example: positive - negative != negative.
         # This doesn't make sense, so an overflow occurs
         overflow = False
 
-        # TODO overflow not working properly
-        # if src_val.get_value_signed() > 0:
-        #     if dest_val.get_value_signed() < 0:
-        #         if negative:
-        #             overflow = True
+        if dest_val.get_value_unsigned() & 0x80000000 > 0:
+            if total & negative_bit == 0:
+                overflow = True
 
         # set the same as the 'C' bit
         simulator.set_condition_status_code(ConditionStatusCode.X, borrow_bit)
