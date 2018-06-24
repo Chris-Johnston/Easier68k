@@ -134,17 +134,20 @@ class Sub(Opcode):
 
         total = (raw_total & mask) | preserve
 
-        # If the raw total is negative, then a borrow has been generated
-        borrow_bit = raw_total < 0
+        # If the subtraction of the masked destination and source value is
+        # negative, then a borrow has been generated.
+        borrow_bit = (mask & dest_val.get_value_unsigned()) - src_val.get_value_unsigned() < 0
 
-        negative = False
+        negative_bit = 0
 
         if self.size is OpSize.BYTE:
-            negative = total & 0x80 > 0
+            negative_bit = 0x80
         elif self.size is OpSize.WORD:
-            negative = total & 0x8000 > 0
+            negative_bit = 0x8000
         elif self.size is OpSize.LONG:
-            negative = total & 0x80000000 > 0
+            negative_bit = 0x80000000
+
+        negative = total & negative_bit > 0
 
         set_val = total & mask   # The value that will be set in destination
 
@@ -153,9 +156,8 @@ class Sub(Opcode):
         # This doesn't make sense, so an overflow occurs
         overflow = False
 
-        if src_val.get_negative() is False:
-            if dest_val.get_negative() is True:
-                if raw_total > 0 and raw_total & 0x80000000 > 0:
+        if dest_val.get_value_unsigned() & 0x80000000 > 0:
+            if total & negative_bit == 0:
                     overflow = True
                     set_val = total      # The value overflowed, so return the entire amount
 
