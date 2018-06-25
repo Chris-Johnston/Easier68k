@@ -5,5 +5,6 @@ __all__ = [
     'test_or',
     'test_add',
     'test_cmp',
+    'test_cmpi',
     'test_adda'
 ]

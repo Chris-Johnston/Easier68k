@@ -8,5 +8,6 @@ __all__ = [
     'opcode_or',
     'add',
     'cmp',
+    'cmpi',
     'adda'
 ]
