@@ -95,31 +95,35 @@ class Cmp(Opcode):
         src_val = self.src.get_value(simulator, self.size.get_number_of_bytes())
         dest_val = self.dest.get_value(simulator, self.size.get_number_of_bytes())
 
-        comparison = src_val.get_value_signed() - dest_val.get_value_signed()
+        comparison = dest_val.get_value_signed() - src_val.get_value_signed()
+        raw_total = dest_val.get_value_unsigned() - src_val.get_value_unsigned()
         comp_mv = dest_val - src_val
 
         # mask out only the bits we need/want
-        result_mv_masked = MemoryValue(self.size,
-                                       unsigned_int=mask_value_for_length(self.size, comp_mv.get_value_unsigned()))
+        comp_mv = MemoryValue(self.size,
+                              unsigned_int=mask_value_for_length(self.size, comp_mv.get_value_unsigned()))
+
+        negative = comp_mv.get_negative()
+
         overflow = False
-        # if the two values have different MSB (in the size of this opcode)
-        if src_val.get_msb(self.size) != dest_val.get_msb(self.size):
-            # and after subtracting have a different MSB
-            # then there has been an overflow
-            if src_val.get_negative() != result_mv_masked.get_negative():
-                overflow = True
+
+        # src false
+        if src_val.get_msb(self.size) is True:
+            if dest_val.get_msb(self.size) is False:
+                if raw_total > 0 and raw_total & 0x80000000 > 0:
+                    overflow = True
 
         # ignore the carry bit
 
         # set negative w/ (dest - src) < 0
-        simulator.set_condition_status_code(ConditionStatusCode.Negative, result_mv_masked.get_negative())
+        simulator.set_condition_status_code(ConditionStatusCode.Negative, negative)
         # set zero w/ (dest_val - src_val) == 0
         simulator.set_condition_status_code(ConditionStatusCode.Zero, comparison == 0)
         # set if an overflow occurs
         simulator.set_condition_status_code(ConditionStatusCode.Overflow, overflow)
         # set if a borrow occurs
         # (this is the same as if src > dest)
-        simulator.set_condition_status_code(ConditionStatusCode.Carry, src_val > dest_val)
+        simulator.set_condition_status_code(ConditionStatusCode.Carry, raw_total < 0)
 
         # set the number of bytes to increment equal to the length of the
         # instruction (1 word)
