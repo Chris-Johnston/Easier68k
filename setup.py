@@ -8,7 +8,7 @@ setup(
     author_email='chjohnston@protonmail.com',
     license='MIT',
     packages=find_packages(exclude=['tests']),
-    setup_requires=['pytest-runner'],
+    setup_requires=['pytest-runner', 'pytest-cov'],
     python_requires='>=3'
 )
 
