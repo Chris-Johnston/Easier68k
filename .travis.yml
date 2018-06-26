@@ -17,3 +17,4 @@ script:
   - cd /home/travis/build/Chris-Johnston/Easier68k
   - (find easier68k -iname "*.py" | xargs pylint) || true
   - (find tests/ -iname "*.py" | xargs pylint) || true
+  - coverage run --source easier68k setup.py test
