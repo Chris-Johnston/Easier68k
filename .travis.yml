@@ -17,4 +17,4 @@ script:
   - cd /home/travis/build/Chris-Johnston/Easier68k
   - (find easier68k -iname "*.py" | xargs pylint) || true
   - (find tests/ -iname "*.py" | xargs pylint) || true
-  - py.test --cov easier68k $(pwd)
+  - py.test --cov easier68k .
