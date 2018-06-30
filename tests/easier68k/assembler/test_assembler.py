@@ -6,7 +6,7 @@ from easier68k.assembler.assembler import parse
 
 def test_basic_test_input():
     # Test
-    with open('easier68k/assembler/basic_test_input.x68') as x68:
+    with open('tests/easier68k/assembler/basic_test_input.x68') as x68:
         assembled, issues = parse(x68.read(-1))
 
         with open('easier68k/assembler/temp_output_file.txt', 'w') as out:  # Temporary output file for testing results
