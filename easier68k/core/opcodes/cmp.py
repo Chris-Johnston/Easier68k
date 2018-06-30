@@ -105,13 +105,25 @@ class Cmp(Opcode):
 
         negative = comp_mv.get_negative()
 
-        overflow = False
+        max_val = 0  # Maximum value allowed for the given memory size
 
-        # src false
-        if src_val.get_msb(self.size) is True:
-            if dest_val.get_msb(self.size) is False:
-                if raw_total > 0 and raw_total & 0x80000000 > 0:
-                    overflow = True
+        if self.size is OpSize.BYTE:
+            max_val = 0xFF
+        elif self.size is OpSize.WORD:
+            max_val = 0xFFFF
+        elif self.size is OpSize.LONG:
+            max_val = 0xFFFFFFFF
+
+        # Overflow occurs if the result cannot be represented by the memory size
+        # Get the signed value
+        test_val = comp_mv.get_value_signed()
+
+        # If it is negative, get the twos complement
+        if test_val < 0:
+            test_val = (abs(test_val) ^ 0xFFFFFFFF) + 1
+
+        # Check to see if it can hold the value
+        overflow = test_val > max_val
 
         # ignore the carry bit
 
