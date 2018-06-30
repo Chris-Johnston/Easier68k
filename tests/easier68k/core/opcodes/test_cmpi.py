@@ -9,8 +9,8 @@ from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
-from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.models.memory_value import MemoryValue
+from .test_opcode_helper import run_opcode_test
 
 
 def test_cmpi():
@@ -34,18 +34,7 @@ def test_cmpi():
 
     cmpi = Cmpi(params, OpSize.WORD)  # CMPI.W #52,D0
 
-    cmpi.execute(sim)
-
-    assert sim.get_register(Register.D0).get_value_unsigned() == stored_val  # Result should be unchanged
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, cmpi, Register.D0, stored_val, 4, [False, False, False, False, False])
 
 
 def test_cmpi_negative():
@@ -69,18 +58,7 @@ def test_cmpi_negative():
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #-1,D2
 
-    cmpi.execute(sim)
-
-    assert sim.get_register(Register.D2).get_value_signed() == stored_val    # Result should be unchanged
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, cmpi, Register.D2, stored_val, 4, [False, False, False, False, True])
 
 
 def test_cmpi_zero():
@@ -100,18 +78,7 @@ def test_cmpi_zero():
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #0,D2
 
-    cmpi.execute(sim)
-
-    assert sim.get_register(Register.D2).get_value_unsigned() == 0  # Register should not change
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, cmpi, Register.D2, 0, 4, [False, False, True, False, False])
 
 
 def test_cmpi_disassembles():
@@ -137,18 +104,7 @@ def test_cmpi_disassembles():
 
     sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=stored_value))
 
-    result.execute(sim)
-
-    assert sim.get_register(Register.D1).get_value_unsigned() == stored_value   # Result should be unchanged
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, result, Register.D1, stored_value, 4, [False, True, False, False, False])
 
 
 def test_ccr_carry():
@@ -172,18 +128,7 @@ def test_ccr_carry():
 
     cmpi = Cmpi(params, OpSize.WORD)  # CMPI.W #$100,D0
 
-    cmpi.execute(sim)
-
-    assert sim.get_register(Register.D0).get_value_unsigned() == stored_val     # Result should be unchanged
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
+    run_opcode_test(sim, cmpi, Register.D0, stored_val, 4, [False, True, False, False, True])
 
 
 def test_ccr_overflow():
@@ -199,26 +144,15 @@ def test_ccr_overflow():
 
     sim.set_program_counter_value(0x1000)
 
-    stored_val = -4
+    stored_val = MemoryValue(OpSize.LONG, signed_int=-4)
 
-    sim.set_register(Register.D1, MemoryValue(OpSize.LONG, signed_int=stored_val))
+    sim.set_register(Register.D1, stored_val)
 
     params = [AssemblyParameter(EAMode.IMM, 125), AssemblyParameter(EAMode.DRD, 1)]
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #125,D1
 
-    cmpi.execute(sim)
-
-    assert sim.get_register(Register.D1).get_value_signed() == stored_val  # result should be unchanged
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)  # 1 OPCODE with immediate (word) data used
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is True
+    run_opcode_test(sim, cmpi, Register.D1, stored_val.get_value_unsigned(), 4, [False, False, False, True, False])
 
 
 def test_add_assemble():
