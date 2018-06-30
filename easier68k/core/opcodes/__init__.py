@@ -6,8 +6,11 @@ __all__ = [
     'trap',
     'opcode',
     'opcode_or',
+    'eor',
     'add',
+    'adda',
     'cmp',
     'cmpi',
-    'adda'
+    'sub',
+    'subq'
 ]
