@@ -9,10 +9,10 @@ def test_basic_test_input():
     script_dir = os.path.dirname(__file__)  # The directory the current file is in
 
     # Test
-    with open(script_dir + '\\basic_test_input.x68') as x68:
+    with open(script_dir + '/basic_test_input.x68') as x68:
         assembled, issues = parse(x68.read(-1))
 
-        with open(script_dir + '\\temp_output_file.txt', 'w') as out:  # Temporary output file for testing results
+        with open(script_dir + '/temp_output_file.txt', 'w') as out:  # Temporary output file for testing results
             pretty_json = json.loads(assembled.to_json())
             out.write(json.dumps(pretty_json, indent=4, sort_keys=True))
             if issues:
