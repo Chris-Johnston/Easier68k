@@ -103,7 +103,14 @@ class Cmp(Opcode):
         comp_mv = MemoryValue(self.size,
                               unsigned_int=mask_value_for_length(self.size, comp_mv.get_value_unsigned()))
 
-        negative = comp_mv.get_negative()
+        negative = False
+
+        if self.size is OpSize.BYTE:
+            negative = comparison & 0x80 > 0
+        elif self.size is OpSize.WORD:
+            negative = comparison & 0x8000 > 0
+        elif self.size is OpSize.LONG:
+            negative = comparison & 0x80000000 > 0
 
         max_val = 0  # Maximum value allowed for the given memory size
 
