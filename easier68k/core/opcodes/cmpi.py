@@ -1,5 +1,5 @@
 from ...core.enum.ea_mode import EAMode
-from ...core.enum.op_size import MoveSize, OpSize
+from ...core.enum.op_size import OpSize
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
@@ -12,30 +12,39 @@ from ..enum.condition_status_code import ConditionStatusCode
 from ..models.memory_value import MemoryValue, mask_value_for_length
 
 
-# foward declaration for specifying the return type
-class Cmpi(Opcode):
-    pass
-
-
 class Cmpi(Opcode):
     """
-    CMPI (Page 4-79 of M68000PRM)
+    CMPI: Compare Immediate
+    Operation: Destination - Immediate Data -> cc
+    Assembler Syntax: CMPI #<data>, <ea>
+    Attributes: Size = (Byte, Word, Long)
+    Description: Subtracts the immediate data from the destination operand
+                 and sets the condition codes according to the result;
+                 the destination location is not changed.
+                 The size of the operation may be specified as byte, word, or long.
+                 The size of the immediate data matches the operation size.
+    Condition Codes: X - Not affected
+                     N - Set if the result is negative; cleared otherwise.
+                     Z - Set if the result is zero; cleared otherwise.
+                     V - Set if an overflow occurs; cleared otherwise.
+                     C - Set if a borrow occurs; cleared otherwise.
+    Instruction Format: 0100111010 Signature xxx EAMode xxx EARegister
+                        | 16-BIT WORD DATA | 8-BIT BYTE DATA |
+                        |        32-BIT LONG DATA            |
+    Instruction Fields:
+        Size field - Specifies the size of the operation.
+            00 - Byte operation
+            01 - Word operation
+            10 - Long operation
 
-    Subtracts the immediate data from the destination operand and sets the condition codes according to the result
-    ; the destination location is not changed.
-    The size of the operation may be speciﬁed as byte, word, or long.
-    The size of the immediate data matches the operation size.
+        Effective Address field - Specifies the address of the next instruction.
+                                  Only data addressing modes can be used.
+            Valid Modes - Dn, (An), (An)+, -(An), (xxx).W, (xxx).L
 
-    Note: CMPA is used when the destination is an address register.
-    CMPI is used when the source is immediate data. CMPM is used
-    for memory-to-memory compares.
-
-    CCR bits modified by this instruction:
-    X Unset
-    N Set
-    Z Set
-    V Set
-    C Set
+        Immediate field - Data immediately following the instruction.
+            If size = 00, the data is the low-order byte of the immediate word
+            If size = 01, the data is the entire immediate word.
+            If size = 10, the data is the next two immediate words.
     """
 
     # the allowed sizes for this opcode
@@ -66,7 +75,7 @@ class Cmpi(Opcode):
         :return: The bytearray which represents this assembled opcode
         """
 
-        # 0 0 0 0 1 1 0 0 size xx EA mode xxx Register xxx
+        # 00001100 signature xx size xxx EAMode xxx EARegister
         ret_opcode = 0b00001100 << 8
         # add the size
         if self.size == OpSize.BYTE:

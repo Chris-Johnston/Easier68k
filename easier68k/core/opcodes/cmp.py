@@ -1,5 +1,5 @@
 from ...core.enum.ea_mode import EAMode
-from ...core.enum.op_size import MoveSize, OpSize
+from ...core.enum.op_size import OpSize
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
@@ -11,28 +11,39 @@ from ..models.assembly_parameter import AssemblyParameter
 from ..enum.condition_status_code import ConditionStatusCode
 from ..models.memory_value import MemoryValue, mask_value_for_length
 
-# foward declaration for specifying the return type
-class Cmp(Opcode):
-    pass
 
 class Cmp(Opcode):
     """
-    CMP (Page 179 of M68000PRM)
+    CMP: Compare
+    Operation: Destination - Source -> cc
+    Assembler Syntax: CMP <ea>, Dn
+    Attributes: Size = (Byte, Word, Long)
+    Description: Subtracts the source operand from the destination data register
+                 and sets the condition codes according to the result;
+                 the data register is not changed.
+                 The size of the operation can be byte, word, or long.
+    Condition Codes: X - Not affected
+                     N - Set if the result is negative; cleared otherwise.
+                     Z - Set if the result is zero; cleared otherwise.
+                     V - Set if an overflow occurs; cleared otherwise.
+                     C - Set if a borrow occurs; cleared otherwise.
+    Instruction Format: 1 0 1 1 Dest Register xxx OpMode xxx EA mode xxx Register xxx
+    Instruction Fields:
+        Register field - Specifies the destination data register.
 
-    Subtracts the source operand from the destination operand and
-    set the condition codes accordingly. The destination must be a
-    data register. The destination is not modified by this instruction.
+        Opmode field [Operation: Dn - <ea>]
+            000 - Byte
+            001 - Word
+            010 - Long
 
-    Note: CMPA is used when the destination is an address register.
-    CMPI is used when the source is immediate data. CMPM is used
-    for memory-to-memory compares.
+        Effective Address field - Specifies the source operand.
+                                  All addressing modes can be used.
+            Valid Modes - All (Word and Long size only for An)
 
-    CCR bits modified by this instruction:
-    X Unset
-    N Set
-    Z Set
-    V Set
-    C Set
+    NOTE: CMPA is used when the destination is an address register.
+          CMPI is used when the source is immediate data.
+          CMPM is used for memory-to-memory compares.
+          Most assemblers automatically make the distinction.
     """
 
     # the allowed sizes for this opcode
