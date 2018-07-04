@@ -12,7 +12,21 @@ from ..enum.register import Register
 
 
 class Jsr(Opcode):
-
+    """
+    JSR: Jump to Subroutine
+    Operation: SP - 4 -> SP; PC -> (SP); Destination Address -> PC
+    Assembler Syntax: JSR <ea>
+    Attributes: Unsized
+    Description: Pushes the long-word address of the instruction immediately following the JSR instruction
+                 onto the system stack. Program execution then continues
+                 at the address specified in the instruction.
+    Condition Codes: Not affected
+    Instruction Format: 0100111010 Signature xxx EAMode xxx EARegister
+    Instruction Field:
+        Effective Address field - Speciﬁes the address of the next instruction.
+                                  Only control addressing modes can be used as listed in the following tables.
+        Valid Modes - (An), (xxx).W, (xxx).L
+    """
     def __init__(self, params: list):
         assert len(params) == 1
         assert isinstance(params[0], AssemblyParameter)
