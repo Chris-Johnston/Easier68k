@@ -80,15 +80,15 @@ class Jsr(Opcode):
         sp_val = simulator.get_register(Register.A7)
         new_sp_val = sp_val.get_value_unsigned() - 4
 
-        # SP – 4 → SP
+        # SP – 4 -> SP
         simulator.set_register(Register.A7, MemoryValue(OpSize.LONG, unsigned_int=new_sp_val))
 
         pc_val = simulator.get_program_counter_value()
 
-        # PC → (SP)
+        # PC -> (SP)
         AssemblyParameter(EAMode.ALA, new_sp_val).set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=pc_val))
 
-        # Destination Address → PC
+        # Destination Address -> PC
         simulator.set_register(Register.PC, dest_val)
 
     def __str__(self):
