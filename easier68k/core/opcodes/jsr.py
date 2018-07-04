@@ -11,10 +11,6 @@ from ..models.memory_value import MemoryValue
 from ..enum.register import Register
 
 
-class Jsr(Opcode):  # Forward declaration
-    pass
-
-
 class Jsr(Opcode):
 
     def __init__(self, params: list):
