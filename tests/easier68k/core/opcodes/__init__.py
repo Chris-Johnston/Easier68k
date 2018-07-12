@@ -9,5 +9,6 @@ __all__ = [
     'test_ori',
     'test_eor',
     'test_adda',
-    'test_jsr'
+    'test_jsr',
+    'test_neg'
 ]
