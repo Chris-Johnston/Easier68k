@@ -59,7 +59,7 @@ class Jsr(Opcode):
         """
         Executes this command in a simulator
         :param simulator: The simulator to execute the command on
-        :return: Nothing
+        :return: None
         """
 
         # increment the program counter by the length of the instruction (1 word)
