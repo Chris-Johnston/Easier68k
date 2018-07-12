@@ -8,5 +8,6 @@ __all__ = [
     'test_or',
     'test_ori',
     'test_eor',
-    'test_adda'
+    'test_adda',
+    'test_neg'
 ]
