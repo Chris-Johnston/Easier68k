@@ -10,5 +10,6 @@ __all__ = [
     'add',
     'sub',
     'subq',
-    'adda'
+    'adda',
+    'neg'
 ]
