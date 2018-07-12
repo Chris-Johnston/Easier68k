@@ -12,5 +12,7 @@ __all__ = [
     'cmp',
     'cmpi',
     'sub',
-    'subq'
+    'subq',
+    'adda',
+    'neg'
 ]
