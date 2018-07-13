@@ -3,17 +3,12 @@ from ...core.models.assembly_parameter import AssemblyParameter
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
-from ...core.enum.condition_status_code import ConditionStatusCode
 from ...core.util.split_bits import split_bits
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
 from ..util.parsing import parse_assembly_parameter
 from ..enum.condition_status_code import ConditionStatusCode
-from ..models.memory_value import MemoryValue
-
-class Or(Opcode):  # Forward declaration
-    pass
 
 
 class Or(Opcode):
@@ -90,7 +85,6 @@ class Or(Opcode):
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
 
-
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
 
@@ -139,7 +133,6 @@ class Or(Opcode):
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
-
 
     def __str__(self):
         return 'Or command: size {}, src {}, dest {}'.format(self.size, self.src, self.dest)
