@@ -44,29 +44,36 @@ class Or(Opcode):
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        tr = '1000'
+        # 1000 Dn xxx D x S xx M xxx Xn xxx
+        # ret_opcode is the binary value which represents the assembled instruction
+        ret_opcode = 0b1000 << 12
 
-        if(self.src == EAMode.DRD):
-            tr += '{0:03b}'.format(self.src.data)
+        if self.src == EAMode.DRD:
+            ret_opcode |= self.src.data << 9
+
             if self.size == OpSize.BYTE:
-                tr += '100'
+                ret_opcode |= 0b100 << 6
             elif self.size == OpSize.WORD:
-                tr += '101'
+                ret_opcode |= 0b101 << 6
             elif self.size == OpSize.LONG:
-                tr += '110'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
-        else: # dest must be DRD
-            tr += '{0:03b}'.format(self.dest.data)
+                ret_opcode |= 0b110 << 6
+
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
+        else:  # dest must be DRD
+            ret_opcode |= self.dest.data << 9
+
             if self.size == OpSize.BYTE:
-                tr += '000'
+                # don't have to do anything, |= wouldn't do anything
+                pass
             elif self.size == OpSize.WORD:
-                tr += '001'
+                ret_opcode |= 0b001 << 6
             elif self.size == OpSize.LONG:
-                tr += '010'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+                ret_opcode |= 0b010 << 6
 
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
 
-        return bytearray.fromhex(hex(int(tr, 2))[2:])
+        # convert the int to a bytes, then to a mutable bytearray
+        return bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
     def execute(self, simulator: M68K):
         """
