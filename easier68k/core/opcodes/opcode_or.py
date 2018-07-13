@@ -112,12 +112,17 @@ class Or(Opcode):
         result = src_val | dest_val
         result_unsigned = result.get_value_unsigned()
 
-        # set status codes
-        num_bits = OpSize.LONG.value*8
-        to_shift = num_bits-1 # this is how far to shift to get most significant bit
-        mask = 1 << num_bits
+        msb_bit = 0
 
-        simulator.set_condition_status_code(ConditionStatusCode.N, mask & result_unsigned != 0)
+        if self.size is OpSize.BYTE:
+            msb_bit = 0x80
+        elif self.size is OpSize.WORD:
+            msb_bit = 0x8000
+        elif self.size is OpSize.LONG:
+            msb_bit = 0x80000000
+
+        # set status codes
+        simulator.set_condition_status_code(ConditionStatusCode.N, msb_bit & result_unsigned != 0)
         simulator.set_condition_status_code(ConditionStatusCode.Z, result_unsigned == 0)
         simulator.set_condition_status_code(ConditionStatusCode.V, False)
         simulator.set_condition_status_code(ConditionStatusCode.C, False)
