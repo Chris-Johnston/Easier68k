@@ -55,11 +55,11 @@ def test_adda_zero():
 
     sim.set_program_counter_value(0x1000)
 
-    params = [AssemblyParameter(EAMode.IMM, 0b0), AssemblyParameter(EAMode.ARD, 5)]
+    params = [AssemblyParameter(EAMode.IMM, 0), AssemblyParameter(EAMode.ARD, 5)]
 
     adda = Adda(params, OpSize.WORD)
 
-    run_opcode_test(sim, adda, Register.A5, 0b0, 4, [False, False, False, False, False])
+    run_opcode_test(sim, adda, Register.A5, 0, 4, [False, False, False, False, False])
 
 
 def test_adda_disassembles():
