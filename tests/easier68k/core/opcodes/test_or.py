@@ -29,7 +29,7 @@ def test_or():
 
     _or = Or(params, OpSize.BYTE)
 
-    run_opcode_test(sim, _or, Register.D2, 10, 4, [False, False, False, False, False])
+    run_opcode_test(sim, _or, Register.D2, 10, [False, False, False, False, False], 4)
 
     _or.execute(sim)
 
@@ -50,7 +50,7 @@ def test_or_negative():
 
     _or = Or(params, OpSize.LONG)
 
-    run_opcode_test(sim, _or, Register.D2, 0xFFFFFFFE, 6, [False, True, False, False, False])
+    run_opcode_test(sim, _or, Register.D2, 0xFFFFFFFE, [False, True, False, False, False], 6)
 
 
 def test_or_disassembles():
@@ -69,7 +69,7 @@ def test_or_disassembles():
 
     sim = M68K()
 
-    run_opcode_test(sim, result, Register.D5, 0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, result, Register.D5, 0, [False, False, True, False, False], 2)
 
 
 def test_ccr_n():
@@ -91,7 +91,7 @@ def test_ccr_n():
 
     _or = Or(params, OpSize.BYTE)
 
-    run_opcode_test(sim, _or, Register.D0, 0xFF, 4, [False, True, False, False, False])
+    run_opcode_test(sim, _or, Register.D0, 0xFF, [False, True, False, False, False], 4)
 
 
 def test_ccr_zero():
@@ -112,7 +112,7 @@ def test_ccr_zero():
 
     _or = Or(params, OpSize.LONG)
 
-    run_opcode_test(sim, _or, Register.D0, 0x0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, _or, Register.D0, 0, [False, False, True, False, False], 2)
 
 
 def test_or_assemble():

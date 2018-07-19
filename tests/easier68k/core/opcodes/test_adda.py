@@ -23,7 +23,7 @@ def test_adda():
 
     adda = Adda(params, OpSize.WORD)
 
-    run_opcode_test(sim, adda, Register.A2, 0b101, 4, [False, False, False, False, False])
+    run_opcode_test(sim, adda, Register.A2, 0b101, [False, False, False, False, False], 4)
 
 
 def test_adda_negative():
@@ -42,7 +42,7 @@ def test_adda_negative():
 
     adda = Adda(params, OpSize.WORD)
 
-    run_opcode_test(sim, adda, Register.A2, 0xFFFFFB2E, 4, [False, False, False, False, False])
+    run_opcode_test(sim, adda, Register.A2, 0xFFFFFB2E, [False, False, False, False, False], 4)
 
 
 def test_adda_zero():
@@ -59,7 +59,7 @@ def test_adda_zero():
 
     adda = Adda(params, OpSize.WORD)
 
-    run_opcode_test(sim, adda, Register.A5, 0, 4, [False, False, False, False, False])
+    run_opcode_test(sim, adda, Register.A5, 0, [False, False, False, False, False], 4)
 
 
 def test_adda_disassembles():
@@ -81,7 +81,7 @@ def test_adda_disassembles():
     # Load value into A0
     sim.set_register(Register.A0, MemoryValue(OpSize.WORD, unsigned_int=123))
 
-    run_opcode_test(sim, result, Register.A1, 123, 2, [False, False, False, False, False])
+    run_opcode_test(sim, result, Register.A1, 123, [False, False, False, False, False], 2)
 
 
 def test_adda_assemble():
