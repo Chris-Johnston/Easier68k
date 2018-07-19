@@ -9,7 +9,6 @@ from ...core.util import opcode_util
 from ..util.parsing import parse_assembly_parameter
 from ..models.assembly_parameter import AssemblyParameter
 from ..enum.condition_status_code import ConditionStatusCode
-import binascii
 from ..models.memory_value import MemoryValue
 
 
