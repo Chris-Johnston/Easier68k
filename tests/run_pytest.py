@@ -8,7 +8,7 @@ import easier68k
 def run_tests():
     print('running pytests...')
     print('version {}'.format(easier68k.__version__))
-    status = pytest.main(['--cov',  '../easier68k', '.'])
+    status = pytest.main(['--cov=../easier68k', 'easier68k/'])
     return status
 
 
