@@ -219,7 +219,7 @@ def n_param_is_valid(command: str, parameters: str, opcode: str, n: int=2, valid
     return True, issues
 
 
-def n_param_from_str(command: str, parameters: str, opcode_cls, n: int=2, default_size=OpSize.WORD):
+def n_param_from_str(command: str, parameters: str, opcode_cls, n: int=2, default_size: OpSize =OpSize.WORD):
     """
     Parses a command from text. Note that this assumes that is_valid has already been run and was successful.
 
@@ -232,7 +232,7 @@ def n_param_from_str(command: str, parameters: str, opcode_cls, n: int=2, defaul
     """
     size, params, parts = from_str_util(command, parameters)
 
-    if default_size and not size:
+    if default_size is not None and not size:
         size = default_size
     elif not default_size:
         size = None
@@ -240,10 +240,8 @@ def n_param_from_str(command: str, parameters: str, opcode_cls, n: int=2, defaul
     parsed = []
     for i in range(n):
         parsed.append(parse_assembly_parameter(params[i].strip()))
-    # param1 = parse_assembly_parameter(params[0].strip())
-    # param2 = parse_assembly_parameter(params[1].strip())
 
-    if size:
+    if size is not None:
         return opcode_cls(parsed, size)
     else:
         return opcode_cls(parsed)
