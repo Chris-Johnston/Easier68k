@@ -350,6 +350,7 @@ def test_comparisons_to_ints():
     assert (not (a < b))
     assert (not (a != b))
 
+
 def test_math_operations():
     """
     Test the math operations with memory value
@@ -386,6 +387,53 @@ def test_math_operations():
     d = 4
 
     assert (a ^ b == c ^ d)
+
+
+def test_subtraction():
+    """
+    Tests the behavior of subtraction
+    :return:
+    """
+    a = MemoryValue(OpSize.LONG, unsigned_int=0x00C0FFEE)
+    b = MemoryValue(OpSize.LONG, unsigned_int=123)
+
+    expected_result = 0xFF3F008D
+    result = (b - a).get_value_unsigned()
+
+    assert result == expected_result
+
+    # now test the same thing but B is a single byte size
+    b = MemoryValue(OpSize.WORD, unsigned_int=123)
+
+    expected_result = 0x8D
+    result = (b - a).get_value_unsigned()
+
+    assert result == expected_result
+
+    # now test the same thing but B is a single byte size
+    b = MemoryValue(OpSize.BYTE, unsigned_int=123)
+
+    expected_result = 0x8D
+    result = (b - a).get_value_unsigned()
+
+    assert result == expected_result
+
+    a = MemoryValue(OpSize.LONG, unsigned_int=0x00C0FFEE)
+    b = MemoryValue(OpSize.LONG, unsigned_int=0x1F0F0F0F)
+
+    expected_result = 0x1E4E0F21
+    result = (b - a).get_value_unsigned()
+
+    assert result == expected_result
+
+    a = MemoryValue(OpSize.LONG, unsigned_int=0x00C0FFEE)
+    # do the operation as a word
+    b = MemoryValue(OpSize.WORD, unsigned_int=0xFFFF)
+
+    expected_result = 0x0011
+    result = (b - a).get_value_unsigned()
+
+    assert result == expected_result
 
 
 def test_math_operations_with_ints():
