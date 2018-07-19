@@ -9,44 +9,34 @@ from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
-from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.util.parsing import parse_assembly_parameter
 from easier68k.core.models.memory_value import MemoryValue
+from .test_opcode_helper import run_opcode_test
+
 
 def test_add():
     """
-    Test to see that or works as intended
-    :return:
+    Test to see that ADD works as intended
+    Example OPCODE used:
+        ADD.B #101,D2
     """
 
     sim = M68K()
 
     sim.set_program_counter_value(0x1000)
 
-    params = [AssemblyParameter(EAMode.IMM, 0b101), AssemblyParameter(EAMode.DRD, 2)]
+    params = [AssemblyParameter(EAMode.IMM, 101), AssemblyParameter(EAMode.DRD, 2)]
 
     add = Add(params, OpSize.BYTE)
 
-    add.execute(sim)
-
-    assert sim.get_register(Register.D2).get_value_unsigned() == 0b101
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, add, Register.D2, 101, 4, [False, False, False, False, False])
 
 
 def test_add_negative():
     """
-    Test to see that or works as intended
-    :return:
+    Test to see that ADD works as intended
+    Example OPCODE used:
+        ADD.B #-1,D2
     """
 
     sim = M68K()
@@ -59,26 +49,14 @@ def test_add_negative():
 
     add = Add(params, OpSize.BYTE)
 
-    add.execute(sim)
-    
-    assert sim.get_register(Register.D2).get_value_unsigned() == 255
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, add, Register.D2, 0xFF, 4, [False, True, False, False, False])
 
 
 def test_add_zero():
     """
-    Test to see that or works as intended
-    :return:
+    Test to see that ADD works as intended
+    Example OPCODE used:
+        ADD.B #0,D2
     """
 
     sim = M68K()
@@ -91,34 +69,23 @@ def test_add_zero():
 
     add = Add(params, OpSize.BYTE)
 
-    add.execute(sim)
-
-    assert sim.get_register(Register.D2).get_value_unsigned() == 0
-
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR
-
-    # changed by execution
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is True
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
+    run_opcode_test(sim, add, Register.D2, 0, 4, [False, False, True, False, False])
 
 
 def test_add_disassembles():
     """
     Test to see that add can be assembled from some input
-    :return:
+    Example OPCODE used:
+        MOVE.W #123,D0
+        ADD.W D0,D1
     """
 
     # cannot do
     # ADD #123, D0
     # because that gets assembled to ADDI
 
-    # ADD D0, D1
-    data = bytearray.fromhex('D2 40')
+    # ADD.W D0, D1
+    data = bytearray.fromhex('D240')
 
     result = Add.disassemble_instruction(data)
 
@@ -128,11 +95,7 @@ def test_add_disassembles():
 
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=123))
 
-    result.execute(sim)
-
-    assert sim.get_register(Register.D1).get_value_unsigned() == 123
-
-    assert sim.get_program_counter_value() == 2
+    run_opcode_test(sim, result, Register.D1, 123, 2, [False, False, False, False, False])
 
 
 def test_ccr_carry():
@@ -142,9 +105,8 @@ def test_ccr_carry():
     Example case of this
 
     MOVE #1, D0
-    MOVE #FFFF, D1
+    MOVE #$FFFF, D1
     ADD D0, D1 ; C bit will be set
-    :return:
     """
 
     sim = M68K()
@@ -160,32 +122,18 @@ def test_ccr_carry():
     # Add D0, D1
     add = Add(params, OpSize.WORD)
 
-    add.execute(sim)
-
-    # result in D1 should be 0
-    assert sim.get_register(Register.D1).get_value_unsigned() == 0
-
-    # carries over and value is zero
-    assert sim.get_condition_status_code(ConditionStatusCode.X)
-    assert sim.get_condition_status_code(ConditionStatusCode.Z)
-    assert sim.get_condition_status_code(ConditionStatusCode.C)
-
-    # not negative
-    assert not sim.get_condition_status_code(ConditionStatusCode.N)
-    # no overflow
-    assert not sim.get_condition_status_code(ConditionStatusCode.V)
+    run_opcode_test(sim, add, Register.D1, 0, 2, [True, False, True, False, True])
 
 
 def test_ccr_overflow():
     """
-    Tests to see that the carry bit is set correctly
+    Tests to see that the overflow bit is set correctly
 
     Example case of this
 
     MOVE #1, D0
-    MOVE #7FFF, D1
-    ADD D0, D1 ; C bit will be set
-    :return:
+    MOVE #$7FFF, D1
+    ADD D0, D1 ; V bit will be set
     """
 
     sim = M68K()
@@ -200,29 +148,19 @@ def test_ccr_overflow():
 
     # Add D0, D1
     add = Add(params, OpSize.WORD)
-    add.execute(sim)
-    # result in D1 should be result of the addition 0x8000
-    assert sim.get_register(Register.D1).get_value_unsigned() == 0x8000
-    # does not carry over and not zero
-    assert not sim.get_condition_status_code(ConditionStatusCode.X)
-    assert not sim.get_condition_status_code(ConditionStatusCode.Z)
-    assert not sim.get_condition_status_code(ConditionStatusCode.C)
 
-    # negative
-    p = sim.get_condition_status_code(ConditionStatusCode.N)
-    assert p is True
-    # overflow
-    assert sim.get_condition_status_code(ConditionStatusCode.V)
+    run_opcode_test(sim, add, Register.D1, 0x8000, 2, [False, True, False, True, False])
 
 
 def test_add_assemble():
     """
     Check that assembly is the same as the input
-    :return:
+    Example OPCODE used:
+        ADD D0, D1
     """
 
     # ADD D0, D1
-    data = bytearray.fromhex('D2 40')
+    data = bytearray.fromhex('D240')
 
     result = Add.disassemble_instruction(data)
 

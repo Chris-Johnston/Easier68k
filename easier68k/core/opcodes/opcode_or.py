@@ -3,17 +3,12 @@ from ...core.models.assembly_parameter import AssemblyParameter
 from ...core.enum import ea_mode_bin
 from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
-from ...core.enum.condition_status_code import ConditionStatusCode
 from ...core.util.split_bits import split_bits
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
 from ..util.parsing import parse_assembly_parameter
 from ..enum.condition_status_code import ConditionStatusCode
-from ..models.memory_value import MemoryValue
-
-class Or(Opcode):  # Forward declaration
-    pass
 
 
 class Or(Opcode):
@@ -44,29 +39,36 @@ class Or(Opcode):
         Assembles this opcode into hex to be inserted into memory
         :return: The hex version of this opcode
         """
-        tr = '1000'
+        # 1000 Dn xxx D x S xx M xxx Xn xxx
+        # ret_opcode is the binary value which represents the assembled instruction
+        ret_opcode = 0b1000 << 12
 
-        if(self.src == EAMode.DRD):
-            tr += '{0:03b}'.format(self.src.data)
+        if self.src == EAMode.DRD:
+            ret_opcode |= self.src.data << 9
+
             if self.size == OpSize.BYTE:
-                tr += '100'
+                ret_opcode |= 0b100 << 6
             elif self.size == OpSize.WORD:
-                tr += '101'
+                ret_opcode |= 0b101 << 6
             elif self.size == OpSize.LONG:
-                tr += '110'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
-        else: # dest must be DRD
-            tr += '{0:03b}'.format(self.dest.data)
+                ret_opcode |= 0b110 << 6
+
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
+        else:  # dest must be DRD
+            ret_opcode |= self.dest.data << 9
+
             if self.size == OpSize.BYTE:
-                tr += '000'
+                # don't have to do anything, |= wouldn't do anything
+                pass
             elif self.size == OpSize.WORD:
-                tr += '001'
+                ret_opcode |= 0b001 << 6
             elif self.size == OpSize.LONG:
-                tr += '010'
-            tr += ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+                ret_opcode |= 0b010 << 6
 
+            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
 
-        return bytearray.fromhex(hex(int(tr, 2))[2:])
+        # convert the int to a bytes, then to a mutable bytearray
+        return bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
     def execute(self, simulator: M68K):
         """
@@ -82,7 +84,6 @@ class Or(Opcode):
 
         # get the value of dest from the simulator
         dest_val = self.dest.get_value(simulator, val_length)
-
 
         # increment the program counter by the length of the instruction (1 word)
         to_increment = OpSize.WORD.value
@@ -112,12 +113,17 @@ class Or(Opcode):
         result = src_val | dest_val
         result_unsigned = result.get_value_unsigned()
 
-        # set status codes
-        num_bits = OpSize.LONG.value*8
-        to_shift = num_bits-1 # this is how far to shift to get most significant bit
-        mask = 1 << num_bits
+        msb_bit = 0
 
-        simulator.set_condition_status_code(ConditionStatusCode.N, mask & result_unsigned != 0)
+        if self.size is OpSize.BYTE:
+            msb_bit = 0x80
+        elif self.size is OpSize.WORD:
+            msb_bit = 0x8000
+        elif self.size is OpSize.LONG:
+            msb_bit = 0x80000000
+
+        # set status codes
+        simulator.set_condition_status_code(ConditionStatusCode.N, msb_bit & result_unsigned != 0)
         simulator.set_condition_status_code(ConditionStatusCode.Z, result_unsigned == 0)
         simulator.set_condition_status_code(ConditionStatusCode.V, False)
         simulator.set_condition_status_code(ConditionStatusCode.C, False)
@@ -127,7 +133,6 @@ class Or(Opcode):
 
         # set the program counter value
         simulator.increment_program_counter(to_increment)
-
 
     def __str__(self):
         return 'Or command: size {}, src {}, dest {}'.format(self.size, self.src, self.dest)

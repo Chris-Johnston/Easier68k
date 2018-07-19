@@ -4,15 +4,16 @@ from easier68k.core.models.assembly_parameter import AssemblyParameter
 from easier68k.core.enum.ea_mode import EAMode
 from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
-from easier68k.core.enum.condition_status_code import ConditionStatusCode
 from easier68k.core.util.parsing import parse_assembly_parameter
 from easier68k.core.models.memory_value import MemoryValue
+from .test_opcode_helper import run_opcode_test
 
 
 def test_adda():
     """
     Test to see that ADDA works as intended
-    Example OPCODE used: ADDA.W #$101,A2
+    Example OPCODE used:
+        ADDA.W #$101,A2
     """
     sim = M68K()
 
@@ -22,25 +23,14 @@ def test_adda():
 
     adda = Adda(params, OpSize.WORD)
 
-    adda.execute(sim)
+    run_opcode_test(sim, adda, Register.A2, 0b101, 4, [False, False, False, False, False])
 
-    # Does it contain the correct value?
-    assert sim.get_register(Register.A2).get_value_unsigned() == 0b101
-
-    # Did the program counter correctly increment?
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR (ensure they're unchanged)
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 def test_adda_negative():
     """
     Test to see that ADDA works as intended
-    Example OPCODE used: ADDA.W #-1234,A2
+    Example OPCODE used:
+        ADDA.W #-1234,A2
     """
     sim = M68K()
 
@@ -52,52 +42,32 @@ def test_adda_negative():
 
     adda = Adda(params, OpSize.WORD)
 
-    adda.execute(sim)
+    run_opcode_test(sim, adda, Register.A2, 0xFFFFFB2E, 4, [False, False, False, False, False])
 
-    # Does it contain the correct value?
-    assert sim.get_register(Register.A2).get_value_unsigned() == 0xFFFFFB2E
-
-    # Did the program counter correctly increment?
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR (ensure they're unchanged)
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 def test_adda_zero():
     """
     Test to see that ADDA works as intended
-    Example OPCODE used: ADDA.W #$0,A5
+    Example OPCODE used:
+        ADDA.W #$0,A5
     """
     sim = M68K()
 
     sim.set_program_counter_value(0x1000)
 
-    params = [AssemblyParameter(EAMode.IMM, 0b0), AssemblyParameter(EAMode.ARD, 5)]
+    params = [AssemblyParameter(EAMode.IMM, 0), AssemblyParameter(EAMode.ARD, 5)]
 
     adda = Adda(params, OpSize.WORD)
 
-    adda.execute(sim)
+    run_opcode_test(sim, adda, Register.A5, 0, 4, [False, False, False, False, False])
 
-    # Does it contain the correct value?
-    assert sim.get_register(Register.A5).get_value_unsigned() == 0b0
-
-    # Did the program counter correctly increment?
-    assert sim.get_program_counter_value() == (0x1000 + 4)
-
-    # check the CCR (ensure they're unchanged)
-    assert sim.get_condition_status_code(ConditionStatusCode.C) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.V) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.Z) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.N) is False
-    assert sim.get_condition_status_code(ConditionStatusCode.X) is False
 
 def test_adda_disassembles():
     """
     Test to see that ADDA works as intended
+    Example OPCODE used:
+        MOVEA.W #123,A0
+        ADDA.W A0, A1
     """
     # ADDA.W A0, A1
     data = bytearray.fromhex('D2C8')
@@ -111,11 +81,7 @@ def test_adda_disassembles():
     # Load value into A0
     sim.set_register(Register.A0, MemoryValue(OpSize.WORD, unsigned_int=123))
 
-    result.execute(sim)
-
-    assert sim.get_register(Register.A1).get_value_unsigned() == 123
-
-    assert sim.get_program_counter_value() == 2
+    run_opcode_test(sim, result, Register.A1, 123, 2, [False, False, False, False, False])
 
 
 def test_adda_assemble():
