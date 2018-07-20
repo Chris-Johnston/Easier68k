@@ -6,11 +6,6 @@ sudo python3 setup.py develop
 # run doctest
 cd tests
 python3 run_doctest.py
-
-python3 run_pytest.py
-
-# back into main dir
 cd ..
 
-
-
+python3 tests/run_pytest.py
