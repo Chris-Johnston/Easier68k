@@ -32,7 +32,7 @@ def test_subq():
 
     subq = Subq(params, OpSize.WORD)  # SUBQ.W #8,D0
 
-    run_opcode_test(sim, subq, Register.D0, 0x73, 2, [False, False, False, False, False])
+    run_opcode_test(sim, subq, Register.D0, 0x73, [False, False, False, False, False], 2)
 
 
 def test_subq_negative():
@@ -54,7 +54,7 @@ def test_subq_negative():
 
     subq = Subq(params, OpSize.LONG)  # SUBQ.L #1,D2
 
-    run_opcode_test(sim, subq, Register.D2, 0xFFFFFFFD, 2, [False, True, False, False, False])
+    run_opcode_test(sim, subq, Register.D2, 0xFFFFFFFD, [False, True, False, False, False], 2)
 
 
 def test_subq_disassembles():
@@ -76,7 +76,7 @@ def test_subq_disassembles():
 
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=0x123))
 
-    run_opcode_test(sim, result, Register.D0, 0x122, 2, [False, False, False, False, False])
+    run_opcode_test(sim, result, Register.D0, 0x122, [False, False, False, False, False], 2)
 
 
 def test_ccr_carry():
@@ -98,7 +98,7 @@ def test_ccr_carry():
 
     subq = Subq(params, OpSize.BYTE)  # SUBQ.B #1,D0
 
-    run_opcode_test(sim, subq, Register.D0, 0x1FF, 2, [True, True, False, False, True])
+    run_opcode_test(sim, subq, Register.D0, 0x1FF, [True, True, False, False, True], 2)
 
 
 def test_ccr_overflow():
@@ -120,7 +120,7 @@ def test_ccr_overflow():
 
     subq = Subq(params, OpSize.BYTE)  # SUBQ.B #4,D0
 
-    run_opcode_test(sim, subq, Register.D0, 0xFFFFFF7F, 2, [False, False, False, True, False])
+    run_opcode_test(sim, subq, Register.D0, 0xFFFFFF7F, [False, False, False, True, False], 2)
 
 
 def test_ccr_zero():
@@ -142,7 +142,7 @@ def test_ccr_zero():
 
     subq = Subq(params, OpSize.BYTE)  # SUBQ.B #1,D0
 
-    run_opcode_test(sim, subq, Register.D0, 0x0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, subq, Register.D0, 0x0, [False, False, True, False, False], 2)
 
 
 def test_subq_assemble():

@@ -30,7 +30,7 @@ def test_neg():
 
     neg = Neg([AssemblyParameter(EAMode.DRD, 0)], OpSize.WORD)  # NEG.W D0
 
-    run_opcode_test(sim, neg, Register.D0, 0xFF85, 2, [True, True, False, False, True])
+    run_opcode_test(sim, neg, Register.D0, 0xFF85, [True, True, False, False, True], 2)
 
 
 def test_neg_negative():
@@ -50,7 +50,7 @@ def test_neg_negative():
 
     neg = Neg([AssemblyParameter(EAMode.DRD, 2)], OpSize.LONG)  # NEG.L D2
 
-    run_opcode_test(sim, neg, Register.D2, 0x2, 2, [True, False, False, False, True])
+    run_opcode_test(sim, neg, Register.D2, 0x2, [True, False, False, False, True], 2)
 
 
 def test_neg_disassembles():
@@ -72,7 +72,7 @@ def test_neg_disassembles():
 
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=0x123))
 
-    run_opcode_test(sim, result, Register.D0, 0x1DD, 2, [True, True, False, False, True])
+    run_opcode_test(sim, result, Register.D0, 0x1DD, [True, True, False, False, True], 2)
 
 
 def test_ccr_carry():
@@ -92,7 +92,7 @@ def test_ccr_carry():
 
     neg = Neg([AssemblyParameter(EAMode.DRD, 0)], OpSize.LONG)
 
-    run_opcode_test(sim, neg, Register.D0, 100, 2, [True, False, False, False, True])
+    run_opcode_test(sim, neg, Register.D0, 100, [True, False, False, False, True], 2)
 
 
 def test_ccr_overflow():
@@ -112,7 +112,7 @@ def test_ccr_overflow():
 
     neg = Neg([AssemblyParameter(EAMode.DRD, 0)], OpSize.BYTE)
 
-    run_opcode_test(sim, neg, Register.D0, 0x80, 2, [True, True, False, True, True])
+    run_opcode_test(sim, neg, Register.D0, 0x80, [True, True, False, True, True], 2)
 
 
 def test_ccr_zero():
@@ -132,7 +132,7 @@ def test_ccr_zero():
 
     neg = Neg([AssemblyParameter(EAMode.DRD, 0)], OpSize.BYTE)
 
-    run_opcode_test(sim, neg, Register.D0, 0x0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, neg, Register.D0, 0x0, [False, False, True, False, False], 2)
 
 
 def test_neg_assemble():

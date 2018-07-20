@@ -34,7 +34,7 @@ def test_cmpi():
 
     cmpi = Cmpi(params, OpSize.WORD)  # CMPI.W #52,D0
 
-    run_opcode_test(sim, cmpi, Register.D0, stored_val, 4, [False, False, False, False, False])
+    run_opcode_test(sim, cmpi, Register.D0, stored_val, [False, False, False, False, False], 4)
 
 
 def test_cmpi_negative():
@@ -58,7 +58,7 @@ def test_cmpi_negative():
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #-1,D2
 
-    run_opcode_test(sim, cmpi, Register.D2, stored_val, 4, [False, False, False, False, True])
+    run_opcode_test(sim, cmpi, Register.D2, stored_val, [False, False, False, False, True], 4)
 
 
 def test_cmpi_zero():
@@ -78,7 +78,7 @@ def test_cmpi_zero():
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #0,D2
 
-    run_opcode_test(sim, cmpi, Register.D2, 0, 4, [False, False, True, False, False])
+    run_opcode_test(sim, cmpi, Register.D2, 0, [False, False, True, False, False], 4)
 
 
 def test_cmpi_disassembles():
@@ -104,7 +104,7 @@ def test_cmpi_disassembles():
 
     sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=stored_value))
 
-    run_opcode_test(sim, result, Register.D1, stored_value, 4, [False, True, False, False, False])
+    run_opcode_test(sim, result, Register.D1, stored_value, [False, True, False, False, False], 4)
 
 
 def test_ccr_carry():
@@ -128,7 +128,7 @@ def test_ccr_carry():
 
     cmpi = Cmpi(params, OpSize.WORD)  # CMPI.W #$100,D0
 
-    run_opcode_test(sim, cmpi, Register.D0, stored_val, 4, [False, True, False, False, True])
+    run_opcode_test(sim, cmpi, Register.D0, stored_val, [False, True, False, False, True], 4)
 
 
 def test_ccr_overflow():
@@ -152,7 +152,7 @@ def test_ccr_overflow():
 
     cmpi = Cmpi(params, OpSize.BYTE)  # CMPI.B #125,D1
 
-    run_opcode_test(sim, cmpi, Register.D1, stored_val.get_value_unsigned(), 4, [False, False, False, True, False])
+    run_opcode_test(sim, cmpi, Register.D1, stored_val.get_value_unsigned(), [False, False, False, True, False], 4)
 
 
 def test_add_assemble():

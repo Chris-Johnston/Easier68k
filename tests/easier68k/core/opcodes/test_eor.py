@@ -34,7 +34,7 @@ def test_eor():
 
     eor = Eor(params, OpSize.BYTE)  # EOR.B D0, D1
 
-    run_opcode_test(sim, eor, Register.D1, 0x12CB, 2, [False, True, False, False, False])
+    run_opcode_test(sim, eor, Register.D1, 0x12CB, [False, True, False, False, False], 2)
 
 
 def test_eor_negative():
@@ -58,7 +58,7 @@ def test_eor_negative():
 
     eor = Eor(params, OpSize.LONG)  # ORI.L #1,D2
 
-    run_opcode_test(sim, eor, Register.D2, 0xFFFFFFFF, 2, [False, True, False, False, False])
+    run_opcode_test(sim, eor, Register.D2, 0xFFFFFFFF, [False, True, False, False, False], 2)
 
 
 def test_eor_disassembles():
@@ -82,7 +82,7 @@ def test_eor_disassembles():
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=0x123))
     sim.set_register(Register.D1, MemoryValue(OpSize.BYTE, unsigned_int=0xFF))
 
-    run_opcode_test(sim, result, Register.D0, 0x1DC, 2, [False, True, False, False, False])
+    run_opcode_test(sim, result, Register.D0, 0x1DC, [False, True, False, False, False], 2)
 
 
 def test_ccr_n():
@@ -106,7 +106,7 @@ def test_ccr_n():
 
     eor = Eor(params, OpSize.BYTE)  # EOR.B D0,D7
 
-    run_opcode_test(sim, eor, Register.D7, 0xFE, 2, [False, True, False, False, False])
+    run_opcode_test(sim, eor, Register.D7, 0xFE, [False, True, False, False, False], 2)
 
 
 def test_ccr_zero():
@@ -130,7 +130,7 @@ def test_ccr_zero():
 
     eor = Eor(params, OpSize.BYTE)  # EOR.B D0,D1
 
-    run_opcode_test(sim, eor, Register.D1, 0x0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, eor, Register.D1, 0x0, [False, False, True, False, False], 2)
 
 
 def test_eor_assemble():

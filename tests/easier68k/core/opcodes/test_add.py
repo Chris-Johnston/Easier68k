@@ -29,7 +29,7 @@ def test_add():
 
     add = Add(params, OpSize.BYTE)
 
-    run_opcode_test(sim, add, Register.D2, 101, 4, [False, False, False, False, False])
+    run_opcode_test(sim, add, Register.D2, 101, [False, False, False, False, False], 4)
 
 
 def test_add_negative():
@@ -49,7 +49,7 @@ def test_add_negative():
 
     add = Add(params, OpSize.BYTE)
 
-    run_opcode_test(sim, add, Register.D2, 0xFF, 4, [False, True, False, False, False])
+    run_opcode_test(sim, add, Register.D2, 0xFF, [False, True, False, False, False], 4)
 
 
 def test_add_zero():
@@ -69,7 +69,7 @@ def test_add_zero():
 
     add = Add(params, OpSize.BYTE)
 
-    run_opcode_test(sim, add, Register.D2, 0, 4, [False, False, True, False, False])
+    run_opcode_test(sim, add, Register.D2, 0, [False, False, True, False, False], 4)
 
 
 def test_add_disassembles():
@@ -95,7 +95,7 @@ def test_add_disassembles():
 
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=123))
 
-    run_opcode_test(sim, result, Register.D1, 123, 2, [False, False, False, False, False])
+    run_opcode_test(sim, result, Register.D1, 123, [False, False, False, False, False], 2)
 
 
 def test_ccr_carry():
@@ -122,7 +122,7 @@ def test_ccr_carry():
     # Add D0, D1
     add = Add(params, OpSize.WORD)
 
-    run_opcode_test(sim, add, Register.D1, 0, 2, [True, False, True, False, True])
+    run_opcode_test(sim, add, Register.D1, 0, [True, False, True, False, True], 2)
 
 
 def test_ccr_overflow():
@@ -149,7 +149,7 @@ def test_ccr_overflow():
     # Add D0, D1
     add = Add(params, OpSize.WORD)
 
-    run_opcode_test(sim, add, Register.D1, 0x8000, 2, [False, True, False, True, False])
+    run_opcode_test(sim, add, Register.D1, 0x8000, [False, True, False, True, False], 2)
 
 
 def test_add_assemble():
