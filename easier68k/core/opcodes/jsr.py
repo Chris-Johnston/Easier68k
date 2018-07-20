@@ -9,6 +9,7 @@ from ..util.parsing import parse_assembly_parameter
 from ..models.assembly_parameter import AssemblyParameter
 from ..models.memory_value import MemoryValue
 from ..enum.register import Register
+from typing import Union
 
 
 class Jsr(Opcode):
@@ -180,7 +181,7 @@ class Jsr(Opcode):
                                                                                                  EAMode.IMM]])[:2]
 
     @classmethod
-    def disassemble_instruction(cls, data: bytearray) -> Opcode:
+    def disassemble_instruction(cls, data: bytearray) -> Union[Opcode, None]:
         """
         This has a non-JSR opcode
         >>> Jsr.disassemble_instruction(bytearray.fromhex('0280'))
