@@ -32,7 +32,7 @@ def test_ori():
 
     ori = Ori(params, OpSize.BYTE)  # ORI.B #$FF, D1
 
-    run_opcode_test(sim, ori, Register.D1, 0x12FF, 4, [False, True, False, False, False])
+    run_opcode_test(sim, ori, Register.D1, 0x12FF, [False, True, False, False, False], 4)
 
 
 def test_ori_negative():
@@ -54,7 +54,7 @@ def test_ori_negative():
 
     ori = Ori(params, OpSize.LONG)  # ORI.L #1,D2
 
-    run_opcode_test(sim, ori, Register.D2, 0xFFFFFFFF, 6, [False, True, False, False, False])
+    run_opcode_test(sim, ori, Register.D2, 0xFFFFFFFF, [False, True, False, False, False], 6)
 
 
 def test_ori_disassembles():
@@ -76,7 +76,7 @@ def test_ori_disassembles():
 
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=0x123))
 
-    run_opcode_test(sim, result, Register.D0, 0x123, 4, [False, False, False, False, False])
+    run_opcode_test(sim, result, Register.D0, 0x123, [False, False, False, False, False], 4)
 
 
 def test_ccr_n():
@@ -98,7 +98,7 @@ def test_ccr_n():
 
     ori = Ori(params, OpSize.BYTE)  # ORI.B #1,D0
 
-    run_opcode_test(sim, ori, Register.D0, 0xFF, 4, [False, True, False, False, False])
+    run_opcode_test(sim, ori, Register.D0, 0xFF, [False, True, False, False, False], 4)
 
 
 def test_ccr_zero():
@@ -120,7 +120,7 @@ def test_ccr_zero():
 
     ori = Ori(params, OpSize.BYTE)  # ORI.B #0,D0
 
-    run_opcode_test(sim, ori, Register.D0, 0x0, 4, [False, False, True, False, False])
+    run_opcode_test(sim, ori, Register.D0, 0x0, [False, False, True, False, False], 4)
 
 
 def test_ori_assemble():
