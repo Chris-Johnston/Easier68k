@@ -14,8 +14,7 @@ script:
   - pwd
   - cd tests
   - python run_doctest.py
-  - cd ..
-  - python tests/run_pytest.py
+  - python run_pytest.py
   - ls -a
   - cat .coverage
   - cd /home/travis/build/Chris-Johnston/Easier68k
