@@ -10,7 +10,8 @@ from easier68k.core.models.memory_value import MemoryValue
 from easier68k.core.enum.condition_status_code import ConditionStatusCode
 
 
-def run_opcode_test(sim: M68K, opcode: Opcode, reg_check: Register, expected_val: int, program_increment: int, expected_ccr: list):
+def run_opcode_test(sim: M68K, opcode: Opcode, reg_check: Register, expected_val: int, expected_ccr: list,
+                    program_increment: int = None):
     """
     Executes the OPCODE and checks to see if it executes correctly
     (by checking the affected register and the CCR).
@@ -18,19 +19,22 @@ def run_opcode_test(sim: M68K, opcode: Opcode, reg_check: Register, expected_val
     :param opcode: The OPCODE to execute
     :param reg_check: The register to check
     :param expected_val: unsigned value of the expected value for the register
-    :param program_increment: how much the program should increment after execution
     :param expected_ccr: A list of bools of what the CCR should look like after execution
+    :param program_increment: how much the program should increment after execution
     :return: None
     """
 
     assert expected_ccr.__len__() == 5  # Size should always be 5
 
-    program_val = sim.get_program_counter_value()   # Get the counter value before execution
+    if program_increment is not None:
+        program_val = sim.get_program_counter_value()   # Get the counter value before execution
+
     opcode.execute(sim)
 
     assert sim.get_register(reg_check).get_value_unsigned() == expected_val
 
-    assert sim.get_program_counter_value() == (program_val + program_increment)
+    if program_increment is not None:
+        assert sim.get_program_counter_value() == (program_val + program_increment)
 
     # changed by execution
     assert sim.get_condition_status_code(ConditionStatusCode.X) == expected_ccr[0]

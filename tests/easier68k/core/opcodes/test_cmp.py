@@ -40,13 +40,13 @@ def test_cmp():
     params = [AssemblyParameter(EAMode.DRD, 0), AssemblyParameter(EAMode.DRD, 1)]
 
     cmp = Cmp(params, OpSize.BYTE)
-    run_opcode_test(sim, cmp, Register.D1, stored_val, correct_incrementation, [False, True, False, True, True])
+    run_opcode_test(sim, cmp, Register.D1, stored_val, [False, True, False, True, True], correct_incrementation)
 
     # now do the same tests with CMP.W, CMP.L
     cmp = Cmp(params, OpSize.WORD)
-    run_opcode_test(sim, cmp, Register.D1, stored_val, correct_incrementation, [False, False, False, False, True])
+    run_opcode_test(sim, cmp, Register.D1, stored_val, [False, False, False, False, True], correct_incrementation)
 
     # L
     # C and N are set
     cmp = Cmp(params, OpSize.LONG)
-    run_opcode_test(sim, cmp, Register.D1, stored_val, correct_incrementation, [False, True, False, False, True])
+    run_opcode_test(sim, cmp, Register.D1, stored_val, [False, True, False, False, True], correct_incrementation)

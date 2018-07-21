@@ -32,7 +32,7 @@ def test_sub():
 
     sub = Sub(params, OpSize.WORD)  # SUB.W #52,D0
 
-    run_opcode_test(sim, sub, Register.D0, 71, 4, [False, False, False, False, False])
+    run_opcode_test(sim, sub, Register.D0, 71, [False, False, False, False, False], 4)
 
 
 def test_sub_negative():
@@ -54,7 +54,7 @@ def test_sub_negative():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B #-1,D2
 
-    run_opcode_test(sim, sub, Register.D2, 3, 4, [True, False, False, False, True])
+    run_opcode_test(sim, sub, Register.D2, 3, [True, False, False, False, True], 4)
 
 
 def test_sub_zero():
@@ -73,7 +73,7 @@ def test_sub_zero():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B #0,D2
 
-    run_opcode_test(sim, sub, Register.D2, 0, 4, [False, False, True, False, False])
+    run_opcode_test(sim, sub, Register.D2, 0, [False, False, True, False, False], 4)
 
 
 def test_sub_disassembles():
@@ -95,7 +95,7 @@ def test_sub_disassembles():
     sim.set_register(Register.D0, MemoryValue(OpSize.WORD, unsigned_int=123))
     sim.set_register(Register.D1, MemoryValue(OpSize.WORD, unsigned_int=65535))
 
-    run_opcode_test(sim, result, Register.D1, 0xFF84, 2, [False, True, False, False, False])
+    run_opcode_test(sim, result, Register.D1, 0xFF84, [False, True, False, False, False], 2)
 
 
 def test_ccr_carry():
@@ -117,7 +117,7 @@ def test_ccr_carry():
 
     sub = Sub(params, OpSize.WORD)  # SUB.W #$100,D0
 
-    run_opcode_test(sim, sub, Register.D0, 0xFFFF, 4, [True, True, False, False, True])
+    run_opcode_test(sim, sub, Register.D0, 0xFFFF, [True, True, False, False, True], 4)
 
 
 def test_ccr_overflow():
@@ -141,7 +141,7 @@ def test_ccr_overflow():
 
     sub = Sub(params, OpSize.BYTE)  # SUB.B D0,D1
 
-    run_opcode_test(sim, sub, Register.D1, 0xFFFFFF7F, 2, [False, False, False, True, False])
+    run_opcode_test(sim, sub, Register.D1, 0xFFFFFF7F, [False, False, False, True, False], 2)
 
 
 def test_ccr_zero():
@@ -160,7 +160,7 @@ def test_ccr_zero():
 
     sub = Sub(params, OpSize.WORD)  # SUB.W D0,D1
 
-    run_opcode_test(sim, sub, Register.D1, 0x0, 2, [False, False, True, False, False])
+    run_opcode_test(sim, sub, Register.D1, 0x0, [False, False, True, False, False], 2)
 
 
 def test_sub_assemble():
