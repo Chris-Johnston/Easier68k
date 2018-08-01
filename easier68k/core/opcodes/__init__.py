@@ -1,5 +1,6 @@
 __all__ = [
     'move',
+    'movea',
     'dc',
     'lea',
     'simhalt',

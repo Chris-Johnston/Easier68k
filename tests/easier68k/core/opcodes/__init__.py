@@ -7,6 +7,7 @@ __all__ = [
     'test_jsr',
     'test_lea',
     'test_move',
+    'test_movea',
     'test_neg',
     'test_opcode_helper',
     'test_or',
