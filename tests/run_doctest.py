@@ -27,6 +27,7 @@ test_modules = [
     'easier68k.core.opcodes.adda',
     'easier68k.core.opcodes.dc',
     'easier68k.core.opcodes.jsr',
+    'easier68k.core.opcodes.rts',
     'easier68k.core.opcodes.lea',
     'easier68k.core.opcodes.neg',
     'easier68k.core.opcodes.simhalt',

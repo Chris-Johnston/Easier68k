@@ -16,5 +16,6 @@ __all__ = [
     'subq',
     'adda',
     'jsr',
+    'rts',
     'neg'
 ]
