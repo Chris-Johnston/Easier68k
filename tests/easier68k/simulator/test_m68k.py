@@ -50,9 +50,12 @@ def _test_single_address_register(a :M68K, reg: Register):
     Tests for the address registers that are limited by the size of memory
     :return:
     """
-
-    # ensure that its value defaults to zero
-    assert a.get_register(reg) == 0
+    if reg is not Register.A7:
+        # ensure that its value defaults to zero
+        assert a.get_register(reg) == 0
+    else:
+        # A7 has a different uninitialized register value
+        assert a.get_register(reg) == 0x1000000
 
     # try setting w/o errors
     a.set_register(reg, MemoryValue(OpSize.WORD, unsigned_int=0x3200))
