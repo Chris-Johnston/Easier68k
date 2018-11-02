@@ -49,6 +49,9 @@ class M68K:
         # which just uses 5 bits out of the lowermost byte (do we want to allocate it an entire word instead?)
         self.registers[Register.ConditionCodeRegister] = MemoryValue(OpSize.BYTE)
 
+        # Easy68k initializes the step counter (A7) to 0x1000000 by default, so do the same
+        self.set_register(Register.A7, MemoryValue(OpSize.LONG, unsigned_int=0x1000000))
+
     def get_register(self, register: Register) -> MemoryValue:
         """
         Gets the entire value of a register
