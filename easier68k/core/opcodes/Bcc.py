@@ -14,19 +14,39 @@ from ..util.split_bits import split_bits
 # makes TC way easier lol
 from bitstring import Bits
 
-"""
-All Branch operations will inherit from branch_code. 
-there will be a conditional function to be overidden across child classes
-"""
+COND_CODE_TO_OPCODE = {
+    '\x02': 'BHI',
+    '\x03': 'BLS',
+    '\x04': 'BCC',
+    '\x05': 'BCS',
+    '\x06': 'BNE',
+    '\x07': 'BEQ',
+    '\x08': 'BVC',
+    '\x09': 'BVS',
+    '\x0A': 'BPL',
+    '\x0B': 'BMI',
+    '\x0C': 'BGE',
+    '\x0D': 'BLT',
+    '\x0E': 'BGT',
+    '\x0F': 'BLE'
+}
+
 
 class branch_code(Opcode):
     pass
 
 
 class branch_code(Opcode):
+    """
+    All Branch operations will inherit from branch_code. 
+    there will be a conditional function to be overidden across child classes
+    one must also redefine self.cond_code across child classes
+    """
+
     operand = None
     address = None
     cond_code = None
+    offset = None
     
     def __init__(self, params: list):
         assert len(params) == 3
@@ -57,18 +77,18 @@ class branch_code(Opcode):
         """
         
         # yes you actually need to subclass this
-        assert cond_code != None
+        assert self.cond_code != None
         
         # make offset out of operand
-        self.offset = operand - address
-        self.offset = Bits(int=offset, size=self.size)
+        self.offset = self.operand - self.address
+        self.offset = Bits(int=self.offset, size=self.size)
         
         # clear for >8 bit offset
         lastbyte = '\x00'
         
         # if offset is 8 bits than it is inside the opword
         if self.size == OpSize.BYTE:
-            lastbyte = offset.to_bytes()
+            lastbyte = self.offset.to_bytes()
         
         # if offset is 32 bits than the last chunk of opword is FF
         if self.size == OpSize.LONG:
@@ -84,13 +104,9 @@ class branch_code(Opcode):
         # stop here if 8 bit offset
         if self.size == OpSize.BYTE:
             return opword
-        
-        # add word of 0000 if 32 bit offset
-        if self.size == OpSize.LONG:
-            opword += '\x00\x00'
             
         # add opword
-        opword += offset.to_bytes(2, "big")
+        opword += self.offset.to_bytes(2, "big")
         
         return opword
     
@@ -105,8 +121,37 @@ class branch_code(Opcode):
         if not self.conditional():
             pass
             
-        # twos comp if negative
-        if offset < 0:
-            if self.size = OpSize.Byte:
-                
-            
+        simulator.increment_program_counter(self.offset + 2)
+        
+    @classmethod            
+    def __str__(self):
+        """
+        converts command to a string
+        :return: string rep of command
+        """
+        return "{s} ${d}".format(
+                s = COND_CODE_TO_OPCODE.get(self.cond_code),
+                d = (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset) )
+    
+    def command_matches(self, command: str) -> bool:
+        """
+        Checks whether a command string is an instance of this command type
+        :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
+        :return: Whether the string is an instance of this command type
+        """
+
+        # gee I sure hope I dont need to refactor this into 16 different freakin clones        
+        return  opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
+    
+    @classmethod
+    def get_word_length(cls, command: str, parameters: str) -> int:
+        """
+        Gets what the end length of this command will be in memory
+        :param command: The text of the command itself (e.g. "LEA", "MOVE.B", etc.)
+        :param parameters: The parameters after the command
+        :return: The length of the bytes in memory in words
+        """
+        pass
+        
+        
+        
