@@ -51,7 +51,7 @@ class branch_code(Opcode):
     
     def __init__(self, params: list):
         assert len(params) == 3
-        assert isinstance(params[0], AssemblyParameter) # Offset
+        assert isinstance(params[0], AssemblyParameter) # Target Address
         assert isinstance(params[1], int) # Address of this isntruction
         assert isinstance(params[2], OpSize)
         assert params[0].mode == EAMode.Immediate
@@ -142,8 +142,8 @@ class branch_code(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        
-        return opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
+        raise Exception("Branch Operation did not override parent class command_matches stub!")
+        #return opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
     
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -200,3 +200,78 @@ class branch_code(Opcode):
             errors.append("Reading word at {d} will cause crash".format(d=offset.data))
             
         return (passes, errors)
+    
+    @classmethod
+    def disassemble_instruction(cls, data: bytes) -> Opcode:
+        """
+        Parses some raw data into an instance of the opcode class
+
+        :param data: The data used to convert into an opcode instance
+        :return: The constructed instance or none if there was an error and
+            the amount of data in words that was used (e.g. extra for immediate
+            data) or 0 for not a match
+        """
+        raise Exception("Branch Operation did not override parent class disassemble_instruction stub!")
+        # Example code: 
+        """
+        # check first byte
+        fb = (6 << 4) + <CONDCODE>
+        if data[0] != fb:
+            return 0
+        
+        # check length of byte array
+        valid_sizes = [2,4,6]
+        if len(data) not in valid_sizes:
+            return None
+            
+        # start by assumming byte size
+        size = OpSize.BYTE
+        offset = data[1]
+        
+        # check word size
+        if offset == '\x00':
+            size = OpSize.WORD
+            offset = data[2:4]
+            if len(offset) not 2:
+                return None
+                
+        elif offset == '\xFF':
+            size = OpSize.LONG
+            offset = data[2:6]
+            if len(offset) not 4:
+                return None
+        
+        op = <BRANCHCLASSNAME>(AssemblyParameter(None, 0), 0, size)
+        op.offset = offset
+        
+        return op 
+        """
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str, address: int):
+        """
+        Parses a command from text
+
+        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+        :param parameters: The parameters after the command (such as the source and destination of a move)
+        :param address: Address of this operation 
+        :return: The parsed command
+        """
+        raise Exception("Branch Operation did not override parent class from_str stub!")
+        
+        # Example code below
+        """
+        # parameter to list
+        parameters = parameters.split(',')
+        for i in parameters:
+            i = i.strip()
+        parameters.append(address)
+        
+        # parse offset
+        parameters[0] = parse_assembly_parameter(parameters[0])
+        
+        # append offset size
+        parameters.append(parameters[0].get_value().get_size())
+        
+        return <BRANCHCLASSNAME>(parameters)
+        """
