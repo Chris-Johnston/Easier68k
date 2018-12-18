@@ -183,5 +183,20 @@ class branch_code(Opcode):
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
         
+        passes = True
+        errors = []
+        parameters = patameters.split(',')
         
+        # See the BIG HORKIN' NOTE from get_word_length()
+        # check param length
+        if len(parameters) >1:
+            passes = False
+            errors.append("Too many operands for Branch Operation (TODO: list them here)")
         
+        # check offset dest validity (odd read)
+        offset = parse_assembly_parameter(parameters[0].strip())
+        if offset.data % 2 == 1:
+            passes = False
+            errors.append("Reading word at {d} will cause crash".format(d=offset.data))
+            
+        return (passes, errors)
