@@ -41,6 +41,7 @@ class branch_code(Opcode):
     All Branch operations will inherit from branch_code. 
     there will be a conditional function to be overidden across child classes
     one must also redefine self.cond_code across child classes
+    Additionally, a redefinition of command_matches() will suffice
     """
 
     operand = None
@@ -51,7 +52,7 @@ class branch_code(Opcode):
     def __init__(self, params: list):
         assert len(params) == 3
         assert isinstance(params[0], AssemblyParameter) # Offset
-        assert isinstance(params[1], int) # Address
+        assert isinstance(params[1], int) # Address of this isntruction
         assert isinstance(params[2], OpSize)
         assert params[0].mode == EAMode.Immediate
         
@@ -129,19 +130,20 @@ class branch_code(Opcode):
         converts command to a string
         :return: string rep of command
         """
+        
         return "{s} ${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
                 d = (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset) )
-    
-    def command_matches(self, command: str) -> bool:
+
+    @classmethod
+    def command_matches(cls, command: str) -> bool:
         """
         Checks whether a command string is an instance of this command type
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-
-        # gee I sure hope I dont need to refactor this into 16 different freakin clones        
-        return  opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
+        
+        return opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
     
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -151,7 +153,35 @@ class branch_code(Opcode):
         :param parameters: The parameters after the command
         :return: The length of the bytes in memory in words
         """
-        pass
+        
+        # opword
+        length = 2
+        
+        # BIG NOTE: I am explicitly ignoring size codes because there are no defined flippy boys
+        # in the opword for Bcc ops. Yeezy68k might let you define a size code, but even it
+        # will more or less ignore whatever you put (reduces unnessesary .l to .w)
+        
+        parameter = parameters.split(',')[0]
+        
+        # Check range of operand
+        parameter = parse_assembly_parameter(parameter.strip())
+        
+        if parameter.mode = EAMode.AWA:
+            length += 2
+        if parameter.mode = EAMode.ALA:
+            length += 4
+        
+        return length
+    
+    @classmethod
+    def is_valid(cls, command: str, parameters: str) -> (bool, list):
+        """
+        Tests whether the given command is valid
+
+        :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+        :param parameters: The parameters after the command (such as the source and destination of a move)
+        :return: Whether the given command is valid and a list of issues/warnings encountered
+        """
         
         
         
