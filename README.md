@@ -88,7 +88,7 @@ package into your code.
 ### Testing
 
 All of the tests can be run with the script `./.testingScript.sh`.
-This will install the development-version package and run all of the tests.
+This will install the development version of the package locally and run all of the tests.
 
 Doctests are implemented on most smaller methods and utility functions, and pytests are planned
 for the overall functionality.
