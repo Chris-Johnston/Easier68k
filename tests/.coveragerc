@@ -1,0 +1,18 @@
+# .coveragerc to control coverage.py
+[run]
+# don't report on coverage of files in the tests dir itself
+omit = 
+# easier68k/tests/*
+  */__init__.py
+
+# run branch coverage in addition to statement coverage
+branch = True
+
+source =
+  easier68k/*
+
+[report]
+
+omit =
+  *../tests
+  */__init__.py

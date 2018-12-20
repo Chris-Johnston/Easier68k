@@ -8,7 +8,7 @@ notifications:
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
-  - python setup.py install
+  - python setup.py develop
 script:
   - pwd
   - cd tests
