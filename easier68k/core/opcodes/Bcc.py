@@ -31,11 +31,6 @@ COND_CODE_TO_OPCODE = {
     '\x0F': 'BLE'
 }
 
-
-class branch_code(Opcode):
-    pass
-
-
 class branch_code(Opcode):
     """
     All Branch operations will inherit from branch_code. 
@@ -48,6 +43,7 @@ class branch_code(Opcode):
     address = None
     cond_code = None
     offset = None
+    size = None
     
     def __init__(self, params: list):
         assert len(params) == 3
@@ -79,7 +75,10 @@ class branch_code(Opcode):
         
         # yes you actually need to subclass this
         assert self.cond_code != None
-        
+
+        # hold size
+        extraSize = 2
+
         # make offset out of operand
         self.offset = self.operand - self.address
         self.offset = Bits(int=self.offset, size=self.size)
@@ -90,10 +89,12 @@ class branch_code(Opcode):
         # if offset is 8 bits than it is inside the opword
         if self.size == OpSize.BYTE:
             lastbyte = self.offset.to_bytes()
-        
+            extraSize = 0
+
         # if offset is 32 bits than the last chunk of opword is FF
         if self.size == OpSize.LONG:
             lastbyte = '\xFF'
+            extraSize = 4
             
         # first byte = 6+cond_code
         firstbyte =  6 << 4
@@ -101,15 +102,19 @@ class branch_code(Opcode):
         
         opword = firstbyte << 8
         opword &= lastbyte
-        
+
+        # convert to bytearray
+        opword = bytearray(opword.to_bytes(2, 'big'))
+
         # stop here if 8 bit offset
         if self.size == OpSize.BYTE:
             return opword
-            
-        # add opword
-        opword += self.offset.to_bytes(2, "big")
-        
+
+        # add offset
+        opword.extend(self.offset.to_bytes(extraSize, "big"))
+
         return opword
+
     
     def execute(self, simulator: M68K):
         """
@@ -166,9 +171,9 @@ class branch_code(Opcode):
         # Check range of operand
         parameter = parse_assembly_parameter(parameter.strip())
         
-        if parameter.mode = EAMode.AWA:
+        if parameter.mode == EAMode.AWA:
             length += 2
-        if parameter.mode = EAMode.ALA:
+        if parameter.mode == EAMode.ALA:
             length += 4
         
         return length
