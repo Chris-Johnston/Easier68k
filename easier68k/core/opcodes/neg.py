@@ -146,16 +146,8 @@ class Neg(Opcode):
         # Cleared if the result is 0.
         carry_bit = total != 0
 
-        # set the same as the 'C' bit
-        simulator.set_condition_status_code(ConditionStatusCode.X, carry_bit)
-        # set if result is negative
-        simulator.set_condition_status_code(ConditionStatusCode.N, negative)
-        # set if result is zero
-        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
-        # set if an overflow is generated, cleared otherwise
-        simulator.set_condition_status_code(ConditionStatusCode.V, overflow)
-        # set if a borrow is generated, cleared otherwise
-        simulator.set_condition_status_code(ConditionStatusCode.C, carry_bit)
+        # set me some heckin status
+        simulator.set_ccr_reg(carry_bit, negative, (total == 0), overflow, carry_bit)
 
         # and set the value
         self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=total))

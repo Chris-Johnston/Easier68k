@@ -123,10 +123,7 @@ class Or(Opcode):
             msb_bit = 0x80000000
 
         # set status codes
-        simulator.set_condition_status_code(ConditionStatusCode.N, msb_bit & result_unsigned != 0)
-        simulator.set_condition_status_code(ConditionStatusCode.Z, result_unsigned == 0)
-        simulator.set_condition_status_code(ConditionStatusCode.V, False)
-        simulator.set_condition_status_code(ConditionStatusCode.C, False)
+        simulator.set_ccr_reg(None, (msb_bit & result_unsigned != 0), (result_unsigned == 0), False, False)
 
         # and set the value
         self.dest.set_value(simulator, result)

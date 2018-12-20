@@ -132,17 +132,9 @@ class Subq(Opcode):
             if total & negative_bit == 0:
                 overflow = True
 
-        # set the same as the 'C' bit
-        simulator.set_condition_status_code(ConditionStatusCode.X, borrow_bit)
-        # set if result is negative
-        simulator.set_condition_status_code(ConditionStatusCode.N, negative)
-        # set if result is zero
-        simulator.set_condition_status_code(ConditionStatusCode.Z, total == 0)
-        # set if an overflow is generated, cleared otherwise
-        simulator.set_condition_status_code(ConditionStatusCode.V, overflow)
-        # set if a borrow is generated, cleared otherwise
-        simulator.set_condition_status_code(ConditionStatusCode.C, borrow_bit)
-
+        # set the ccr registorio
+        simulator.set_ccr_reg(borrow_bit, negative, (total == 0), overflow, borrow_bit)
+        
         # and set the value
         self.dest.set_value(simulator, MemoryValue(OpSize.LONG, unsigned_int=total))
 

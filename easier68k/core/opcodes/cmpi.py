@@ -141,15 +141,8 @@ class Cmpi(Opcode):
                 if raw_total > 0 and raw_total & 0x80000000 > 0:
                     overflow = True
 
-        # set negative w/ (dest - src) < 0
-        simulator.set_condition_status_code(ConditionStatusCode.Negative, negative)
-        # set zero w/ (dest_val - src_val) == 0
-        simulator.set_condition_status_code(ConditionStatusCode.Zero, comparison == 0)
-        # set if an overflow occurs
-        simulator.set_condition_status_code(ConditionStatusCode.Overflow, overflow)
-        # set if a borrow occurs
-        # (this is the same as if src > dest)
-        simulator.set_condition_status_code(ConditionStatusCode.Carry, raw_total < 0)
+        # set register whomst have status
+        simulator.set_ccr_reg(None, negative, (comparison == 0), overflow, (raw_total < 0))
 
         # set the number of bytes to increment equal to the length of the
         # instruction (1 word)
