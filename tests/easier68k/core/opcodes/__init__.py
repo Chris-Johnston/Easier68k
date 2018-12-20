@@ -12,6 +12,7 @@ __all__ = [
     'test_opcode_helper',
     'test_or',
     'test_ori',
+    'test_rts',
     'test_sub',
     'test_subq',
     'test_trap'
