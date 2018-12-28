@@ -194,7 +194,7 @@ class branch_code(Opcode):
         # check param length
         if len(parameters) >2:
             passes = False
-            errors.append("Too many operands for Branch Operation (TODO: list them here)")
+            errors.append(f"Too many operands for Branch Operation: " + ', '.join(parameters))
         
         # check offset dest validity (odd read)
         operand = parse_assembly_parameter(parameters[0].strip())
