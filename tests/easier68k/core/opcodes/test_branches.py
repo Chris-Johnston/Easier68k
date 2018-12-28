@@ -86,15 +86,20 @@ def test_bra_validation():
     (x, y) = BRA.is_valid("BRA.L", "$1001, Garbage")
     assert not x
     assert len(y) == 2
-    
+
 def test_bra_length():
     """
     Test BRA.get_word_length()
     :return:
     """
 
-    # BRA.getWordLength() (.b .w .l)
-    pass
+    # Dont bother testing size codes, see get_word_length note
+    assert BRA.get_word_length("BRA", "$1000, 4100") == 1
+    assert BRA.get_word_length("BRA", "$1010, 4096") == 1
+    #assert BRA.get_word_length("BRA", "$1000, 8194") == 2
+    #assert BRA.get_word_length("BRA", "$2000, 4096") == 2
+    assert BRA.get_word_length("BRA", "$999, 658556") == 3
+    assert BRA.get_word_length("BRA", "$5FFFFF, 4096") == 3
 
 # All Others
 # (test execute: pass and branch)
