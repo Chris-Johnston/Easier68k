@@ -90,7 +90,7 @@ class branch_code(Opcode):
         
         # if offset is 8 bits than it is inside the opword
         if self.size == OpSize.BYTE:
-            lastbyte = self.offset.to_bytes(length=1, byteorder='big')
+            lastbyte = self.offset.to_bytes(length=1, byteorder='big', signed=True)
             extraSize = 0
 
         # if offset is 32 bits than the last chunk of opword is FF
