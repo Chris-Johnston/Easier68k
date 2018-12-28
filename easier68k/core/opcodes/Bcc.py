@@ -54,8 +54,8 @@ class branch_code(Opcode):
         self.offset = int(self.operand) - int(self.address + 2)
 
         # get the size
-        self.size = OpSize.BYTE if int(self.offset) < 256 else \
-            (OpSize.WORD if int(self.offset) < 653556 else OpSize.LONG)
+        self.size = OpSize.BYTE if int(self.offset) < 128 else \
+            (OpSize.WORD if int(self.offset) < 326778 else OpSize.LONG)
 
         # offset to bits
         self.offset = Bits(int=self.offset,
@@ -164,24 +164,21 @@ class branch_code(Opcode):
         :return: The length of the bytes in memory in words
         """
         
-        # opword
-        length = 2
-        
         # BIG NOTE: I am explicitly ignoring size codes because there are no defined flippy boys
         # in the opword for Bcc ops. Yeezy68k might let you define a size code, but even it
         # will more or less ignore whatever you put (reduces unnessesary .l to .w)
-        
-        parameter = parameters.split(',')[0]
-        
-        # Check range of operand
-        parameter = parse_assembly_parameter(parameter.strip())
-        
-        if parameter.mode == EAMode.AWA:
-            length += 2
-        if parameter.mode == EAMode.ALA:
-            length += 4
-        
-        return length
+
+        parameters = parameters.split(',')
+        for i in parameters:
+            i = i.strip()
+
+        parameters[0] = parse_literal(parameters[0])
+        parameters[1] = int(parameters[1])
+
+        offset = abs(int(parameters[0]) - int(parameters[1] + 2))
+        size = 1 if offset < 128 else (2 if offset < 326778 else 3)
+
+        return size
     
     @classmethod
     def is_valid(cls, command: str, parameters: str) -> (bool, list):
