@@ -2,14 +2,11 @@
 
 from ...core.enum.ea_mode import EAMode
 from ...core.models.assembly_parameter import AssemblyParameter
-from ...core.enum import ea_mode_bin
-from ...core.enum.ea_mode_bin import parse_ea_from_binary
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
 from ..util.parsing import parse_assembly_parameter
-from ..util.split_bits import split_bits
 
 # makes TC way easier lol
 from bitstring import Bits
@@ -34,7 +31,7 @@ COND_CODE_TO_OPCODE = {
 
 class branch_code(Opcode):
     """
-    All Branch operations will inherit from branch_code. 
+    All Branch operations will inherit from branch_code.
     there will be a conditional function to be overidden across child classes
     one must also redefine self.cond_code across child classes
     Additionally, a redefinition of command_matches(), from_str(), and disassemble_instruction() will suffice
@@ -132,10 +129,13 @@ class branch_code(Opcode):
         converts command to a string
         :return: string rep of command
         """
-        
-        return "{s} ${d}".format(
+
+        # todo: talking in discord about solutions to getting the current opcodes address
+        return "{s} {o}${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
-                d = (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset) )
+                o = '+' if self.offset > 0 else '-',
+                #d = (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset) )
+                d = self.offset )
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -230,6 +230,7 @@ class branch_code(Opcode):
 
 
 # ================ GENERIC FUNCTIONS FOR CLASSMETHODS =========================
+# All of this is re-entrant code so it has been refactored out here.
 
 def bcc_disassemble_instruction(data: bytes, arg: type, arg_cond_code: int):
     """
@@ -300,6 +301,10 @@ def bcc_from_str(command: str, parameters: str, arg: type):
 
 # =============================================================================
 
+# Illegal zone, all code here will be arrested by police officers
+
+# ============================== OVERLOADS ====================================
+
 class BRA(branch_code):
     """
     The BRA opcode, compiles to 60xx xxxx xxxx
@@ -318,3 +323,6 @@ class BRA(branch_code):
 
     def from_str(cls, command: str, parameters: str):
         return bcc_from_str(command, parameters, BRA)
+
+
+# ==============================================================================
