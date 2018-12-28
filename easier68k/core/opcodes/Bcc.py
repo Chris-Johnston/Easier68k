@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from ...core.enum.ea_mode import EAMode
-from ..core.enum.condition_status_code import ConditionStatusCode
+from ...core.enum.condition_status_code import ConditionStatusCode
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
 from ...core.enum.op_size import OpSize
-from ..util.parsing import parse_assembly_parameter
+from ..util.parsing import *
 
 # makes TC way easier lol
 from bitstring import Bits
@@ -96,10 +96,10 @@ class branch_code(Opcode):
             
         # first byte = 6+cond_code
         firstbyte =  6 << 4
-        firstbyte &= self.cond_code.to_bytes()
+        firstbyte &= ord(self.cond_code)
         
         opword = firstbyte << 8
-        opword &= lastbyte
+        opword &= ord(lastbyte)
 
         # convert to bytearray
         opword = bytearray(opword.to_bytes(2, 'big'))
@@ -135,7 +135,8 @@ class branch_code(Opcode):
 
         return "{s} ${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
-                d = self.operand or (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset))
+                d = hex(self.operand or
+                     (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset)))
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -286,20 +287,23 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     :return: The parsed command
     """
 
+    # Sanity Check!
+    assert arg.command_matches(command)
+
     # parameter to list
     parameters = parameters.split(',')
     for i in parameters:
         i = i.strip()
 
     # operand
-    p = parse_assembly_parameter(parameters[0])
-    parameters[0] = p.data
-
-    # size
-    parameters.append(p.get_value().get_size())
+    parameters[0] = parse_literal(parameters[0])
 
     # address
-    parameters[2] = int(parameters[2])
+    parameters.append(int(parameters[1]))
+
+    # size; following easy68k queue we should stick to word by default unless we need long
+    parameters[1] = (OpSize.WORD if int(parameters[0]) < 653556 else OpSize.LONG)
+
 
     return arg(parameters)
 
@@ -319,12 +323,15 @@ class BRA(branch_code):
     def conditional(self, simulator: M68K):
         return True
 
+    @classmethod
     def command_matches(cls, command: str):
         return opcode_util.command_matches(command, 'BRA')
 
+    @classmethod
     def disassemble_instruction(cls, data: bytes):
         return bcc_disassemble_instruction(data, BRA, 0)
 
+    @classmethod
     def from_str(cls, command: str, parameters: str):
         return bcc_from_str(command, parameters, BRA)
 
@@ -346,12 +353,15 @@ class BHI(branch_code):
 
         return False
 
+    @classmethod
     def command_matches(cls, command: str):
         return opcode_util.command_matches(command, 'BHI')
 
+    @classmethod
     def disassemble_instruction(cls, data: bytes):
         return bcc_disassemble_instruction(data, BHI, 2)
 
+    @classmethod
     def from_str(cls, command: str, parameters: str):
         return bcc_from_str(command, parameters, BHI)
 
