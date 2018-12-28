@@ -49,7 +49,7 @@ def test_bra_assemble():
     """
     start = 0x2000
     assert BRA.from_str("BRA", "$2002, " + str(start) ).assemble() == bytearray(b'\x60\x02')
-    #assert str(BRA.from_str("BRA", "$1FF8, " + str(start) )) == bytearray.fromhex("60F8")
+    assert BRA.from_str("BRA", "$1FF8, " + str(start) ).assemble() == bytearray.fromhex("60F8")
 
 # test disassemble
 # test size functions
