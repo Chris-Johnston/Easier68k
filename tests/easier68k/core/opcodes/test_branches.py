@@ -12,12 +12,12 @@ from easier68k.core.models.memory_value import MemoryValue
 from .test_opcode_helper import run_opcode_test
 
 # BRA
-
+BRA_TEST_ADDR = 0x2000
 BRA_TESTS = {
     # positive offset
-    "BRA +$2": bytearray.fromhex("6002"),
+    "BRA $2002": bytearray.fromhex("6002"),
     # negative offset
-    "BRA -$8": bytearray.fromhex("60F8")
+    "BRA $1FF8": bytearray.fromhex("60F8")
 }
 
 def test_bra_effect():
@@ -29,7 +29,10 @@ def test_bra_effect():
     sim = M68K()
     sim.set_program_counter_value(0x1000)
 
-    op = BRA([])
+    op = BRA([0x2000, OpSize.LONG, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
 
 def test_bra_assemble():
     """
@@ -37,6 +40,7 @@ def test_bra_assemble():
     This code is definitely common for all opcodes so we only really need to test it once
     :return:
     """
+    pass
 
 # test disassemble
 # test size functions
