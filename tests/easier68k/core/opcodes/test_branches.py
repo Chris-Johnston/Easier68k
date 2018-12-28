@@ -11,6 +11,13 @@ from easier68k.core.enum.op_size import OpSize
 from easier68k.core.models.memory_value import MemoryValue
 from .test_opcode_helper import run_opcode_test
 
+def test_bcc_construction():
+    b = BRA.from_str("BRA", "$2002, " + str(0x2000) )
+    assert b.size == OpSize.BYTE
+    assert b.offset == 2
+    assert b.address == 0x2000
+    assert b.operand == 0x2002
+
 def test_bra_effect():
     """
     Test if we can BRA properly.
@@ -20,7 +27,7 @@ def test_bra_effect():
     sim = M68K()
     sim.set_program_counter_value(0x1000)
 
-    op = BRA([0x2000, OpSize.LONG, 0x1000])
+    op = BRA([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -28,7 +35,7 @@ def test_bra_effect():
     # TEST NEGATIVE OFFSET
     sim.set_program_counter_value(0x2006)
 
-    op = BRA([0x2000, OpSize.LONG, 0x2006])
+    op = BRA([0x2000, 0x2006])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
