@@ -62,7 +62,7 @@ def test_bra_disassemble():
 
     # will have a negative displacement
     b = BRA.disassemble_instruction(bytearray.fromhex("60FC"))
-    assert b.offset == -6
+    assert b.offset == -4
     assert b.size == OpSize.BYTE
     #assert b.address == who knows
 
