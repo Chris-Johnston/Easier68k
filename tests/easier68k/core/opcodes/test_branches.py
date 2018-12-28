@@ -47,6 +47,7 @@ def test_bra_assemble():
     This code is definitely common for all opcodes so we only really need to test it once
     :return:
     """
+
     start = 0x1000 # interestingly enough, the first test would compile to 6000 0004 on Easy68k
     assert BRA.from_str("BRA", "$1006, " + str(start) ).assemble() == bytearray.fromhex("6004")
     assert BRA.from_str("BRA", "$0FF8, " + str(start) ).assemble() == bytearray.fromhex("60F6")
@@ -65,7 +66,24 @@ def test_bra_disassemble():
     assert b.size == OpSize.BYTE
     #assert b.address == who knows
 
-# test validity (for valid and invalid invluding odd instructions)
+def test_bra_validation():
+    """
+    Test if BRA is_valid commands work as expected
+    :return:
+    """
+
+    # BRA.is_valid("BRA", "$1000")
+    #    .L, .W, .B, (odd), (even)
+    pass
+
+def test_bra_length():
+    """
+    Test BRA.get_word_length()
+    :return:
+    """
+
+    # BRA.getWordLength() (.b .w .l)
+    pass
 
 # All Others
-# (test execute)
+# (test execute: pass and branch)
