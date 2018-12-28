@@ -44,18 +44,22 @@ class branch_code(Opcode):
     size = None
     
     def __init__(self, params: list):
-        assert len(params) == 3
+        assert len(params) == 2
         assert isinstance(params[0], int)
-        assert isinstance(params[1], OpSize)
-        assert isinstance(params[2], int)
+        assert isinstance(params[1], int)
 
         # Operand = target address
         self.operand = params[0]
-        self.size = params[1]
-        self.address = params[2]
+        self.address = params[1]
 
         # make offset out of operand
         self.offset = self.operand - self.address
+
+        # get the size
+        self.size = OpSize.BYTE if int(self.offset) < 256 else \
+            (OpSize.WORD if int(self.offset) < 653556 else OpSize.LONG)
+
+        # offset to bits
         self.offset = Bits(int=self.offset,
                            length=(self.size.get_number_of_bytes() * 8)).int
         
@@ -86,7 +90,7 @@ class branch_code(Opcode):
         
         # if offset is 8 bits than it is inside the opword
         if self.size == OpSize.BYTE:
-            lastbyte = self.offset.to_bytes()
+            lastbyte = self.offset.to_bytes(length=1, byteorder='big')
             extraSize = 0
 
         # if offset is 32 bits than the last chunk of opword is FF
@@ -95,11 +99,11 @@ class branch_code(Opcode):
             extraSize = 4
             
         # first byte = 6+cond_code
-        firstbyte =  6 << 4
-        firstbyte &= ord(self.cond_code)
+        firstbyte =  ord('\x60')
+        firstbyte |= ord(self.cond_code)
         
         opword = firstbyte << 8
-        opword &= ord(lastbyte)
+        opword |= ord(lastbyte)
 
         # convert to bytearray
         opword = bytearray(opword.to_bytes(2, 'big'))
@@ -299,10 +303,7 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     parameters[0] = parse_literal(parameters[0])
 
     # address
-    parameters.append(int(parameters[1]))
-
-    # size; following easy68k queue we should stick to word by default unless we need long
-    parameters[1] = (OpSize.WORD if int(parameters[0]) < 653556 else OpSize.LONG)
+    parameters[1] = int(parameters[1])
 
 
     return arg(parameters)
