@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...core.enum.ea_mode import EAMode
 from ...core.enum.condition_status_code import ConditionStatusCode
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
-from ...core.enum.op_size import OpSize
 from ..util.parsing import *
 
 # makes TC way easier lol
