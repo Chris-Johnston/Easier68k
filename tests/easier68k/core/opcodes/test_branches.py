@@ -103,3 +103,282 @@ def test_bra_length():
 
 # All Others
 # (test execute: pass and branch)
+# CCR = XNZVC
+
+def test_bhi():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, False, None, False)
+
+    op = BHI([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, True, None, False)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bls():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, True, None, True)
+
+    op = BLS([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, False, None, False)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bcc():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, None, None, False)
+
+    op = BCC([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, None, None, True)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bcs():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, None, None, True)
+
+    op = BCS([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, None, None, False)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bne():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, False, None, None)
+
+    op = BNE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, True, None, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_beq():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, True, None, None)
+
+    op = BEQ([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, False, None, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bvc():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, None, False, None)
+
+    op = BVC([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, None, True, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bvs():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, None, None, True, None)
+
+    op = BVS([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, None, False, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bpl():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, False, None, None, None)
+    op = BPL([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, True, None, None, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_bmi():
+    sim = M68K()
+    sim.set_program_counter_value(0x1000)
+
+    sim.set_ccr_reg(None, True, None, None, None)
+    op = BMI([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, None, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+# CCR = XNZVC
+def test_bge():
+
+    sim = M68K()
+    op = BGE([0x2000, 0x1000])
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, True, None, True, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, False, None)
+    op = BGE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, True, None)
+    op = BGE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+def test_blt():
+
+    sim = M68K()
+    op = BLT([0x2000, 0x1000])
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, False, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, True, None, True, None)
+    op = BLT([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, True, None)
+    op = BLT([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+# CCR = XNZVC
+def test_bgt():
+
+    sim = M68K()
+    op = BGT([0x2000, 0x1000])
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, True, False, True, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, False, False, None)
+    op = BGT([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, None, True, None)
+    op = BGT([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000
+
+# CCR = XNZVC
+def test_ble():
+
+    sim = M68K()
+    op = BLE([0x2000, 0x1000])
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, True, None, None)
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, None, False, True, None)
+    op = BLE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(None, False, False, False, None)
+    op = BLE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x2000
+
+    sim.set_program_counter_value(0x1000)
+    sim.set_ccr_reg(False, True, False, False, False)
+    op = BLE([0x2000, 0x1000])
+    op.execute(sim)
+
+    assert sim.get_program_counter_value() == 0x1000

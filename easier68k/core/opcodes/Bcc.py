@@ -129,12 +129,12 @@ class branch_code(Opcode):
         """
 
         # check conditional
-        if not self.conditional(simulator):
-            pass
+        if self.conditional(simulator):
+            self.offset += 2
+            simulator.increment_program_counter(self.offset)
 
-        self.offset += 2
-        simulator.increment_program_counter(self.offset)
-        
+        pass
+
     def __str__(self):
         """
         converts command to a string
@@ -466,7 +466,7 @@ class BNE(branch_code):
     def conditional(self, simulator: M68K):
         z = simulator.get_condition_status_code(ConditionStatusCode.Z)
 
-        if z:
+        if not z:
             return True
 
         return False
