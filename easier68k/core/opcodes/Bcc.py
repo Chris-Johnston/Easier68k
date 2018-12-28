@@ -253,35 +253,29 @@ def bcc_disassemble_instruction(data: bytes, arg: type, arg_cond_code: int):
         data) or 0 for not a match
     """
 
-    # check first byte
-    fb = (6 << 4) + arg_cond_code
+    fb = (6 << 4) | arg_cond_code
     if data[0] != fb:
         return 0
 
-    # check length of byte array
     valid_sizes = [2, 4, 6]
     if len(data) not in valid_sizes:
         return None
 
-    # start by assumming byte size
-    size = OpSize.BYTE
     offset = data[1]
 
     # check word size
     if offset == '\x00':
-        size = OpSize.WORD
         offset = data[2:4]
         if not len(offset) == 2:
             return None
 
     elif offset == '\xFF':
-        size = OpSize.LONG
         offset = data[2:6]
         if not len(offset) == 4:
             return None
 
-    op = arg([0, size, 0])
-    op.offset = offset
+    op = arg([0, 0])
+    op.offset = int(offset)
 
     return op
 

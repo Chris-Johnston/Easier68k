@@ -13,7 +13,7 @@ from .test_opcode_helper import run_opcode_test
 
 def test_bcc_construction():
     b = BRA.from_str("BRA", "$2002, " + str(0x2000) )
-    assert b.size == OpSize.BYTE
+    assert b.size == OpSize.WORD # should catch 0 offset
     assert b.offset == 0 # branching to next instruction
     assert b.operand == 0x2002
 
@@ -47,13 +47,23 @@ def test_bra_assemble():
     This code is definitely common for all opcodes so we only really need to test it once
     :return:
     """
-    start = 0x2000
-    #assert BRA.from_str("BRA", "$2002, " + str(start) ).assemble() == bytearray(b'\x60\x02')
-    #assert BRA.from_str("BRA", "$1FF8, " + str(start) ).assemble() == bytearray.fromhex("60F8")
-    # TODO: fix the above tests, the RHO is wrong
+    start = 0x1000 # interestingly enough, the first test would compile to 6000 0004 on Easy68k
+    assert BRA.from_str("BRA", "$1006, " + str(start) ).assemble() == bytearray.fromhex("6004")
+    assert BRA.from_str("BRA", "$0FF8, " + str(start) ).assemble() == bytearray.fromhex("60F6")
     assert BRA.from_str("BRA", "$1000, " + str(0x1002)).assemble() == bytearray.fromhex("60FC")
 
-# test disassemble
+def test_bra_disassemble():
+    """
+    Test if BRA disassembles correctly
+    Will test Offset, address, and size
+    :return:
+    """
+
+    # will have a negative displacement
+    b = BRA.disassemble_instruction(bytearray.fromhex("60FC"))
+    assert b.offset == -6
+    assert b.size == OpSize.BYTE
+    #assert b.address == who knows
 
 # test validity (for valid and invalid invluding odd instructions)
 
