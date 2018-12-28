@@ -145,7 +145,7 @@ class branch_code(Opcode):
         return "{s} ${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
                 d = hex(self.operand or
-                     (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset)))
+                     (self.address + 2 + (self.size if self.size.get_number_of_bytes() > 1 else 0) + self.offset)))
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -290,6 +290,7 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     """
 
     # Sanity Check!
+    assert issubclass(arg, branch_code), 'bcc_from_str used on non branch opcode, what are you doing?'
     assert arg.command_matches(command), '[OPCODE] command_matches failed, from_str called!'
 
     # parameter to list
