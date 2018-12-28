@@ -85,7 +85,7 @@ class branch_code(Opcode):
         """
         
         # yes you actually need to subclass this
-        assert self.cond_code != None
+        assert self.cond_code != None, 'No cond_code, assemble called on base clas of branch op?'
 
         # hold size
         extraSize = 2
@@ -296,7 +296,7 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     """
 
     # Sanity Check!
-    assert arg.command_matches(command)
+    assert arg.command_matches(command), '[OPCODE] command_matches failed, from_str called!'
 
     # parameter to list
     parameters = parameters.split(',')

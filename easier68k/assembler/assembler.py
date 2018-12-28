@@ -197,7 +197,6 @@ def parse(text: str) -> (ListFile, list):
         # for BRA and probably in the future JMP ops...
         # addr must be handed off so that they can pull an offset out of the operand address.
         if issubclass(op_class, Bcc.branch_code):
-            # contents.append(current_memory_location)
             contents += ", " + str(current_memory_location)
 
         # if valid, then actually construct the opcode
