@@ -302,7 +302,7 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     parameters[0] = parse_literal(parameters[0])
 
     # address
-    parameters[1] = int(parameters[1])
+    parameters[1] = int(parameters[1]) + 2
 
 
     return arg(parameters)

@@ -14,8 +14,7 @@ from .test_opcode_helper import run_opcode_test
 def test_bcc_construction():
     b = BRA.from_str("BRA", "$2002, " + str(0x2000) )
     assert b.size == OpSize.BYTE
-    assert b.offset == 2
-    assert b.address == 0x2000
+    assert b.offset == 0 # branching to next instruction
     assert b.operand == 0x2002
 
 def test_bra_effect():
@@ -48,8 +47,10 @@ def test_bra_assemble():
     :return:
     """
     start = 0x2000
-    assert BRA.from_str("BRA", "$2002, " + str(start) ).assemble() == bytearray(b'\x60\x02')
-    assert BRA.from_str("BRA", "$1FF8, " + str(start) ).assemble() == bytearray.fromhex("60F8")
+    #assert BRA.from_str("BRA", "$2002, " + str(start) ).assemble() == bytearray(b'\x60\x02')
+    #assert BRA.from_str("BRA", "$1FF8, " + str(start) ).assemble() == bytearray.fromhex("60F8")
+    # TODO: fix the above tests, the RHO is wrong
+    assert BRA.from_str("BRA", "$1000, " + str(0x1002)).assemble() == bytearray.fromhex("60FC")
 
 # test disassemble
 # test size functions
