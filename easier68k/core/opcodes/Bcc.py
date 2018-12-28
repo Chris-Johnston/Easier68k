@@ -8,7 +8,7 @@ from ..util.parsing import *
 
 # makes TC way easier lol
 from bitstring import Bits
-
+from math import log
 COND_CODE_TO_OPCODE = {
     '\x00': 'BRA',
     '\x02': 'BHI',
@@ -51,7 +51,7 @@ class branch_code(Opcode):
         self.address = params[1]
 
         # make offset out of operand
-        self.offset = int(self.operand) - int(self.address)
+        self.offset = int(self.operand) - int(self.address + 2)
 
         # get the size
         self.size = OpSize.BYTE if int(self.offset) < 256 else \
@@ -65,7 +65,7 @@ class branch_code(Opcode):
         # 0x00 8 bit offset defaults to word size
         if self.offset == 0:
             self.size = OpSize.WORD
-        
+
     def conditional(self, simulator: M68K):
         """
         This is a method stub to be overridden in child classes
@@ -131,7 +131,8 @@ class branch_code(Opcode):
         # check conditional
         if not self.conditional(simulator):
             pass
-            
+
+        self.offset += 2
         simulator.increment_program_counter(self.offset)
         
     def __str__(self):
@@ -143,7 +144,7 @@ class branch_code(Opcode):
         return "{s} ${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
                 d = hex(self.operand or
-                     (self.address + 2 + (self.size if self.size.get_number_of_bytes() > 1 else 0) + self.offset)))
+                     (self.address + (self.size if self.size.get_number_of_bytes() > 1 else 0) + self.offset)))
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -203,8 +204,8 @@ class branch_code(Opcode):
             errors.append("Too many operands for Branch Operation: " + ', '.join(parameters))
         
         # check offset dest validity (odd read)
-        operand = parse_assembly_parameter(parameters[0].strip())
-        if operand.data % 2 == 1:
+        operand = parse_literal(parameters[0].strip())
+        if operand % 2 == 1:
             passes = False
             errors.append("Reading word at {d} will cause crash".format(d=operand.data))
             
@@ -260,20 +261,25 @@ def bcc_disassemble_instruction(data: bytes, arg: type, arg_cond_code: int):
         return None
 
     offset = data[1]
+    s = 1
 
     # check word size
     if offset == '\x00':
         offset = data[2:4]
+        s = 2
         if not len(offset) == 2:
             return None
 
     elif offset == '\xFF':
         offset = data[2:6]
+        s = 4
         if not len(offset) == 4:
             return None
 
-    op = arg([0, 0])
-    op.offset = int(offset)
+    op = arg([0, 0]) # lol
+    op.offset = int.from_bytes(bytes=offset.to_bytes(length=s, byteorder='big', signed=False),
+                               byteorder='big',
+                               signed=True) # couldnt think of a better way to sign this, I sure hope someone else does
 
     return op
 
@@ -300,7 +306,7 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     parameters[0] = parse_literal(parameters[0])
 
     # address
-    parameters[1] = int(parameters[1]) + 2
+    parameters[1] = int(parameters[1])
 
 
     return arg(parameters)
