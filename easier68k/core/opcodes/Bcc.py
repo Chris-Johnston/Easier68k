@@ -71,7 +71,7 @@ class branch_code(Opcode):
         :param simulator: the M68K sim object that contains the CCR we are checking
         :return bool: returns true or false 
         """
-        raise Exception("Branch Operation did not override Parent's conditional stub")
+        raise NotImplementedError("Branch Operation did not override Parent's conditional stub")
         
     def assemble(self) -> bytearray:
         """
@@ -149,8 +149,7 @@ class branch_code(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        raise Exception("Branch Operation did not override parent class command_matches stub!")
-        #return
+        raise NotImplementedError("Branch Operation did not override parent class command_matches stub!")
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -194,11 +193,11 @@ class branch_code(Opcode):
         errors = []
         parameters = parameters.split(',')
         
-        # See the BIG HORKIN' NOTE from get_word_length()
+        # See the BIG NOTE from get_word_length()
         # check param length
         if len(parameters) >2:
             passes = False
-            errors.append(f"Too many operands for Branch Operation: " + ', '.join(parameters))
+            errors.append("Too many operands for Branch Operation: " + ', '.join(parameters))
         
         # check offset dest validity (odd read)
         operand = parse_assembly_parameter(parameters[0].strip())
@@ -218,7 +217,7 @@ class branch_code(Opcode):
             the amount of data in words that was used (e.g. extra for immediate
             data) or 0 for not a match
         """
-        raise Exception("Branch Operation did not override parent class disassemble_instruction stub!")
+        raise NotImplementedError("Branch Operation did not override parent class disassemble_instruction stub!")
 
 
     @classmethod
@@ -231,7 +230,7 @@ class branch_code(Opcode):
         :param address: Address of this operation 
         :return: The parsed command
         """
-        raise Exception("Branch Operation did not override parent class from_str stub!")
+        raise NotImplementedError("Branch Operation did not override parent class from_str stub!")
 
 
 # ================ GENERIC FUNCTIONS FOR CLASSMETHODS =========================
