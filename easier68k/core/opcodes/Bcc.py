@@ -364,4 +364,403 @@ class BHI(branch_code):
     def from_str(cls, command: str, parameters: str):
         return bcc_from_str(command, parameters, BHI)
 
+
+class BLS(branch_code):
+    """
+    The BLS opcode compiles down to 63xx xxxx xxxx
+    The conditional here is C OR Z
+    """
+
+    cond_code = '\x03'
+
+    def conditional(self, simulator: M68K):
+        c = simulator.get_condition_status_code(ConditionStatusCode.C)
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if c or z:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BLS')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BLS, 3)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BLS)
+
+
+class BCC(branch_code):
+    """
+    The BCC opcode compiles down to 64xx xxxx xxxx
+    The conditional here is NOT C
+    """
+
+    cond_code = '\x04'
+
+    def conditional(self, simulator: M68K):
+        c = simulator.get_condition_status_code(ConditionStatusCode.C)
+
+        if not c:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BCC')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BCC, 4)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BCC)
+
+
+class BCS(branch_code):
+    """
+    The BCS opcode compiles down to 65xx xxxx xxxx
+    The conditional here is C
+    """
+
+    cond_code = '\x05'
+
+    def conditional(self, simulator: M68K):
+        c = simulator.get_condition_status_code(ConditionStatusCode.C)
+
+        if c:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BCS')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BCS, 5)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BCS)
+
+
+class BNE(branch_code):
+    """
+    The BNE opcode compiles down to 66xx xxxx xxxx
+    The conditional here is NOT Z
+    """
+
+    cond_code = '\x06'
+
+    def conditional(self, simulator: M68K):
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if z:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BNE')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BNE, 6)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BNE)
+
+
+class BEQ(branch_code):
+    """
+    The BEQ opcode compiles down to 67xx xxxx xxxx
+    The conditional here is Z
+    """
+
+    cond_code = '\x07'
+
+    def conditional(self, simulator: M68K):
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if z:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BEQ')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BEQ, 7)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BEQ)
+
+
+class BVC(branch_code):
+    """
+    The BVC opcode compiles down to 68xx xxxx xxxx
+    The conditional here is NOT V
+    """
+
+    cond_code = '\x08'
+
+    def conditional(self, simulator: M68K):
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+
+        if not v:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BVC')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BVC, 8)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BVC)
+
+
+class BVS(branch_code):
+    """
+    The BVS opcode compiles down to 69xx xxxx xxxx
+    The conditional here is V
+    """
+
+    cond_code = '\x09'
+
+    def conditional(self, simulator: M68K):
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+
+        if v:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BVS')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BVS, 9)
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BVS)
+
+
+class BPL(branch_code):
+    """
+    The BPL opcode compiles down to 6Axx xxxx xxxx
+    The conditional here is NOT N
+    """
+
+    cond_code = '\x0A'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+
+        if not n:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BPL')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BPL, ord('\x0A'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BPL)
+
+
+class BMI(branch_code):
+    """
+    The BMI opcode compiles down to 6Bxx xxxx xxxx
+    The conditional here is N
+    """
+
+    cond_code = '\x0B'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+
+        if n:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BMI')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BMI, ord('\x0B'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BMI)
+
+
+class BGE(branch_code):
+    """
+    The BGE opcode compiles down to 6Cxx xxxx xxxx
+    The conditional here is N AND V OR NOT N AND NOT V
+    """
+
+    cond_code = '\x0C'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+
+        if n and v:
+            return True
+
+        if not n and not v:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BGE')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BGE, ord('\x0C'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BGE)
+
+
+class BLT(branch_code):
+    """
+    The BLT opcode compiles down to 6Dxx xxxx xxxx
+    The conditional here is N AND NOT V OR NOT N AND V
+    """
+
+    cond_code = '\x0D'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+
+        if n and v:
+            return True
+
+        if not n and not v:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BLT')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BLT, ord('\x0D'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BLT)
+
+
+class BGT(branch_code):
+    """
+    The BGT opcode compiles down to 6Exx xxxx xxxx
+    The conditional here is N AND V AND NOT Z OR NOT N AND NOV AND NOT Z
+    """
+
+    cond_code = '\x0E'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if n and v and not z:
+            return True
+
+        if not n and not v and not z:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BGT')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BGT, ord('\x0E'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BGT)
+
+
+class BLE(branch_code):
+    """
+    The BLE opcode compiles down to 6Fxx xxxx xxxx
+    The conditional here is Z OR V AND NOT Z OR NOT N AND NOT V AND NOT Z
+    """
+
+    cond_code = '\x0F'
+
+    def conditional(self, simulator: M68K):
+        n = simulator.get_condition_status_code(ConditionStatusCode.N)
+        v = simulator.get_condition_status_code(ConditionStatusCode.V)
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if z:
+            return True
+
+        if v and not z:
+            return True
+
+        if not n and not v and not z:
+            return True
+
+        return False
+
+    @classmethod
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BLE')
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BLE, ord('\x0F'))
+
+    @classmethod
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BLE)
+
 # ==============================================================================
