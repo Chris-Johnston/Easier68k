@@ -51,7 +51,7 @@ class branch_code(Opcode):
         self.address = params[1]
 
         # make offset out of operand
-        self.offset = self.operand - self.address
+        self.offset = int(self.operand) - int(self.address)
 
         # get the size
         self.size = OpSize.BYTE if int(self.offset) < 256 else \
