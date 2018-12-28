@@ -275,3 +275,37 @@ class M68K:
         NOTE: file must be opened as binary or this won't work
         """
         self.memory.save_memory(file)
+
+
+    def set_ccr_reg(self, extend, negative, zero, overflow, carry): 
+        """
+        Accepts Boolean values for X,N,Z,V, and C, respectively and sets the CCR accordingly.
+        Passing None in for any argument will cause it to ignore that bit.
+        Returns nothing.
+        :param extend:
+        :param negative:
+        :param zero:
+        :param overflow:
+        :param carry:
+        :return:
+        """
+        if extend is not None:
+            extend = bool(extend)
+            self.set_condition_status_code(ConditionStatusCode.X, extend)
+            
+        if negative is not None:
+            negative = bool(negative)
+            self.set_condition_status_code(ConditionStatusCode.N, negative)
+            
+        if zero is not None:
+            zero = bool(zero)
+            self.set_condition_status_code(ConditionStatusCode.Z, zero)
+            
+        if overflow is not None:
+            overflow = bool(overflow)
+            self.set_condition_status_code(ConditionStatusCode.V, overflow)
+            
+        if carry is not None:
+            carry = bool(carry)
+            self.set_condition_status_code(ConditionStatusCode.C, carry)
+    

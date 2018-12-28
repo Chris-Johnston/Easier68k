@@ -87,8 +87,8 @@ package into your code.
     
 ### Testing
 
-Running the tests assumes that all the prior installation steps have been run already.
-The testing sequence is defined in `tests/travis.sh`, but these can be run manually.
+All of the tests can be run with the script `./.testingScript.sh`.
+This will install the development version of the package locally and run all of the tests.
 
 Doctests are implemented on most smaller methods and utility functions, and pytests are planned
 for the overall functionality.
