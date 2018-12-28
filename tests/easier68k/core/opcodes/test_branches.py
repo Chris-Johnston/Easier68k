@@ -17,6 +17,7 @@ def test_bcc_construction():
     assert b.offset == 0 # branching to next instruction
     assert b.operand == 0x2002
 
+
 def test_bra_effect():
     """
     Test if we can BRA properly.
@@ -53,7 +54,8 @@ def test_bra_assemble():
     assert BRA.from_str("BRA", "$1000, " + str(0x1002)).assemble() == bytearray.fromhex("60FC")
 
 # test disassemble
-# test size functions
+
+# test validity (for valid and invalid invluding odd instructions)
 
 # All Others
 # (test execute)

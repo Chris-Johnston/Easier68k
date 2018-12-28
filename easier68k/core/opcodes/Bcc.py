@@ -62,6 +62,11 @@ class branch_code(Opcode):
         # offset to bits
         self.offset = Bits(int=self.offset,
                            length=(self.size.get_number_of_bytes() * 8)).int
+
+        # Note on Page 130 of the NXP 68K Manual
+        # 0x00 8 bit offset defaults to word size
+        if self.offset == 0:
+            self.size = OpSize.WORD
         
     def conditional(self, simulator: M68K):
         """
