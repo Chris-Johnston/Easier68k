@@ -2,14 +2,8 @@
 Test methods for all branch opcodes
 """
 
-from easier68k.simulator.m68k import M68K
 from easier68k.core.opcodes.Bcc import *
-from easier68k.core.models.assembly_parameter import AssemblyParameter
-from easier68k.core.enum.ea_mode import EAMode
-from easier68k.core.enum.register import Register
 from easier68k.core.enum.op_size import OpSize
-from easier68k.core.models.memory_value import MemoryValue
-from .test_opcode_helper import run_opcode_test
 
 def test_bcc_construction():
     b = BRA.from_str("BRA", "$2002, " + str(0x2000) )
@@ -43,7 +37,7 @@ def test_bra_effect():
 
 def test_bra_assemble():
     """
-    Test if BRA assembles corrctly for negative and positive offsets
+    Test if BRA assembles correctly for negative and positive offsets
     This code is definitely common for all opcodes so we only really need to test it once
     :return:
     """
@@ -74,6 +68,10 @@ def test_bra_validation():
 
     # BRA.is_valid("BRA", "$1000")
     #    .L, .W, .B, (odd), (even)
+
+    (x, _) = BRA.is_valid("BRA.L", "$1000")
+    assert x
+
     pass
 
 def test_bra_length():
