@@ -199,7 +199,7 @@ class branch_code(Opcode):
         
         # See the BIG NOTE from get_word_length()
         # check param length
-        if len(parameters) >2:
+        if len(parameters) > 1:
             passes = False
             errors.append("Too many operands for Branch Operation: " + ', '.join(parameters))
         
@@ -207,7 +207,7 @@ class branch_code(Opcode):
         operand = parse_literal(parameters[0].strip())
         if operand % 2 == 1:
             passes = False
-            errors.append("Reading word at {d} will cause crash".format(d=operand.data))
+            errors.append("Reading word at {d} will cause crash".format(d=operand))
             
         return (passes, errors)
     

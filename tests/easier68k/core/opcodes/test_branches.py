@@ -66,14 +66,27 @@ def test_bra_validation():
     :return:
     """
 
-    # BRA.is_valid("BRA", "$1000")
-    #    .L, .W, .B, (odd), (even)
-
     (x, _) = BRA.is_valid("BRA.L", "$1000")
     assert x
 
-    pass
+    (x, _) = BRA.is_valid("BRA.W", "$1000")
+    assert x
 
+    (x, _) = BRA.is_valid("BRA.B", "$1000")
+    assert x
+
+    (x, y) = BRA.is_valid("BRA.L", "$1001")
+    assert not x
+    assert len(y) == 1
+
+    (x, y) = BRA.is_valid("BRA.L", "$1000, Garbage")
+    assert not x
+    assert len(y) == 1
+
+    (x, y) = BRA.is_valid("BRA.L", "$1001, Garbage")
+    assert not x
+    assert len(y) == 2
+    
 def test_bra_length():
     """
     Test BRA.get_word_length()
