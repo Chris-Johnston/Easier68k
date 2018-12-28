@@ -15,6 +15,7 @@ from ..util.split_bits import split_bits
 from bitstring import Bits
 
 COND_CODE_TO_OPCODE = {
+    '\x00': 'BRA',
     '\x02': 'BHI',
     '\x03': 'BLS',
     '\x04': 'BCC',
@@ -36,26 +37,23 @@ class branch_code(Opcode):
     All Branch operations will inherit from branch_code. 
     there will be a conditional function to be overidden across child classes
     one must also redefine self.cond_code across child classes
-    Additionally, a redefinition of command_matches() will suffice
+    Additionally, a redefinition of command_matches(), from_str(), and disassemble_instruction() will suffice
     """
 
     operand = None
-    address = None
     cond_code = None
     offset = None
     size = None
     
     def __init__(self, params: list):
-        assert len(params) == 3
+        assert len(params) == 2
         assert isinstance(params[0], AssemblyParameter) # Target Address
-        assert isinstance(params[1], int) # Address of this isntruction
-        assert isinstance(params[2], OpSize)
+        assert isinstance(params[1], OpSize)
         assert params[0].mode == EAMode.Immediate
         
         # Operand = target address
         self.operand = params[0]
-        self.address = params[1]
-        self.size = params[2]
+        self.size = params[1]
         
     def conditional(self, simulator: M68K):
         """
@@ -80,7 +78,7 @@ class branch_code(Opcode):
         extraSize = 2
 
         # make offset out of operand
-        self.offset = self.operand - self.address
+        self.offset = self.operand
         self.offset = Bits(int=self.offset, size=self.size)
         
         # clear for >8 bit offset
@@ -129,7 +127,6 @@ class branch_code(Opcode):
             
         simulator.increment_program_counter(self.offset + 2)
         
-    @classmethod            
     def __str__(self):
         """
         converts command to a string
@@ -148,8 +145,8 @@ class branch_code(Opcode):
         :return: Whether the string is an instance of this command type
         """
         raise Exception("Branch Operation did not override parent class command_matches stub!")
-        #return opcode_util.command_matches(command, COND_CODE_TO_OPCODE.get(self.cond_code))
-    
+        #return
+
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
         """
@@ -190,7 +187,7 @@ class branch_code(Opcode):
         
         passes = True
         errors = []
-        parameters = patameters.split(',')
+        parameters = parameters.split(',')
         
         # See the BIG HORKIN' NOTE from get_word_length()
         # check param length
@@ -217,43 +214,10 @@ class branch_code(Opcode):
             data) or 0 for not a match
         """
         raise Exception("Branch Operation did not override parent class disassemble_instruction stub!")
-        # Example code: 
-        """
-        # check first byte
-        fb = (6 << 4) + <CONDCODE>
-        if data[0] != fb:
-            return 0
-        
-        # check length of byte array
-        valid_sizes = [2,4,6]
-        if len(data) not in valid_sizes:
-            return None
-            
-        # start by assumming byte size
-        size = OpSize.BYTE
-        offset = data[1]
-        
-        # check word size
-        if offset == '\x00':
-            size = OpSize.WORD
-            offset = data[2:4]
-            if len(offset) not 2:
-                return None
-                
-        elif offset == '\xFF':
-            size = OpSize.LONG
-            offset = data[2:6]
-            if len(offset) not 4:
-                return None
-        
-        op = <BRANCHCLASSNAME>(AssemblyParameter(None, 0), 0, size)
-        op.offset = offset
-        
-        return op 
-        """
+
 
     @classmethod
-    def from_str(cls, command: str, parameters: str, address: int):
+    def from_str(cls, command: str, parameters: str):
         """
         Parses a command from text
 
@@ -263,20 +227,94 @@ class branch_code(Opcode):
         :return: The parsed command
         """
         raise Exception("Branch Operation did not override parent class from_str stub!")
-        
-        # Example code below
-        """
-        # parameter to list
-        parameters = parameters.split(',')
-        for i in parameters:
-            i = i.strip()
-        parameters.append(address)
-        
-        # parse offset
-        parameters[0] = parse_assembly_parameter(parameters[0])
-        
-        # append offset size
-        parameters.append(parameters[0].get_value().get_size())
-        
-        return <BRANCHCLASSNAME>(parameters)
-        """
+
+
+# ================ GENERIC FUNCTIONS FOR CLASSMETHODS =========================
+
+def bcc_disassemble_instruction(data: bytes, arg: type, arg_cond_code: int):
+    """
+    Parses some raw data into an instance of the opcode class
+
+    :param data: The data used to convert into an opcode instance
+    :param arg: The class of BCC to be used
+    :param arg_cond_code: The condition byte of the BCC instruction
+    :return: The constructed instance or none if there was an error and
+        the amount of data in words that was used (e.g. extra for immediate
+        data) or 0 for not a match
+    """
+
+    # check first byte
+    fb = (6 << 4) + arg_cond_code
+    if data[0] != fb:
+        return 0
+
+    # check length of byte array
+    valid_sizes = [2, 4, 6]
+    if len(data) not in valid_sizes:
+        return None
+
+    # start by assumming byte size
+    size = OpSize.BYTE
+    offset = data[1]
+
+    # check word size
+    if offset == '\x00':
+        size = OpSize.WORD
+        offset = data[2:4]
+        if not len(offset) == 2:
+            return None
+
+    elif offset == '\xFF':
+        size = OpSize.LONG
+        offset = data[2:6]
+        if not len(offset) == 4:
+            return None
+
+    op = arg(AssemblyParameter(None, 0), 0, size)
+    op.offset = offset
+
+    return op
+
+def bcc_from_str(command: str, parameters: str, arg: type):
+    """
+    Parses a command from text
+
+    :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
+    :param parameters: The parameters after the command (such as the source and destination of a move)
+    :param arg: class of this BCC
+    :return: The parsed command
+    """
+
+    # parameter to list
+    parameters = parameters.split(',')
+    for i in parameters:
+        i = i.strip()
+
+    # parse offset
+    parameters[0] = parse_assembly_parameter(parameters[0])
+
+    # append offset size
+    parameters.append(parameters[0].get_value().get_size())
+
+    return arg(parameters)
+
+# =============================================================================
+
+class BRA(branch_code):
+    """
+    The BRA opcode, compiles to 60xx xxxx xxxx
+    the conditional here is True, always.
+    """
+    cond_code = '\x00'
+
+    def conditional(self, simulator: M68K):
+        return True
+
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BRA')
+
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BRA, 0)
+
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BRA)
