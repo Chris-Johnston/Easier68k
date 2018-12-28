@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ...core.enum.ea_mode import EAMode
-from ...core.models.assembly_parameter import AssemblyParameter
+from ..core.enum.condition_status_code import ConditionStatusCode
 from ...simulator.m68k import M68K
 from ...core.opcodes.opcode import Opcode
 from ...core.util import opcode_util
@@ -38,19 +38,26 @@ class branch_code(Opcode):
     """
 
     operand = None
+    address = None
     cond_code = None
     offset = None
     size = None
     
     def __init__(self, params: list):
-        assert len(params) == 2
-        assert isinstance(params[0], AssemblyParameter) # Target Address
+        assert len(params) == 3
+        assert isinstance(params[0], int)
         assert isinstance(params[1], OpSize)
-        assert params[0].mode == EAMode.Immediate
-        
+        assert isinstance(params[2], int)
+
         # Operand = target address
         self.operand = params[0]
         self.size = params[1]
+        self.address = params[2]
+
+        # make offset out of operand
+        self.offset = self.operand - self.address
+        self.offset = Bits(int=self.offset,
+                           length=(self.size.get_number_of_bytes() * 8)).int
         
     def conditional(self, simulator: M68K):
         """
@@ -73,10 +80,6 @@ class branch_code(Opcode):
 
         # hold size
         extraSize = 2
-
-        # make offset out of operand
-        self.offset = self.operand
-        self.offset = Bits(int=self.offset, size=self.size)
         
         # clear for >8 bit offset
         lastbyte = '\x00'
@@ -119,10 +122,10 @@ class branch_code(Opcode):
         """
 
         # check conditional
-        if not self.conditional():
+        if not self.conditional(simulator):
             pass
             
-        simulator.increment_program_counter(self.offset + 2)
+        simulator.increment_program_counter(self.offset)
         
     def __str__(self):
         """
@@ -130,12 +133,9 @@ class branch_code(Opcode):
         :return: string rep of command
         """
 
-        # todo: talking in discord about solutions to getting the current opcodes address
-        return "{s} {o}${d}".format(
+        return "{s} ${d}".format(
                 s = COND_CODE_TO_OPCODE.get(self.cond_code),
-                o = '+' if self.offset > 0 else '-',
-                #d = (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset) )
-                d = self.offset )
+                d = self.operand or (self.address + 2 + (self.size if self.size > 1 else 0) + self.offset))
 
     @classmethod
     def command_matches(cls, command: str) -> bool:
@@ -191,15 +191,15 @@ class branch_code(Opcode):
         
         # See the BIG HORKIN' NOTE from get_word_length()
         # check param length
-        if len(parameters) >1:
+        if len(parameters) >2:
             passes = False
             errors.append("Too many operands for Branch Operation (TODO: list them here)")
         
         # check offset dest validity (odd read)
-        offset = parse_assembly_parameter(parameters[0].strip())
-        if offset.data % 2 == 1:
+        operand = parse_assembly_parameter(parameters[0].strip())
+        if operand.data % 2 == 1:
             passes = False
-            errors.append("Reading word at {d} will cause crash".format(d=offset.data))
+            errors.append("Reading word at {d} will cause crash".format(d=operand.data))
             
         return (passes, errors)
     
@@ -271,7 +271,7 @@ def bcc_disassemble_instruction(data: bytes, arg: type, arg_cond_code: int):
         if not len(offset) == 4:
             return None
 
-    op = arg(AssemblyParameter(None, 0), 0, size)
+    op = arg([0, size, 0])
     op.offset = offset
 
     return op
@@ -291,11 +291,15 @@ def bcc_from_str(command: str, parameters: str, arg: type):
     for i in parameters:
         i = i.strip()
 
-    # parse offset
-    parameters[0] = parse_assembly_parameter(parameters[0])
+    # operand
+    p = parse_assembly_parameter(parameters[0])
+    parameters[0] = p.data
 
-    # append offset size
-    parameters.append(parameters[0].get_value().get_size())
+    # size
+    parameters.append(p.get_value().get_size())
+
+    # address
+    parameters[2] = int(parameters[2])
 
     return arg(parameters)
 
@@ -324,5 +328,31 @@ class BRA(branch_code):
     def from_str(cls, command: str, parameters: str):
         return bcc_from_str(command, parameters, BRA)
 
+
+class BHI(branch_code):
+    """
+    The BHI opcode, compiles to 62xx xxxx xxxx
+    The conditional here is NOT C AND NOT Z
+    """
+
+    cond_code = '\x02'
+
+    def conditional(self, simulator: M68K):
+        c = simulator.get_condition_status_code(ConditionStatusCode.C)
+        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
+
+        if not c and not z:
+            return True
+
+        return False
+
+    def command_matches(cls, command: str):
+        return opcode_util.command_matches(command, 'BHI')
+
+    def disassemble_instruction(cls, data: bytes):
+        return bcc_disassemble_instruction(data, BHI, 2)
+
+    def from_str(cls, command: str, parameters: str):
+        return bcc_from_str(command, parameters, BHI)
 
 # ==============================================================================
