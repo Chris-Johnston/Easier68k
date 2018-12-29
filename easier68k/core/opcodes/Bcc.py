@@ -34,6 +34,41 @@ class branch_code(Opcode):
     one must also redefine self.cond_code across child classes
     Additionally, a redefinition of command_matches(), from_str(), and disassemble_instruction() will suffice
     """
+    
+    """ 
+    BCC:     Operation: If Condition True Then PC + dn → PC
+
+    Syntax:  Bcc < label >
+
+    Size = (Byte, Word, Long*)
+    *(MC68020, MC68030, and MC68040 only)
+
+    Description: If the specified condition is true, program execution continues at location (PC) + displacement. The program counter contains the address of the instruction word for
+    the Bcc instruction plus two. The displacement is a twos-complement integer that
+    represents the relative distance in bytes from the current program counter to the
+    destination program counter. If the 8-bit displacement field in the instruction word is
+    zero, a 16-bit displacement (the word immediately following the instruction) is used. If
+    the 8-bit displacement field in the instruction word is all ones ($FF), the 32-bit
+    displacement (long word immediately following the instruction) is used. Condition code
+    cc specifies one of the following conditional tests (refer to Table 3-19 for more
+                                                         information on these conditional tests):
+
+    Condition Codes:    Not affected.
+
+    Instruction Fields:
+        Condition field—The binary code for one of the conditions listed in the table.
+        8-Bit Displacement field—Twos complement integer specifying the number of bytes
+            between the branch instruction and the next instruction to be executed if the
+            condition is met.
+        16-Bit Displacement field—Used for the displacement when the 8-bit displacement
+            field contains $00.
+        32-Bit Displacement field—Used for the displacement when the 8-bit displacement
+            field contains $FF.
+
+    NOTE    A branch to the immediately following instruction automatically
+    uses the 16-bit displacement format because the 8-bit
+    displacement field contains $00 (zero offset).
+    """
 
     operand = None
     address = None
