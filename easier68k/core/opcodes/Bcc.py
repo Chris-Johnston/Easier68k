@@ -663,7 +663,7 @@ class BLT(branch_code):
         n = simulator.get_condition_status_code(ConditionStatusCode.N)
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
 
-        return n != v
+        return not n == v
 
     @classmethod
     def command_matches(cls, command: str):
