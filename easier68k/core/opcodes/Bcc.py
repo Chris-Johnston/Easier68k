@@ -441,12 +441,7 @@ class BCC(branch_code):
     cond_code = '\x04'
 
     def conditional(self, simulator: M68K):
-        c = simulator.get_condition_status_code(ConditionStatusCode.C)
-
-        if not c:
-            return True
-
-        return False
+        return not simulator.get_condition_status_code(ConditionStatusCode.C)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -470,12 +465,7 @@ class BCS(branch_code):
     cond_code = '\x05'
 
     def conditional(self, simulator: M68K):
-        c = simulator.get_condition_status_code(ConditionStatusCode.C)
-
-        if c:
-            return True
-
-        return False
+        return simulator.get_condition_status_code(ConditionStatusCode.C)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -499,12 +489,7 @@ class BNE(branch_code):
     cond_code = '\x06'
 
     def conditional(self, simulator: M68K):
-        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
-
-        if not z:
-            return True
-
-        return False
+        return not simulator.get_condition_status_code(ConditionStatusCode.Z)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -528,12 +513,7 @@ class BEQ(branch_code):
     cond_code = '\x07'
 
     def conditional(self, simulator: M68K):
-        z = simulator.get_condition_status_code(ConditionStatusCode.Z)
-
-        if z:
-            return True
-
-        return False
+        return simulator.get_condition_status_code(ConditionStatusCode.Z)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -557,12 +537,7 @@ class BVC(branch_code):
     cond_code = '\x08'
 
     def conditional(self, simulator: M68K):
-        v = simulator.get_condition_status_code(ConditionStatusCode.V)
-
-        if not v:
-            return True
-
-        return False
+        return not simulator.get_condition_status_code(ConditionStatusCode.V)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -586,12 +561,7 @@ class BVS(branch_code):
     cond_code = '\x09'
 
     def conditional(self, simulator: M68K):
-        v = simulator.get_condition_status_code(ConditionStatusCode.V)
-
-        if v:
-            return True
-
-        return False
+        return simulator.get_condition_status_code(ConditionStatusCode.V)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -615,12 +585,7 @@ class BPL(branch_code):
     cond_code = '\x0A'
 
     def conditional(self, simulator: M68K):
-        n = simulator.get_condition_status_code(ConditionStatusCode.N)
-
-        if not n:
-            return True
-
-        return False
+        return not simulator.get_condition_status_code(ConditionStatusCode.N)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -644,12 +609,7 @@ class BMI(branch_code):
     cond_code = '\x0B'
 
     def conditional(self, simulator: M68K):
-        n = simulator.get_condition_status_code(ConditionStatusCode.N)
-
-        if n:
-            return True
-
-        return False
+        return simulator.get_condition_status_code(ConditionStatusCode.N)
 
     @classmethod
     def command_matches(cls, command: str):
@@ -676,13 +636,7 @@ class BGE(branch_code):
         n = simulator.get_condition_status_code(ConditionStatusCode.N)
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
 
-        if n and v:
-            return True
-
-        if not n and not v:
-            return True
-
-        return False
+        return n == v
 
     @classmethod
     def command_matches(cls, command: str):
@@ -709,13 +663,7 @@ class BLT(branch_code):
         n = simulator.get_condition_status_code(ConditionStatusCode.N)
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
 
-        if n and v:
-            return True
-
-        if not n and not v:
-            return True
-
-        return False
+        return n != v
 
     @classmethod
     def command_matches(cls, command: str):
