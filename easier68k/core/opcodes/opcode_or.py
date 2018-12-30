@@ -12,6 +12,53 @@ from ..enum.condition_status_code import ConditionStatusCode
 
 
 class Or(Opcode):
+    """
+    OR: Inclusive-OR Logical
+
+    Operation: Source V Destination → Destination
+
+    Syntax: 
+    Type 1: OR < ea > ,Dn
+    Type 2: OR Dn, < ea >
+    
+    Attributes: Size = (Byte, Word, Long)
+    
+    Description: Performs an inclusive-OR operation on the source operand and the
+    destination operand and stores the result in the destination location. The size of the
+    operation is specified as byte, word, or long. The contents of an address register may
+    not be used as an operand.
+
+    Condition Codes:
+    X — Not affected.
+    N — Set if the most significant bit of the result is set; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Always cleared.
+    C — Always cleared.
+
+    Opmode field:
+     Byte
+     Word
+     Long
+ 
+    Type 1:
+     000
+     001
+     010
+ 
+    Type 2:
+     100
+     101
+     110
+
+    Operation:
+    Type 1: < ea > V Dn → Dn
+    Type 2: Dn V < ea > → < ea >
+
+    NOTE: If the destination is a data register, it must be specified using the
+    destination Dn mode, not the destination < ea > mode.
+    Most assemblers use ORI when the source is immediate data.
+    """
+
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
     def __init__(self, params: list, size: OpSize=OpSize.WORD):

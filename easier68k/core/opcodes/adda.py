@@ -14,7 +14,26 @@ class Adda(Opcode):
     pass
 
 class Adda(Opcode):
+    """
+    ADDA  Add Address  ADDA
+    Operation: Source + Destination → Destination
+    Syntax: ADDA < ea > , An
+    Attributes: Size = (Word, Long)
 
+    Description: Adds the source operand to the destination address register and stores the
+    result in the address register. The size of the operation may be specified as word or
+    long. The entire destination address register is used regardless of the operation size.
+
+    Condition Codes: Not affected
+
+    Instruction Fields: Register field—Specifies any of the eight address registers. This is always the
+    destination. Opmode field—Specifies the size of the operation.
+    011— Word operation; the source operand is sign-extended to a long operand and
+    the operation is performed on the address register using all 32 bits.
+    111— Long operation.
+    """
+
+    
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.WORD, OpSize.LONG]
 
