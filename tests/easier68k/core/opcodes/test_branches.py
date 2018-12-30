@@ -308,21 +308,21 @@ def test_blt():
     sim.set_ccr_reg(None, False, None, False, None)
     op.execute(sim)
 
-    assert sim.get_program_counter_value() == 0x2000
+    assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, None, True, None)
     op = BLT([0x2000, 0x1000])
     op.execute(sim)
 
-    assert sim.get_program_counter_value() == 0x2000
+    assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, True, None)
     op = BLT([0x2000, 0x1000])
     op.execute(sim)
 
-    assert sim.get_program_counter_value() == 0x1000
+    assert sim.get_program_counter_value() == 0x2000
 
 # CCR = XNZVC
 def test_bgt():
