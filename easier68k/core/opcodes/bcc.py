@@ -709,7 +709,7 @@ class Bgt(branch_code):
 class Ble(branch_code):
     """
     The BLE opcode compiles down to 6Fxx xxxx xxxx
-    The conditional here is (Z) OR (V AND NOT Z) OR (NOT N AND NOT V AND NOT Z)
+    The conditional here is (Z) OR (N AND NOT V) OR (NOT N AND V)
     """
 
     cond_code = '\x0F'
@@ -719,7 +719,7 @@ class Ble(branch_code):
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
         z = simulator.get_condition_status_code(ConditionStatusCode.Z)
 
-        return (n != v) and not z
+        return (n != v) or z
         
 
     @classmethod
