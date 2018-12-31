@@ -17,6 +17,31 @@ class Eor(Opcode):  # Forward declaration
 
 
 class Eor(Opcode):
+    """
+    EOR: Exclusive-OR Logical
+
+    Operation: Source ⊕ Destination → Destination
+
+    Syntax: EOR Dn, < ea >
+
+    Attributes: Size = (Byte, Word, Long)
+
+    Description: Performs an exclusive-OR operation on the destination operand using the
+    source operand and stores the result in the destination location. The size of the
+    operation may be specified to be byte, word, or long. The source operand must be a
+    data register. The destination operand is specified in the effective address field.
+
+    Condition Codes:
+    X — Not affected.
+    N — Set if the most significant bit of the result is set; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Always cleared.
+    C — Always cleared.
+
+    NOTE: Memory-to-data-register operations are not allowed. Most
+    assemblers use EORI when the source is immediate data.
+    """
+
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
     def __init__(self, params: list, size: OpSize=OpSize.WORD):

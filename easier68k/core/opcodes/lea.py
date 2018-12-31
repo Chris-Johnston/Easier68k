@@ -15,6 +15,20 @@ class Lea(Opcode):
 
 
 class Lea(Opcode):
+    """
+    LEA: Load Effective Address
+
+    Operation: < ea > → An
+
+    Syntax: LEA < ea > ,An
+
+    Attributes: Size = (Long)
+
+    Description: Loads the effective address into the specified address register. 
+    All 32 bits of the address register are effected by this instruction.
+
+    Condition Codes: Not affected.
+    """
     
     def __init__(self, params: list):
         assert len(params) == 2

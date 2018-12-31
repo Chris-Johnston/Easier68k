@@ -17,6 +17,37 @@ class Subq(Opcode):  # Forward declaration
 
 
 class Subq(Opcode):
+    """
+    SUBQ: Subtract Quick
+
+    Operation: Destination – Immediate Data → Destination
+
+    Syntax: SUBQ # < data > , < ea >
+
+    Attributes: Size = (Byte, Word, Long)
+
+    Description: Subtracts the immediate data (1 – 8) from the destination operand. The size
+    of the operation is specified as byte, word, or long. Only word and long operations can
+    be used with address registers, and the condition codes are not affected. When
+    subtracting from address registers, the entire destination address register is used,
+    despite the operation size.
+
+    Condition Codes:
+    X — Set to the value of the carry bit.
+    N — Set if the result is negative; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Set if an overflow occurs; cleared otherwise.
+    C — Set if a borrow occurs; cleared otherwise.
+
+    Data field—Three bits of immediate data; 1 – 7 represent immediate values of 1 – 7,
+    and zero represents eight.
+
+    Size field—Specifies the size of the operation.
+     00 — Byte operation
+     01 — Word operation
+     10 — Long operation
+    """
+    
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 

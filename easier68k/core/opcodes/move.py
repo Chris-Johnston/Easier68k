@@ -15,6 +15,39 @@ class Move(Opcode):  # Forward declaration
 
 
 class Move(Opcode):
+    """
+    MOVE: Move Data from Source to Destination
+
+    Operation: Source → Destination
+
+    Syntax: MOVE < ea > , < ea >
+
+    Attributes: Size = (Byte, Word, Long)
+
+    Description: Moves the data at the source to the destination location and sets the 
+    condition codes according to the data. The size of the operation may be specified as 
+    byte, word, or long. 
+
+    Condition Codes:
+    X — Not affected.
+    N — Set if the result is negative; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Always cleared.
+    C — Always cleared.
+
+    Size field: Specifies the size of the operand to be moved.
+    01 — Byte operation
+    11 — Word operation
+    10 — Long operation
+
+    Source Effective Address field—Specifies the source operand. All addressing modes
+    can be used as listed in the following tables:
+
+    NOTE: Most assemblers use MOVEA when the destination is an
+    address register. MOVEQ can be used to move an immediate 8-bit value to a data
+    register.
+    """
+
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
