@@ -18,5 +18,5 @@ __all__ = [
     'jsr',
     'rts',
     'neg',
-    'Bcc'
+    'bcc'
 ]

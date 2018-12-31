@@ -6,7 +6,7 @@ from easier68k.core.opcodes.Bcc import *
 from easier68k.core.enum.op_size import OpSize
 
 def test_bcc_construction():
-    b = BRA.from_str("BRA", "$2002, " + str(0x2000) )
+    b = Bra.from_str("BRA", "$2002, " + str(0x2000) )
     assert b.size == OpSize.WORD # should catch 0 offset
     assert b.offset == 0 # branching to next instruction
     assert b.operand == 0x2002
@@ -21,7 +21,7 @@ def test_bra_effect():
     sim = M68K()
     sim.set_program_counter_value(0x1000)
 
-    op = BRA([0x2000, 0x1000])
+    op = Bra([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -29,7 +29,7 @@ def test_bra_effect():
     # TEST NEGATIVE OFFSET
     sim.set_program_counter_value(0x2006)
 
-    op = BRA([0x2000, 0x2006])
+    op = Bra([0x2000, 0x2006])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -43,9 +43,9 @@ def test_bra_assemble():
     """
 
     start = 0x1000 # interestingly enough, the first test would compile to 6000 0004 on Easy68k
-    assert BRA.from_str("BRA", "$1006, " + str(start) ).assemble() == bytearray.fromhex("6004")
-    assert BRA.from_str("BRA", "$0FF8, " + str(start) ).assemble() == bytearray.fromhex("60F6")
-    assert BRA.from_str("BRA", "$1000, " + str(0x1002)).assemble() == bytearray.fromhex("60FC")
+    assert Bra.from_str("BRA", "$1006, " + str(start) ).assemble() == bytearray.fromhex("6004")
+    assert Bra.from_str("BRA", "$0FF8, " + str(start) ).assemble() == bytearray.fromhex("60F6")
+    assert Bra.from_str("BRA", "$1000, " + str(0x1002)).assemble() == bytearray.fromhex("60FC")
 
 def test_bra_disassemble():
     """
@@ -55,7 +55,7 @@ def test_bra_disassemble():
     """
 
     # will have a negative displacement
-    b = BRA.disassemble_instruction(bytearray.fromhex("60FC"))
+    b = Bra.disassemble_instruction(bytearray.fromhex("60FC"))
     assert b.offset == -4
     assert b.size == OpSize.BYTE
     #assert b.address == who knows
@@ -66,24 +66,24 @@ def test_bra_validation():
     :return:
     """
 
-    (x, _) = BRA.is_valid("BRA.L", "$1000")
+    (x, _) = Bra.is_valid("BRA.L", "$1000")
     assert x
 
-    (x, _) = BRA.is_valid("BRA.W", "$1000")
+    (x, _) = Bra.is_valid("BRA.W", "$1000")
     assert x
 
-    (x, _) = BRA.is_valid("BRA.B", "$1000")
+    (x, _) = Bra.is_valid("BRA.B", "$1000")
     assert x
 
-    (x, y) = BRA.is_valid("BRA.L", "$1001")
+    (x, y) = Bra.is_valid("BRA.L", "$1001")
     assert not x
     assert len(y) == 1
 
-    (x, y) = BRA.is_valid("BRA.L", "$1000, Garbage")
+    (x, y) = Bra.is_valid("BRA.L", "$1000, Garbage")
     assert not x
     assert len(y) == 1
 
-    (x, y) = BRA.is_valid("BRA.L", "$1001, Garbage")
+    (x, y) = Bra.is_valid("BRA.L", "$1001, Garbage")
     assert not x
     assert len(y) == 2
 
@@ -94,12 +94,12 @@ def test_bra_length():
     """
 
     # Dont bother testing size codes, see get_word_length note
-    assert BRA.get_word_length("BRA", "$1000, 4100") == 1
-    assert BRA.get_word_length("BRA", "$1010, 4096") == 1
-    assert BRA.get_word_length("BRA", "$1000, 8194") == 2
-    assert BRA.get_word_length("BRA", "$2000, 4096") == 2
-    assert BRA.get_word_length("BRA", "$999, 658556") == 3
-    assert BRA.get_word_length("BRA", "$5FFFFF, 4096") == 3
+    assert Bra.get_word_length("BRA", "$1000, 4100") == 1
+    assert Bra.get_word_length("BRA", "$1010, 4096") == 1
+    assert Bra.get_word_length("BRA", "$1000, 8194") == 2
+    assert Bra.get_word_length("BRA", "$2000, 4096") == 2
+    assert Bra.get_word_length("BRA", "$999, 658556") == 3
+    assert Bra.get_word_length("BRA", "$5FFFFF, 4096") == 3
 
 # All Others
 # (test execute: pass and branch)
@@ -111,7 +111,7 @@ def test_bhi():
 
     sim.set_ccr_reg(None, None, False, None, False)
 
-    op = BHI([0x2000, 0x1000])
+    op = Bhi([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -128,7 +128,7 @@ def test_bls():
 
     sim.set_ccr_reg(None, None, True, None, True)
 
-    op = BLS([0x2000, 0x1000])
+    op = Bls([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -145,7 +145,7 @@ def test_bcc():
 
     sim.set_ccr_reg(None, None, None, None, False)
 
-    op = BCC([0x2000, 0x1000])
+    op = Bcc([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -162,7 +162,7 @@ def test_bcs():
 
     sim.set_ccr_reg(None, None, None, None, True)
 
-    op = BCS([0x2000, 0x1000])
+    op = Bcs([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -179,7 +179,7 @@ def test_bne():
 
     sim.set_ccr_reg(None, None, False, None, None)
 
-    op = BNE([0x2000, 0x1000])
+    op = Bne([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -196,7 +196,7 @@ def test_beq():
 
     sim.set_ccr_reg(None, None, True, None, None)
 
-    op = BEQ([0x2000, 0x1000])
+    op = Beq([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -213,7 +213,7 @@ def test_bvc():
 
     sim.set_ccr_reg(None, None, None, False, None)
 
-    op = BVC([0x2000, 0x1000])
+    op = Bvc([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -230,7 +230,7 @@ def test_bvs():
 
     sim.set_ccr_reg(None, None, None, True, None)
 
-    op = BVS([0x2000, 0x1000])
+    op = Bvs([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -246,7 +246,7 @@ def test_bpl():
     sim.set_program_counter_value(0x1000)
 
     sim.set_ccr_reg(None, False, None, None, None)
-    op = BPL([0x2000, 0x1000])
+    op = Bpl([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -262,7 +262,7 @@ def test_bmi():
     sim.set_program_counter_value(0x1000)
 
     sim.set_ccr_reg(None, True, None, None, None)
-    op = BMI([0x2000, 0x1000])
+    op = Bmi([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -277,7 +277,7 @@ def test_bmi():
 def test_bge():
 
     sim = M68K()
-    op = BGE([0x2000, 0x1000])
+    op = Bge([0x2000, 0x1000])
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, None, True, None)
@@ -287,14 +287,14 @@ def test_bge():
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, False, None)
-    op = BGE([0x2000, 0x1000])
+    op = Bge([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, True, None)
-    op = BGE([0x2000, 0x1000])
+    op = Bge([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x1000
@@ -302,7 +302,7 @@ def test_bge():
 def test_blt():
 
     sim = M68K()
-    op = BLT([0x2000, 0x1000])
+    op = Blt([0x2000, 0x1000])
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, False, None)
@@ -312,14 +312,14 @@ def test_blt():
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, None, True, None)
-    op = BLT([0x2000, 0x1000])
+    op = Blt([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, True, None)
-    op = BLT([0x2000, 0x1000])
+    op = Blt([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
@@ -328,7 +328,7 @@ def test_blt():
 def test_bgt():
 
     sim = M68K()
-    op = BGT([0x2000, 0x1000])
+    op = Bgt([0x2000, 0x1000])
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, False, True, None)
@@ -338,14 +338,14 @@ def test_bgt():
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, False, False, None)
-    op = BGT([0x2000, 0x1000])
+    op = Bgt([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, None, True, None)
-    op = BGT([0x2000, 0x1000])
+    op = Bgt([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x1000
@@ -354,7 +354,7 @@ def test_bgt():
 def test_ble():
 
     sim = M68K()
-    op = BLE([0x2000, 0x1000])
+    op = Ble([0x2000, 0x1000])
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, False, False, None)
@@ -364,14 +364,14 @@ def test_ble():
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, True, False, True, None)
-    op = BLE([0x2000, 0x1000])
+    op = Ble([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
     sim.set_ccr_reg(None, False, True, True, None)
-    op = BLE([0x2000, 0x1000])
+    op = Ble([0x2000, 0x1000])
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x1000
