@@ -719,7 +719,7 @@ class BLE(branch_code):
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
         z = simulator.get_condition_status_code(ConditionStatusCode.Z)
 
-        return (n != v) and not z
+        return (n != v) or z
         
 
     @classmethod
