@@ -357,27 +357,20 @@ def test_ble():
     op = BLE([0x2000, 0x1000])
 
     sim.set_program_counter_value(0x1000)
-    sim.set_ccr_reg(None, None, True, None, None)
+    sim.set_ccr_reg(None, True, False, False, None)
     op.execute(sim)
 
     assert sim.get_program_counter_value() == 0x2000
 
     sim.set_program_counter_value(0x1000)
-    sim.set_ccr_reg(None, None, False, True, None)
+    sim.set_ccr_reg(None, True, False, True, None)
     op = BLE([0x2000, 0x1000])
     op.execute(sim)
 
-    assert sim.get_program_counter_value() == 0x2000
+    assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
-    sim.set_ccr_reg(None, False, False, False, None)
-    op = BLE([0x2000, 0x1000])
-    op.execute(sim)
-
-    assert sim.get_program_counter_value() == 0x2000
-
-    sim.set_program_counter_value(0x1000)
-    sim.set_ccr_reg(False, True, False, False, False)
+    sim.set_ccr_reg(None, False, True, True, None)
     op = BLE([0x2000, 0x1000])
     op.execute(sim)
 

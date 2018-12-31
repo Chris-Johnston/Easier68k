@@ -691,13 +691,7 @@ class BGT(branch_code):
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
         z = simulator.get_condition_status_code(ConditionStatusCode.Z)
 
-        if n and v and not z:
-            return True
-
-        if not n and not v and not z:
-            return True
-
-        return False
+        return (n == v) and not z
 
     @classmethod
     def command_matches(cls, command: str):
@@ -725,16 +719,8 @@ class BLE(branch_code):
         v = simulator.get_condition_status_code(ConditionStatusCode.V)
         z = simulator.get_condition_status_code(ConditionStatusCode.Z)
 
-        if z:
-            return True
-
-        if v and not z:
-            return True
-
-        if not n and not v and not z:
-            return True
-
-        return False
+        return (n != v) and not z
+        
 
     @classmethod
     def command_matches(cls, command: str):
