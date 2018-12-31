@@ -13,10 +13,15 @@ Welcome to Easier68k's documentation!
 .. automodule:: easier68k
    :no-undoc-members:
 
-.. automodule:: easier68k.simulator
-   :no-undoc-members:
+.. automodule:: easier68k.core
 
+.. automodule:: easier68k.core.models
 
+.. autoclass:: easier68k.core.models.assembly_parameter.AssemblyParameter
+   :members:
+
+.. autoclass:: easier68k.core.models.memory_value.MemoryValue
+   :members:
 
 Indices and tables
 ==================
