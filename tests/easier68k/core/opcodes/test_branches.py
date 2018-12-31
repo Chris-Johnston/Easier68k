@@ -2,7 +2,7 @@
 Test methods for all branch opcodes
 """
 
-from easier68k.core.opcodes.Bcc import *
+from easier68k.core.opcodes.bcc import *
 from easier68k.core.enum.op_size import OpSize
 
 def test_bcc_construction():
@@ -370,7 +370,7 @@ def test_ble():
     assert sim.get_program_counter_value() == 0x1000
 
     sim.set_program_counter_value(0x1000)
-    sim.set_ccr_reg(None, False, True, True, None)
+    sim.set_ccr_reg(None, False, False, False, None)
     op = Ble([0x2000, 0x1000])
     op.execute(sim)
 
