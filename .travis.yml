@@ -11,7 +11,7 @@ install:
   # install the "developer" version of the library
   - python setup.py develop
   # ensure that sphinx is installed
-  - apt-get install python3-sphinx
+  - sudo apt-get install python3-sphinx
 script:
   - pwd
   - cd tests
