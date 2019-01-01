@@ -2,5 +2,3 @@
 pytest
 pytest-cov
 recommonmark
-# documentation
-sphinx
