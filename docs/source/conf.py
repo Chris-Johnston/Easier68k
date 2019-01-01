@@ -156,7 +156,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'Easier68k', 'Easier68k Documentation',
-     author, 'Easier68k', 'One line description of project.',
+     author, 'Easier68k', 'A Python-based M68k assembler and simulator.',
      'Miscellaneous'),
 ]
 
