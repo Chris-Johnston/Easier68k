@@ -102,7 +102,7 @@ class branch_code(Opcode):
         if self.offset == 0:
             self.size = OpSize.WORD
 
-    @astractmethod
+    @abstractmethod
     def conditional(self, simulator: M68K):
         """
         This is a method stub to be overridden in child classes
@@ -182,6 +182,7 @@ class branch_code(Opcode):
                      (self.address + (self.size if self.size.get_number_of_bytes() > 1 else 0) + self.offset)))
 
     @classmethod
+    @abstractmethod
     def command_matches(cls, command: str) -> bool:
         """
         Checks whether a command string is an instance of this command type
