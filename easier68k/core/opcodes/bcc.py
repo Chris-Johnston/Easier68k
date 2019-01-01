@@ -102,7 +102,7 @@ class branch_code(Opcode):
         if self.offset == 0:
             self.size = OpSize.WORD
 
-;    @astractmethod
+    @astractmethod
     def conditional(self, simulator: M68K):
         """
         This is a method stub to be overridden in child classes
