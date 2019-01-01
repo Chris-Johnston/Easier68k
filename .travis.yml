@@ -5,13 +5,15 @@ python:
 notifications:
   email:
     on_failure: change
+before_install:
+  - sudo apt-get update
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
   # install the "developer" version of the library
   - python setup.py develop
   # ensure that sphinx is installed
-  - sudo apt-get install python3-sphinx
+  - sudo apt-get install -y python3-sphinx
 script:
   - pwd
   - cd tests
