@@ -17,6 +17,54 @@ class Sub(Opcode):  # Forward declaration
 
 
 class Sub(Opcode):
+    """
+    SUB: Subtract
+
+    Operation: Destination – Source → Destination
+
+    Syntax:
+     SUB < ea > ,Dn
+     SUB Dn, < ea >
+
+    Attributes: Size = (Byte, Word, Long)
+    
+    Description: Subtracts the source operand from the destination operand and stores the
+    result in the destination. The size of the operation is specified as byte, word, or long.
+    The mode of the instruction indicates which operand is the source, which is the
+    destination, and which is the operand size.
+
+    Condition Codes:
+    X — Set to the value of the carry bit.
+    N — Set if the result is negative; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Set if an overflow is generated; cleared otherwise.
+    C — Set if a borrow is generated; cleared otherwise.
+
+    Opmode field
+     Byte
+     Word
+     Long
+     Operation
+
+    Type 1:
+     000
+     001
+     010
+     Dn – < ea > → Dn
+
+    Type 2:
+     100 
+     101
+     110
+     < ea > – Dn → < ea >
+
+    NOTE:
+    If the destination is a data register, it must be specified as a
+    destination Dn address, not as a destination < ea > address.
+    Most assemblers use SUBA when the destination is an address
+    register and SUBI or SUBQ when the source is immediate data.
+    """
+    
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 

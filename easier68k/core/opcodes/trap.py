@@ -13,7 +13,30 @@ class Trap(Opcode): # forward declaration
     pass
 
 class Trap(Opcode):
+    """
+    TRAP
 
+    Operation: Trap
+
+    1 → S-Bit of SR
+    *SSP – 2 → SSP; Format/Offset → (SSP);
+    SSP – 4 → SSP; PC → (SSP); SSP – 2 → SSP;
+    SR → (SSP); Vector Address → PC
+    *The MC68000 and MC68008 do not write vector offset or
+    format code to the system stack.
+
+    Syntax: TRAP # < vector >
+
+    Attributes: Unsized
+
+    Description: Causes a TRAP # < vector > exception. The instruction adds the immediate
+    operand (vector) of the instruction to 32 to obtain the vector number. The range of
+    vector values is 0 – 15, which provides 16 vectors.
+
+    Condition Codes:
+    Not affected.
+    """
+    
     def __init__(self, param: TrapVectors):
         assert isinstance(param, TrapVectors)
         # max size is 4 bit

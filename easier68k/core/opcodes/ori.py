@@ -17,6 +17,38 @@ class Ori(Opcode):  # Forward declaration
 
 
 class Ori(Opcode):
+    """
+    ORI: Inclusive-OR
+
+    Operation: Immediate Data V Destination → Destination
+
+    Syntax: ORI # < data > , < ea >
+
+    Attributes: Size = (Byte, Word, Long)
+    
+    Description: Performs an inclusive-OR operation on the immediate data and the
+    destination operand and stores the result in the destination location. The size of the
+    operation is specified as byte, word, or long. The size of the immediate data matches
+    the operation size.
+
+    Condition Codes:
+    X — Not affected.
+    N — Set if the most significant bit of the result is set; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Always cleared.
+    C — Always cleared.
+
+    Size field—Specifies the size of the operation.
+    00— Byte operation
+    01— Word operation
+    10— Long operation
+
+    Immediate field: —Data immediately following the instruction.
+    If size = 00, the data is the low-order byte of the immediate word.
+    If size = 01, the data is the entire immediate word.
+    If size = 10, the data is the next two immediate words.
+    """
+    
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
     def __init__(self, params: list, size: OpSize=OpSize.WORD):
