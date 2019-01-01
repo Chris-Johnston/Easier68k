@@ -9,6 +9,8 @@ from ..util.parsing import *
 # makes TC way easier lol
 from bitstring import Bits
 from math import log
+from abc import ABC, ABCMeta, abstractmethod
+
 COND_CODE_TO_OPCODE = {
     '\x00': 'BRA',
     '\x02': 'BHI',
@@ -33,9 +35,8 @@ class branch_code(Opcode):
     there will be a conditional function to be overidden across child classes
     one must also redefine self.cond_code across child classes
     Additionally, a redefinition of command_matches(), from_str(), and disassemble_instruction() will suffice
-    """
-    
-    """ 
+
+
     BCC:     Operation: If Condition True Then PC + dn → PC
 
     Syntax:  Bcc < label >
@@ -101,6 +102,7 @@ class branch_code(Opcode):
         if self.offset == 0:
             self.size = OpSize.WORD
 
+;    @astractmethod
     def conditional(self, simulator: M68K):
         """
         This is a method stub to be overridden in child classes
@@ -167,8 +169,6 @@ class branch_code(Opcode):
         if self.conditional(simulator):
             self.offset += 2
             simulator.increment_program_counter(self.offset)
-
-        pass
 
     def __str__(self):
         """
