@@ -304,3 +304,20 @@ class Cmpi(Opcode):
 
         # make a new reference of this type
         return cls([src, dest], size)
+    
+    def __str__(self):
+        return 'CMPI Size {}, Src {}, Dest {}'.format(self.size, self.src, self.dest)
+    
+    @classmethod
+    def from_str(self, command: str, parameters: str):
+        """
+        Parses a CMPI from text.
+
+        >>> str(Cmpi.from_str('CMPI.B', '#1337, D1'))
+        'CMPI Size OpSize.BYTE, Src EA Mode: EAMode.IMM, Data: 1337, Dest EA Mode: EAMode.DRD, Data: 1'
+
+        :param command: The command itself 'CMPI' 'CMPI.B', etc.
+        :param parameters: The parameters after the command
+        :return: The parsed command
+        """
+        return opcode_util.n_param_from_str(command, parameters, Cmpi, 2, OpSize.WORD)

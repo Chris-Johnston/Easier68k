@@ -402,3 +402,14 @@ class DC(Opcode):
                     params.append(int(hexed[i:i + 2], 16))
 
         return cls(params, size)
+
+    @classmethod
+    def disassemble_instruction(cls, data: bytes) -> Opcode:
+        """
+        Disassembles the instuction into an instance of the DC class
+        """
+        # DC is a directive for the assembler, so it has no representaiton
+        # as bytes
+        pass
+
+        
