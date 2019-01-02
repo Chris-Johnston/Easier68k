@@ -17,5 +17,6 @@ __all__ = [
     'adda',
     'jsr',
     'rts',
-    'neg'
+    'neg',
+    'bcc'
 ]

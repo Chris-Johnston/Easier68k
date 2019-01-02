@@ -113,7 +113,7 @@ class MemoryValue:
         :return:
         """
         if not isinstance(unsigned_int, int):
-            raise AssertionError('The unsigned_int parameter must be an integer!')
+           raise AssertionError('The unsigned_int parameter must be an integer!')
 
         # assert that the value can fit within the possible range for the size
         if self.length is OpSize.LONG:
