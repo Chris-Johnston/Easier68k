@@ -17,6 +17,53 @@ class Add(Opcode):  # Forward declaration
 
 
 class Add(Opcode):
+    """
+    ADD: add
+
+    Operation: Source + Destination → Destination
+
+    Syntax: ADD Dn, < ea > OR  ADD < ea > ,Dn
+
+    Attributes: Size = (Byte, Word, Long)
+
+    Description: Adds the source operand to the destination operand using binary addition and
+    stores the result in the destination location. The size of the operation may be specified
+    as byte, word, or long. The mode of the instruction indicates which operand is the
+    source and which is the destination, as well as the operand size.
+
+    Condition Codes:
+    X — Set the same as the carry bit.
+    N — Set if the result is negative; cleared otherwise.
+    Z — Set if the result is zero; cleared otherwise.
+    V — Set if an overflow is generated; cleared otherwise.
+    C — Set if a carry is generated; cleared otherwise.
+
+    Instruction Fields:
+    Register field—Specifies any of the eight data registers.
+    Opmode field
+
+    Byte
+    Word
+    Long
+    Operation
+
+    000
+    001
+    010
+    < ea > + Dn → Dn
+
+    100
+    101
+    110
+    Dn + < ea > → < ea >
+
+    NOTE
+    The Dn mode is used when the destination is a data register; the
+    destination < ea > mode is invalid for a data register.
+    ADDA is used when the destination is an address register. ADDI
+    and ADDQ are used when the source is immediate data. Most
+    assemblers automatically make this distinction.
+    """
     # Allowed sizes for this opcode
     valid_sizes = [OpSize.BYTE, OpSize.WORD, OpSize.LONG]
 
