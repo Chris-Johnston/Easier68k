@@ -1,3 +1,4 @@
 # Be sure to update the requirements inside setup.py as well!
 pytest
 pytest-cov
+bitstring

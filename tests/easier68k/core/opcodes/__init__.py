@@ -15,5 +15,6 @@ __all__ = [
     'test_rts',
     'test_sub',
     'test_subq',
-    'test_trap'
+    'test_trap',
+    'test_branches'
 ]
