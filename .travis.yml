@@ -5,15 +5,35 @@ python:
 notifications:
   email:
     on_failure: change
+before_install:
+  - sudo apt-get update
 install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r testing_requirements.txt
+  # install the "developer" version of the library
   - python setup.py develop
+  # ensure that sphinx is installed
+  - sudo apt-get install -y python3-sphinx
 script:
   - pwd
   - cd tests
   - python run_doctest.py
   - python run_pytest.py
   - cd /home/travis/build/Chris-Johnston/Easier68k
+  # lint all files, but do not let these fail the build
   - (find easier68k -iname "*.py" | xargs pylint) || true
+  - (find easier68k-cli -iname "*.py" | xargs pylint) || true
   - (find tests/ -iname "*.py" | xargs pylint) || true
+  # build documentation
+  - cd docs
+  - make html
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN # set in Travis CI as a secure token
+  keep-history: true
+  local-dir: docs/build/html
+  committer-from-gh: true
+  on:
+    branch:
+      - master

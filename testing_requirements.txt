@@ -1,1 +1,7 @@
+# These requirements are only used for the tests, and are not required
+# for the library to function
+
+# linting
 pylint
+# documentation
+sphinx
