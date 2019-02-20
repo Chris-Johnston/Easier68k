@@ -66,4 +66,24 @@ cd tests
 python3 run_pytest.py
 ```
 
+## Building the Docs
+
+Documentation is built using Sphinx. The Travis CI pipeline will
+automatically build and deploy these pages to GitHub pages when
+committed to master.
+
+If you have contributed to the docs, either by editing the documentation itself
+or in docstrings, you should check that the docs look OK yourself.
+
+Ensure that you have the `testing_requirements.txt` installed.
+
+```console
+python3 -m pip install -r testing_requirements.txt
+cd docs
+make html
+```
+
+If the build process completes without errors, open the file
+`docs/build/html/index.html` in your web browser.
+
 [doctest-guide]: https://pymotw.com/2/doctest/ 
