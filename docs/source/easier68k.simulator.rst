@@ -27,12 +27,3 @@ easier68k.simulator.memory module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: easier68k.simulator
-    :members:
-    :undoc-members:
-    :show-inheritance:

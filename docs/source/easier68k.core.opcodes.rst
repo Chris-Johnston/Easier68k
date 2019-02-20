@@ -1,6 +1,9 @@
 easier68k.core.opcodes package
 ==============================
 
+This page lists all of the opcodes that have been implemented in
+Easier68k.
+
 Submodules
 ----------
 
@@ -152,15 +155,6 @@ easier68k.core.opcodes.trap module
 ----------------------------------
 
 .. automodule:: easier68k.core.opcodes.trap
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: easier68k.core.opcodes
     :members:
     :undoc-members:
     :show-inheritance:

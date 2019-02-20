@@ -1,6 +1,9 @@
 easier68k.core package
 ======================
 
+The `easier68k.core` package contains types and logic that are used
+by both the assembler and the simulator.
+
 Subpackages
 -----------
 
@@ -10,11 +13,3 @@ Subpackages
     easier68k.core.models
     easier68k.core.opcodes
     easier68k.core.util
-
-Module contents
----------------
-
-.. automodule:: easier68k.core
-    :members:
-    :undoc-members:
-    :show-inheritance:

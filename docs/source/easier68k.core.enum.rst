@@ -83,12 +83,3 @@ easier68k.core.enum.trap\_vector module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: easier68k.core.enum
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -51,12 +51,3 @@ easier68k.core.util.split\_bits module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: easier68k.core.util
-    :members:
-    :undoc-members:
-    :show-inheritance:
