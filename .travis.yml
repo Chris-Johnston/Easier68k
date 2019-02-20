@@ -37,4 +37,3 @@ deploy:
   on:
     branch:
       - master
-      - setup-read-the-docs # testing
