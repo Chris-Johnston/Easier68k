@@ -103,11 +103,6 @@ html_static_path = ['_static']
 #
 html_sidebars = {
     '**': ['localtoc.html',
-    # 'easier68k.html',
-    # 'easier68k.assembler.html',
-    # 'easier68k.core.html',
-    # 'easier68k.simulator.html',
-    # 'genindex.html',
     'searchbox.html',
     'sourcelink.html']
 }
