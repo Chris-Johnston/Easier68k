@@ -156,3 +156,6 @@ tags
 
 # Temp. output file for a unit test
 temp_output_file.txt
+
+# emacs stuff
+\#*\#

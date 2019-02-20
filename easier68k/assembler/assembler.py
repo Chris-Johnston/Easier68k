@@ -194,6 +194,11 @@ def parse(text: str) -> (ListFile, list):
         # check that the input is valid the opcode at the module level
         is_valid, issues = op_class.is_valid(opcode, contents)
 
+        # for BRA and probably in the future JMP ops...
+        # addr must be handed off so that they can pull an offset out of the operand address.
+        if issubclass(op_class, bcc.branch_code):
+            contents += ", " + str(current_memory_location)
+
         # if valid, then actually construct the opcode
         if is_valid:
             # get the length of the operation in # of words

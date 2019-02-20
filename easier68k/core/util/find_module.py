@@ -11,7 +11,22 @@ valid_opcode_classes = [
     'easier68k.core.opcodes.lea.Lea',
     'easier68k.core.opcodes.trap.Trap',
     'easier68k.core.opcodes.opcode_or.Or',
-    'easier68k.core.opcodes.add.Add'
+    'easier68k.core.opcodes.add.Add',
+    'easier68k.core.opcodes.bcc.Bra',
+    'easier68k.core.opcodes.bcc.Bhi',
+    'easier68k.core.opcodes.bcc.Bls',
+    'easier68k.core.opcodes.bcc.Bcc',
+    'easier68k.core.opcodes.bcc.Bcs',
+    'easier68k.core.opcodes.bcc.Bne',
+    'easier68k.core.opcodes.bcc.Beq',
+    'easier68k.core.opcodes.bcc.Bvc',
+    'easier68k.core.opcodes.bcc.Bvs',
+    'easier68k.core.opcodes.bcc.Bpl',
+    'easier68k.core.opcodes.bcc.Bmi',
+    'easier68k.core.opcodes.bcc.Bge',
+    'easier68k.core.opcodes.bcc.Blt',
+    'easier68k.core.opcodes.bcc.Bgt',
+    'easier68k.core.opcodes.bcc.Ble'
 ]
 
 valid_opcodes = [
