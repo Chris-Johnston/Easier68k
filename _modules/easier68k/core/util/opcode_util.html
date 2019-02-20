@@ -1,0 +1,330 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.util.opcode_util &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.util.opcode_util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">..enum.ea_mode</span> <span class="k">import</span> <span class="n">EAMode</span>
+<span class="kn">from</span> <span class="nn">..util.parsing</span> <span class="k">import</span> <span class="n">parse_assembly_parameter</span><span class="p">,</span> <span class="n">from_str_util</span>
+<span class="kn">from</span> <span class="nn">..enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+<span class="kn">from</span> <span class="nn">..models.memory_value</span> <span class="k">import</span> <span class="n">MemoryValue</span>
+
+<div class="viewcode-block" id="command_matches"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.command_matches">[docs]</a><span class="k">def</span> <span class="nf">command_matches</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &gt;&gt;&gt; command_matches(&quot;MOVE.B&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; command_matches(&quot;MOVE&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; command_matches(&quot;MOV&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &gt;&gt;&gt; command_matches(&quot;MOV.B&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    Handles the typical checking of a command string (like &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.).</span>
+<span class="sd">    NOTE: this will match some error conditions, this just does the broadest possible checks. The main one is that this</span>
+<span class="sd">    doesn&#39;t check for more than 1 period (MOVE.B.W, for example) or check for valid sizes/lack of sizes. The assumption</span>
+<span class="sd">    is that this will be handled in the actual parsing methods for proper error handling.</span>
+<span class="sd">    :param command: The command string to parse</span>
+<span class="sd">    :param template: The template to check with</span>
+<span class="sd">    :return: Whether the command matches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># There&#39;s no size argument here</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">command</span> <span class="o">==</span> <span class="n">template</span>
+
+    <span class="c1"># There&#39;s a size argument</span>
+    <span class="k">return</span> <span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">template</span></div>
+
+
+<div class="viewcode-block" id="get_size"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.get_size">[docs]</a><span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default_size</span><span class="o">=</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpSize</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets the size of a command, or supplies the default size</span>
+
+<span class="sd">    &gt;&gt;&gt; get_size(&quot;MOVE.B&quot;)</span>
+<span class="sd">    &lt;OpSize.BYTE: 1&gt;</span>
+
+<span class="sd">    &gt;&gt;&gt; get_size(&quot;MOVE&quot;)</span>
+<span class="sd">    &lt;OpSize.WORD: 2&gt;</span>
+
+<span class="sd">    &gt;&gt;&gt; get_size(&quot;MOVE&quot;, default_size=OpSize.BYTE)</span>
+<span class="sd">    &lt;OpSize.BYTE: 1&gt;</span>
+
+<span class="sd">    :param command: The command string to parse</span>
+<span class="sd">    :param default_size: The default size if no size is found</span>
+<span class="sd">    :return: The size of the command</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default_size</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="check_valid_command"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.check_valid_command">[docs]</a><span class="k">def</span> <span class="nf">check_valid_command</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">can_take_size</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">valid_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks whether this command is valid</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;MOVE.B&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;MOVE&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;MOV&quot;, &quot;MOVE&quot;)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;LEA&quot;, &quot;LEA&quot;, can_take_size=False)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;LEA.B&quot;, &quot;LEA&quot;, can_take_size=False)</span>
+<span class="sd">    False</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;MOVEA.W&quot;, &quot;MOVEA&quot;, valid_sizes=[OpSize.WORD, OpSize.LONG])</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; check_valid_command(&quot;MOVEA.B&quot;, &quot;MOVEA&quot;, valid_sizes=[OpSize.WORD, OpSize.LONG])</span>
+<span class="sd">    False</span>
+
+<span class="sd">    :param command: The command to check</span>
+<span class="sd">    :param template: The type of command we&#39;re checking for (like &#39;MOVE&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">    :param can_take_size: Whether this command takes a size argument or not</span>
+<span class="sd">    :return: Whether this command is valid or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># There&#39;s nothing here?</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">can_take_size</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Can&#39;t take a size but has a size specified</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="o">!=</span> <span class="n">template</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Command doesn&#39;t match</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">template</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Command doesn&#39;t match</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Size not 1 character</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">in</span> <span class="n">valid_sizes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Invalid size specifier</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># More than 2 parts in the command (more than 2 periods somehow)</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ea_to_binary_post_op"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.ea_to_binary_post_op">[docs]</a><span class="k">def</span> <span class="nf">ea_to_binary_post_op</span><span class="p">(</span><span class="n">ea</span><span class="p">:</span> <span class="n">EAMode</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemoryValue</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets the binary (if any) of an EA Mode to append after the command itself. For example, if we were to do</span>
+<span class="sd">    &#39;MOVE.B #$42, D0&#39;, the immediate would need to be appended after the command: this returns the part that</span>
+<span class="sd">    needs to be appended.</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;#$42&#39;), OpSize.BYTE))</span>
+<span class="sd">    &#39;WORD MemoryValue 0x42&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;D0&#39;), OpSize.WORD))</span>
+<span class="sd">    &#39;None&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;#$42&#39;), OpSize.LONG))</span>
+<span class="sd">    &#39;LONG MemoryValue 0x42&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;($242).W&#39;), OpSize.WORD))</span>
+<span class="sd">    &#39;WORD MemoryValue 0x242&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;($242).L&#39;), OpSize.LONG))</span>
+<span class="sd">    &#39;LONG MemoryValue 0x242&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;#-1&#39;), OpSize.BYTE))</span>
+<span class="sd">    &#39;WORD MemoryValue 0xffff&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; str(ea_to_binary_post_op(parse_assembly_parameter(&#39;#-113442343&#39;), OpSize.LONG))</span>
+<span class="sd">    &#39;LONG MemoryValue 0xf93d01d9&#39;</span>
+
+<span class="sd">    :param ea: The effective address that needs to be converted</span>
+<span class="sd">    :param size: The size of the operation</span>
+<span class="sd">    :return: The binary that needs to be appended, in string form (or an empty string)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ea</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">IMM</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ea</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ea</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+
+    <span class="k">if</span> <span class="n">ea</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AWA</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">if</span> <span class="n">ea</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">ea</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+
+
+<div class="viewcode-block" id="n_param_is_valid"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.n_param_is_valid">[docs]</a><span class="k">def</span> <span class="nf">n_param_is_valid</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">opcode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">valid_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">],</span>
+                       <span class="n">default_size</span><span class="o">=</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">param_invalid_modes</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tests whether the given command is valid</span>
+
+<span class="sd">    :param command: The command itself (e.g. &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">    :param parameters: The parameters after the command (such as the source and destination of a move)</span>
+<span class="sd">    :param opcode: The opcode to check for (&#39;MOVE&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">    :param valid_sizes: valid sizes of the command (empty list or None for no size)</span>
+<span class="sd">    :param default_size: the default size for the command (can be None if it doesn&#39;t take a command)</span>
+<span class="sd">    :param n: the number of parameters to parse</span>
+<span class="sd">    :param param_invalid_modes: list of lists of invalid parameter modes (in order)</span>
+<span class="sd">    :return: Whether the given command is valid and a list of issues/warnings encountered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">issues</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">size</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">from_str_util</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+        <span class="c1"># If we have more than 2 parts something is seriously wrong</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Unknown error (more than 1 period in command)&#39;</span>
+        <span class="k">assert</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="n">opcode</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="s2">&quot;Command doesn&#39;t match template </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opcode</span><span class="p">)</span>
+        <span class="c1"># Size check</span>
+        <span class="k">if</span> <span class="n">valid_sizes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_sizes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">size</span><span class="p">:</span>
+                <span class="c1"># If size is null but we had a size parameter, it was an invalid size</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Invalid size parameter&#39;</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="n">default_size</span>
+            <span class="k">assert</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">valid_sizes</span><span class="p">,</span> <span class="s1">&#39;Size </span><span class="si">{}</span><span class="s1"> is not a valid size&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Can&#39;t specify a size for command </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opcode</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">==</span> <span class="n">n</span><span class="p">,</span> <span class="s1">&#39;Opcode </span><span class="si">{}</span><span class="s1"> must have </span><span class="si">{}</span><span class="s1"> parameters&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+        <span class="n">parsed</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_invalid_modes</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="n">param</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">param_invalid_modes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Invalid addressing mode&#39;</span>
+            <span class="n">parsed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">issues</span>
+
+    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">issues</span></div>
+
+
+<div class="viewcode-block" id="n_param_from_str"><a class="viewcode-back" href="../../../../easier68k.core.util.html#easier68k.core.util.opcode_util.n_param_from_str">[docs]</a><span class="k">def</span> <span class="nf">n_param_from_str</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">opcode_cls</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default_size</span><span class="p">:</span> <span class="n">OpSize</span> <span class="o">=</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parses a command from text. Note that this assumes that is_valid has already been run and was successful.</span>
+
+<span class="sd">    :param command: The command itself (e.g. &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">    :param parameters: The parameters after the command (such as the source and destination of a move)</span>
+<span class="sd">    :param opcode_cls: The class of opcode we&#39;re parsing to</span>
+<span class="sd">    :param n: The number of parameters to parse</span>
+<span class="sd">    :param default_size: The default size if no size is specified, or None if this is an unsized opcode</span>
+<span class="sd">    :return: The parsed command</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">from_str_util</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">default_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">default_size</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">default_size</span><span class="p">:</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">parsed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">parsed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+
+    <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">opcode_cls</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">opcode_cls</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

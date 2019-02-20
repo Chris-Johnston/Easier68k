@@ -1,0 +1,349 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.simulator package &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="easier68k-simulator-package">
+<h1>easier68k.simulator package<a class="headerlink" href="#easier68k-simulator-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-easier68k.simulator.clock">
+<span id="easier68k-simulator-clock-module"></span><h2>easier68k.simulator.clock module<a class="headerlink" href="#module-easier68k.simulator.clock" title="Permalink to this headline">¶</a></h2>
+<p>Used by m68k to handle stepping through actions</p>
+<dl class="class">
+<dt id="easier68k.simulator.clock.Clock">
+<em class="property">class </em><code class="descclassname">easier68k.simulator.clock.</code><code class="descname">Clock</code><a class="reference internal" href="_modules/easier68k/simulator/clock.html#Clock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.clock.Clock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Constructor</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.simulator.m68k">
+<span id="easier68k-simulator-m68k-module"></span><h2>easier68k.simulator.m68k module<a class="headerlink" href="#module-easier68k.simulator.m68k" title="Permalink to this headline">¶</a></h2>
+<p>Motorola 68k chip definition</p>
+<dl class="class">
+<dt id="easier68k.simulator.m68k.M68K">
+<em class="property">class </em><code class="descclassname">easier68k.simulator.m68k.</code><code class="descname">M68K</code><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Constructor</p>
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.clear_cycles">
+<code class="descname">clear_cycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.clear_cycles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.clear_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the count of clock cycles
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.get_condition_status_code">
+<code class="descname">get_condition_status_code</code><span class="sig-paren">(</span><em>code: easier68k.core.enum.condition_status_code.ConditionStatusCode</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.get_condition_status_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.get_condition_status_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the status of a code from the Condition Code Register
+:param code:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.get_cycles">
+<code class="descname">get_cycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.get_cycles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.get_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns how many clock cycles have been performed
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.get_program_counter_value">
+<code class="descname">get_program_counter_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.get_program_counter_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.get_program_counter_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the 32-bit unsigned integer value for the program counter value
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.get_register">
+<code class="descname">get_register</code><span class="sig-paren">(</span><em>register: easier68k.core.enum.register.Register</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.memory_value.MemoryValue<a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.get_register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.get_register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the entire value of a register
+:param register:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.halt">
+<code class="descname">halt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.halt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.halt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Halts the auto simulation execution
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.increment_program_counter">
+<code class="descname">increment_program_counter</code><span class="sig-paren">(</span><em>inc: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.increment_program_counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.increment_program_counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increments the program counter by the given value
+:param inc:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.load_list_file">
+<code class="descname">load_list_file</code><span class="sig-paren">(</span><em>list_file: easier68k.core.models.list_file.ListFile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.load_list_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.load_list_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load List File</p>
+<p>load the contents of a list file into memory
+using the locations specified inside of the list file
+:param list_file:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.load_memory">
+<code class="descname">load_memory</code><span class="sig-paren">(</span><em>file: BinaryIO</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.load_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.load_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>saves the raw memory into the designated file
+NOTE: file must be opened as binary or this won’t work</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.reload_execution">
+<code class="descname">reload_execution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.reload_execution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.reload_execution" title="Permalink to this definition">¶</a></dt>
+<dd><p>restarts execution of the program
+up to the current program counter location
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the automatic execution
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.save_memory">
+<code class="descname">save_memory</code><span class="sig-paren">(</span><em>file: BinaryIO</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.save_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.save_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the raw memory from the designated file
+This includes programs
+NOTE: file must be opened as binary or this won’t work</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.set_address_register_value">
+<code class="descname">set_address_register_value</code><span class="sig-paren">(</span><em>reg: easier68k.core.enum.register.Register</em>, <em>new_value: easier68k.core.models.memory_value.MemoryValue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.set_address_register_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.set_address_register_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of an address register, so the PC or A0-A7
+:param reg:
+:param new_value:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.set_ccr_reg">
+<code class="descname">set_ccr_reg</code><span class="sig-paren">(</span><em>extend</em>, <em>negative</em>, <em>zero</em>, <em>overflow</em>, <em>carry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.set_ccr_reg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.set_ccr_reg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts Boolean values for X,N,Z,V, and C, respectively and sets the CCR accordingly.
+Passing None in for any argument will cause it to ignore that bit.
+Returns nothing.
+:param extend:
+:param negative:
+:param zero:
+:param overflow:
+:param carry:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.set_condition_status_code">
+<code class="descname">set_condition_status_code</code><span class="sig-paren">(</span><em>code: easier68k.core.enum.condition_status_code.ConditionStatusCode</em>, <em>value: bool</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.set_condition_status_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.set_condition_status_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the status of a code from the Condition Code Register to value
+:param code:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.set_program_counter_value">
+<code class="descname">set_program_counter_value</code><span class="sig-paren">(</span><em>new_value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.set_program_counter_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.set_program_counter_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of the program counter
+Must be a non negative integer that is less than the maximum location size
+:param new_value:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.set_register">
+<code class="descname">set_register</code><span class="sig-paren">(</span><em>register: easier68k.core.enum.register.Register</em>, <em>val: easier68k.core.models.memory_value.MemoryValue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.set_register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.set_register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of a register using a 32-bit int
+:param register:
+:param val:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.m68k.M68K.step_instruction">
+<code class="descname">step_instruction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.step_instruction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.step_instruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increments the clock until the program
+counter increments
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.simulator.memory">
+<span id="easier68k-simulator-memory-module"></span><h2>easier68k.simulator.memory module<a class="headerlink" href="#module-easier68k.simulator.memory" title="Permalink to this headline">¶</a></h2>
+<p>Represents all of the memory for the 68k
+This should be able to be serialized/deserialized
+and accessed completely</p>
+<dl class="exception">
+<dt id="easier68k.simulator.memory.AssignWrongMemorySizeError">
+<em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">AssignWrongMemorySizeError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#AssignWrongMemorySizeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.AssignWrongMemorySizeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="easier68k.simulator.memory.Memory">
+<em class="property">class </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">Memory</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Constructor</p>
+<dl class="method">
+<dt id="easier68k.simulator.memory.Memory.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize</em>, <em>location: int</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.memory_value.MemoryValue<a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the memory at the given location index of size</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.memory.Memory.load_list_file">
+<code class="descname">load_list_file</code><span class="sig-paren">(</span><em>list_file: easier68k.core.models.list_file.ListFile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.load_list_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.load_list_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load List File</p>
+<p>load the contents of a list file into memory
+using the locations specified inside of the list file
+starting location, registers, etc… (anything
+which is not data) is ignored
+:param list_file:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.memory.Memory.load_memory">
+<code class="descname">load_memory</code><span class="sig-paren">(</span><em>file: BinaryIO</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.load_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.load_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the raw memory from the designated file
+This includes programs
+NOTE: file must be opened as binary or this won’t work</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.memory.Memory.save_memory">
+<code class="descname">save_memory</code><span class="sig-paren">(</span><em>file: BinaryIO</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.save_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.save_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>saves the raw memory into the designated file
+NOTE: file must be opened as binary or this won’t work</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.simulator.memory.Memory.set">
+<code class="descname">set</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize</em>, <em>location: int</em>, <em>value: easier68k.core.models.memory_value.MemoryValue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the memory at the given location index of size</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="easier68k.simulator.memory.OutOfBoundsMemoryError">
+<em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">OutOfBoundsMemoryError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#OutOfBoundsMemoryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.OutOfBoundsMemoryError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="easier68k.simulator.memory.UnalignedMemoryAccessError">
+<em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">UnalignedMemoryAccessError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#UnalignedMemoryAccessError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.UnalignedMemoryAccessError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.simulator">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.simulator" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">easier68k.simulator package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-easier68k.simulator.clock">easier68k.simulator.clock module</a></li>
+<li><a class="reference internal" href="#module-easier68k.simulator.m68k">easier68k.simulator.m68k module</a></li>
+<li><a class="reference internal" href="#module-easier68k.simulator.memory">easier68k.simulator.memory module</a></li>
+<li><a class="reference internal" href="#module-easier68k.simulator">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.simulator.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

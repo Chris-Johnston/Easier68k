@@ -1,0 +1,406 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.opcodes.cmpi &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.opcodes.cmpi</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">...core.enum.ea_mode</span> <span class="k">import</span> <span class="n">EAMode</span>
+<span class="kn">from</span> <span class="nn">...core.enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+<span class="kn">from</span> <span class="nn">...core.enum</span> <span class="k">import</span> <span class="n">ea_mode_bin</span>
+<span class="kn">from</span> <span class="nn">...core.enum.ea_mode_bin</span> <span class="k">import</span> <span class="n">parse_ea_from_binary</span>
+<span class="kn">from</span> <span class="nn">...simulator.m68k</span> <span class="k">import</span> <span class="n">M68K</span>
+<span class="kn">from</span> <span class="nn">...core.opcodes.opcode</span> <span class="k">import</span> <span class="n">Opcode</span>
+<span class="kn">from</span> <span class="nn">...core.util.split_bits</span> <span class="k">import</span> <span class="n">split_bits</span>
+<span class="kn">from</span> <span class="nn">...core.util</span> <span class="k">import</span> <span class="n">opcode_util</span>
+<span class="kn">from</span> <span class="nn">..util.parsing</span> <span class="k">import</span> <span class="n">parse_assembly_parameter</span>
+<span class="kn">from</span> <span class="nn">..models.assembly_parameter</span> <span class="k">import</span> <span class="n">AssemblyParameter</span>
+<span class="kn">from</span> <span class="nn">..enum.condition_status_code</span> <span class="k">import</span> <span class="n">ConditionStatusCode</span>
+<span class="kn">from</span> <span class="nn">..models.memory_value</span> <span class="k">import</span> <span class="n">MemoryValue</span><span class="p">,</span> <span class="n">mask_value_for_length</span>
+
+
+<div class="viewcode-block" id="Cmpi"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi">[docs]</a><span class="k">class</span> <span class="nc">Cmpi</span><span class="p">(</span><span class="n">Opcode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    CMPI: Compare Immediate</span>
+<span class="sd">    Operation: Destination - Immediate Data -&gt; cc</span>
+<span class="sd">    Assembler Syntax: CMPI #&lt;data&gt;, &lt;ea&gt;</span>
+<span class="sd">    Attributes: Size = (Byte, Word, Long)</span>
+<span class="sd">    Description: Subtracts the immediate data from the destination operand</span>
+<span class="sd">                 and sets the condition codes according to the result;</span>
+<span class="sd">                 the destination location is not changed.</span>
+<span class="sd">                 The size of the operation may be specified as byte, word, or long.</span>
+<span class="sd">                 The size of the immediate data matches the operation size.</span>
+<span class="sd">    Condition Codes: X - Not affected</span>
+<span class="sd">                     N - Set if the result is negative; cleared otherwise.</span>
+<span class="sd">                     Z - Set if the result is zero; cleared otherwise.</span>
+<span class="sd">                     V - Set if an overflow occurs; cleared otherwise.</span>
+<span class="sd">                     C - Set if a borrow occurs; cleared otherwise.</span>
+<span class="sd">    Instruction Format: 0100111010 Signature xxx EAMode xxx EARegister</span>
+<span class="sd">                        | 16-BIT WORD DATA | 8-BIT BYTE DATA |</span>
+<span class="sd">                        |        32-BIT LONG DATA            |</span>
+<span class="sd">    Instruction Fields:</span>
+<span class="sd">        Size field - Specifies the size of the operation.</span>
+<span class="sd">            00 - Byte operation</span>
+<span class="sd">            01 - Word operation</span>
+<span class="sd">            10 - Long operation</span>
+
+<span class="sd">        Effective Address field - Specifies the address of the next instruction.</span>
+<span class="sd">                                  Only data addressing modes can be used.</span>
+<span class="sd">            Valid Modes - Dn, (An), (An)+, -(An), (xxx).W, (xxx).L</span>
+
+<span class="sd">        Immediate field - Data immediately following the instruction.</span>
+<span class="sd">            If size = 00, the data is the low-order byte of the immediate word</span>
+<span class="sd">            If size = 01, the data is the entire immediate word.</span>
+<span class="sd">            If size = 10, the data is the next two immediate words.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># the allowed sizes for this opcode</span>
+    <span class="n">valid_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">):</span>
+        <span class="c1"># ensure that the parameters are valid</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">AssemblyParameter</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">AssemblyParameter</span><span class="p">)</span>
+
+        <span class="c1"># source can only be immediate data</span>
+        <span class="k">assert</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">Immediate</span>
+
+        <span class="c1"># destination can be any EA mode</span>
+        <span class="c1"># except for An and immediate</span>
+        <span class="k">assert</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterDirect</span> <span class="ow">and</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">Immediate</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">Cmpi</span><span class="o">.</span><span class="n">valid_sizes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+
+<div class="viewcode-block" id="Cmpi.assemble"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.assemble">[docs]</a>    <span class="k">def</span> <span class="nf">assemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assembles this opcode into a bytearray to be inserted into memory</span>
+<span class="sd">        :return: The bytearray which represents this assembled opcode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 00001100 signature xx size xxx EAMode xxx EARegister</span>
+        <span class="n">ret_opcode</span> <span class="o">=</span> <span class="mb">0b00001100</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span>
+        <span class="c1"># add the size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">:</span>
+            <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="mb">0b00</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="mb">0b01</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="mb">0b10</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+
+        <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="n">ea_mode_bin</span><span class="o">.</span><span class="n">parse_from_ea_mode_modefirst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span>
+
+        <span class="n">ret_bytes</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">ret_opcode</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="c1"># extend to include source</span>
+        <span class="n">ret_bytes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">opcode_util</span><span class="o">.</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_bytearray</span><span class="p">())</span>
+
+        <span class="c1"># extend to include destination (if needed)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">IMM</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AWA</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span><span class="p">:</span>
+            <span class="n">ret_bytes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">opcode_util</span><span class="o">.</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_bytearray</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">ret_bytes</span></div>
+
+<div class="viewcode-block" id="Cmpi.execute"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">:</span> <span class="n">M68K</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes this command in the simulator</span>
+
+<span class="sd">        Subtracts the source operand from the destination operand and</span>
+<span class="sd">        set the condition codes accordingly. The source must be an</span>
+<span class="sd">        immediate number. The destination is not modified by this instruction.</span>
+
+<span class="sd">        :param simulator: the simulator that this opcode is being run on</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the src and dest values</span>
+        <span class="n">src_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">())</span>
+        <span class="n">dest_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">())</span>
+
+        <span class="n">comparison</span> <span class="o">=</span> <span class="n">dest_val</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">-</span> <span class="n">src_val</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="n">raw_total</span> <span class="o">=</span> <span class="n">dest_val</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">-</span> <span class="n">src_val</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+        <span class="n">comp_mv</span> <span class="o">=</span> <span class="n">dest_val</span> <span class="o">-</span> <span class="n">src_val</span>
+
+        <span class="c1"># mask out only the bits we need/want</span>
+        <span class="n">comp_mv</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                              <span class="n">unsigned_int</span><span class="o">=</span><span class="n">mask_value_for_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">comp_mv</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()))</span>
+
+        <span class="n">negative</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">:</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">comparison</span> <span class="o">&amp;</span> <span class="mh">0x80</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">comparison</span> <span class="o">&amp;</span> <span class="mh">0x8000</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">comparison</span> <span class="o">&amp;</span> <span class="mh">0x80000000</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># Overflow occurs when a sign change occurs where it shouldn&#39;t occur.</span>
+        <span class="c1"># For example: positive - negative != negative.</span>
+        <span class="c1"># This doesn&#39;t make sense, so an overflow occurs</span>
+        <span class="n">overflow</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">src_val</span><span class="o">.</span><span class="n">get_negative</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dest_val</span><span class="o">.</span><span class="n">get_negative</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">raw_total</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">raw_total</span> <span class="o">&amp;</span> <span class="mh">0x80000000</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">overflow</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># set register whomst have status</span>
+        <span class="n">simulator</span><span class="o">.</span><span class="n">set_ccr_reg</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">negative</span><span class="p">,</span> <span class="p">(</span><span class="n">comparison</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span> <span class="n">overflow</span><span class="p">,</span> <span class="p">(</span><span class="n">raw_total</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># set the number of bytes to increment equal to the length of the</span>
+        <span class="c1"># instruction (1 word)</span>
+        <span class="n">to_increment</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># Increment by size</span>
+        <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span> <span class="k">else</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># any additional increments by destination value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteLongAddress</span><span class="p">:</span>
+            <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">:</span>
+            <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># increment PC</span>
+        <span class="n">simulator</span><span class="o">.</span><span class="n">increment_program_counter</span><span class="p">(</span><span class="n">to_increment</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;CMPI Size </span><span class="si">{}</span><span class="s1">, Src </span><span class="si">{}</span><span class="s1">, Dest </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Cmpi.command_matches"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.command_matches">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">command_matches</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether a command string is an instance of this command type</span>
+
+<span class="sd">        This will only allow for CMPI. Not CMPA, CMP, CMPM. While CMPI is not</span>
+<span class="sd">        checking for the types that would make it actually one of these</span>
+<span class="sd">        different types, those instructions must be implemented separately.</span>
+
+<span class="sd">        :param command: The command string to check &#39;CMPI.W&#39;, &#39;CMPI&#39;</span>
+<span class="sd">        :return: Whether the string is an instance of CMPI</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">command_matches</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="s1">&#39;CMPI&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Cmpi.get_word_length"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.get_word_length">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_word_length</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the length of this command in memory, including the length of</span>
+<span class="sd">        the single opcode and the length of any immediate parameter values</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI&#39;, &#39;#123, D3&#39;)</span>
+<span class="sd">        2</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI.L&#39;, &#39;#12345678, D1&#39;)</span>
+<span class="sd">        3</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI.W&#39;, &#39;#$FFFF, (A2)+&#39;)</span>
+<span class="sd">        2</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI.L&#39;, &#39;#12345678, (A7)&#39;)</span>
+<span class="sd">        3</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI.W&#39;, &#39;#$FFFF, ($AAAA).W&#39;)</span>
+<span class="sd">        3</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.get_word_length(&#39;CMPI.L&#39;, &#39;#12345678, ($AAAA).L&#39;)</span>
+<span class="sd">        5</span>
+
+<span class="sd">        :param command:</span>
+<span class="sd">        :param parameters:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># split the command to get the size, if specified</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+        <span class="c1"># parse the src and dest parameters</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+        <span class="c1"># length is at least either 2 or 3 depending on size</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span> <span class="k">else</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AWA</span><span class="p">:</span>
+            <span class="c1"># appends a word</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span><span class="p">:</span>
+            <span class="c1"># appends a long</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">length</span></div>
+
+<div class="viewcode-block" id="Cmpi.is_valid"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.is_valid">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests whether the given command is valid</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.is_valid(&#39;CMPI&#39;, &#39;#123, D1&#39;)[0]</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &gt;&gt;&gt; Cmpi.is_valid(&#39;CMP.&#39;, &#39;#123, D7&#39;)[0]</span>
+<span class="sd">        False</span>
+
+<span class="sd">        :param command:</span>
+<span class="sd">        :param parameters:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># don&#39;t bother with param invalid modes</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">n_param_is_valid</span><span class="p">(</span>
+            <span class="n">command</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="p">,</span>
+            <span class="s2">&quot;CMPI&quot;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Cmpi.disassemble_instruction"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.disassemble_instruction">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">disassemble_instruction</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Opcode</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CMPI.W #123,D7</span>
+<span class="sd">        &gt;&gt;&gt; op = Cmpi.disassemble_instruction(bytearray.fromhex(&#39;0C47007B&#39;))</span>
+
+<span class="sd">        &gt;&gt;&gt; str(op.src)</span>
+<span class="sd">        &#39;EA Mode: EAMode.IMM, Data: 123&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; str(op.dest)</span>
+<span class="sd">        &#39;EA Mode: EAMode.DRD, Data: 7&#39;</span>
+
+<span class="sd">        Disassembles the instruction into an instance of the CMP class</span>
+<span class="sd">        :param data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Opcode size must be at least 1 word&#39;</span>
+
+        <span class="n">first_word</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;big&#39;</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">opcode_bin</span><span class="p">,</span>
+         <span class="n">size_bin</span><span class="p">,</span>
+         <span class="n">ea_mode_binary</span><span class="p">,</span>
+         <span class="n">ea_reg_bin</span><span class="p">]</span> <span class="o">=</span> <span class="n">split_bits</span><span class="p">(</span><span class="n">first_word</span><span class="p">,</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+        <span class="c1"># ensure that this is the correct opcode</span>
+        <span class="k">if</span> <span class="n">opcode_bin</span> <span class="o">!=</span> <span class="mb">0b00001100</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">words_used</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">size_bin</span> <span class="o">==</span> <span class="mb">0b00</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span>
+        <span class="k">elif</span> <span class="n">size_bin</span> <span class="o">==</span> <span class="mb">0b01</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span>
+        <span class="k">elif</span> <span class="n">size_bin</span> <span class="o">==</span> <span class="mb">0b10</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">src_size</span> <span class="o">=</span> <span class="mi">4</span> <span class="k">if</span> <span class="n">size</span> <span class="o">==</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span> <span class="k">else</span> <span class="mi">2</span>
+        <span class="n">src_value</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">2</span><span class="o">+</span><span class="n">src_size</span><span class="p">],</span> <span class="s1">&#39;big&#39;</span><span class="p">)</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="n">AssemblyParameter</span><span class="p">(</span><span class="n">EAMode</span><span class="o">.</span><span class="n">Immediate</span><span class="p">,</span> <span class="n">src_value</span><span class="p">)</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">parse_ea_from_binary</span><span class="p">(</span><span class="n">ea_mode_binary</span><span class="p">,</span> <span class="n">ea_reg_bin</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">words_used</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># make a new reference of this type</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">([</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">],</span> <span class="n">size</span><span class="p">)</span></div>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;CMPI Size </span><span class="si">{}</span><span class="s1">, Src </span><span class="si">{}</span><span class="s1">, Dest </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="Cmpi.from_str"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.cmpi.Cmpi.from_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses a CMPI from text.</span>
+
+<span class="sd">        &gt;&gt;&gt; str(Cmpi.from_str(&#39;CMPI.B&#39;, &#39;#1337, D1&#39;))</span>
+<span class="sd">        &#39;CMPI Size OpSize.BYTE, Src EA Mode: EAMode.IMM, Data: 1337, Dest EA Mode: EAMode.DRD, Data: 1&#39;</span>
+
+<span class="sd">        :param command: The command itself &#39;CMPI&#39; &#39;CMPI.B&#39;, etc.</span>
+<span class="sd">        :param parameters: The parameters after the command</span>
+<span class="sd">        :return: The parsed command</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">n_param_from_str</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">Cmpi</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

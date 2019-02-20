@@ -1,0 +1,428 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.models package &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="easier68k-core-models-package">
+<h1>easier68k.core.models package<a class="headerlink" href="#easier68k-core-models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-easier68k.core.models.assembly_parameter">
+<span id="easier68k-core-models-assembly-parameter-module"></span><h2>easier68k.core.models.assembly_parameter module<a class="headerlink" href="#module-easier68k.core.models.assembly_parameter" title="Permalink to this headline">¶</a></h2>
+<p>Assembly Parameter</p>
+<p>Represents a single parameter in assembly code
+this is the new ‘EAMode’ class</p>
+<dl class="class">
+<dt id="easier68k.core.models.assembly_parameter.AssemblyParameter">
+<em class="property">class </em><code class="descclassname">easier68k.core.models.assembly_parameter.</code><code class="descname">AssemblyParameter</code><span class="sig-paren">(</span><em>mode: easier68k.core.enum.ea_mode.EAMode</em>, <em>data: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/assembly_parameter.html#AssemblyParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.assembly_parameter.AssemblyParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Constructor</p>
+<p>Checks that the mode and the data are considered to be valid, like
+registers are within the correct bounds and addresses are not out of bounds.</p>
+<dl class="method">
+<dt id="easier68k.core.models.assembly_parameter.AssemblyParameter.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>simulator: easier68k.simulator.m68k.M68K</em>, <em>length: easier68k.core.enum.op_size.OpSize = &lt;OpSize.WORD: 2&gt;</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.memory_value.MemoryValue<a class="reference internal" href="_modules/easier68k/core/models/assembly_parameter.html#AssemblyParameter.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.assembly_parameter.AssemblyParameter.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the value for this EAMode from the simulator
+:param simulator: reference to the 68k simulator
+:param length: the length in bytes associated with this operation, must be 1 2 or 4
+:return: the value associated with this assembly parameter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.assembly_parameter.AssemblyParameter.set_value">
+<code class="descname">set_value</code><span class="sig-paren">(</span><em>simulator: easier68k.simulator.m68k.M68K</em>, <em>value: easier68k.core.models.memory_value.MemoryValue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/assembly_parameter.html#AssemblyParameter.set_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.assembly_parameter.AssemblyParameter.set_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of a destination mode
+:param simulator: the reference to the simulator
+:param value: the value to set for this assembly parameter
+:param length: the number of bits associated for this instruction, must be 1 2 or 4
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.models.list_file">
+<span id="easier68k-core-models-list-file-module"></span><h2>easier68k.core.models.list_file module<a class="headerlink" href="#module-easier68k.core.models.list_file" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="easier68k.core.models.list_file.ListFile">
+<em class="property">class </em><code class="descclassname">easier68k.core.models.list_file.</code><code class="descname">ListFile</code><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents assembled instructions and their locations in memory</p>
+<p>Constructor</p>
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.clear_location">
+<code class="descname">clear_location</code><span class="sig-paren">(</span><em>location: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.clear_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.clear_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the data at the given location
+:param location:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.clear_symbol">
+<code class="descname">clear_symbol</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.clear_symbol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.clear_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears a label
+:param name:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.define_symbol">
+<code class="descname">define_symbol</code><span class="sig-paren">(</span><em>name: str</em>, <em>location: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.define_symbol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.define_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines a label and it’s associated location
+:param name:
+:param location:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.get_starting_data">
+<code class="descname">get_starting_data</code><span class="sig-paren">(</span><em>location: int</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.get_starting_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.get_starting_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the data starting at the given location
+:param location:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.get_starting_execution_address">
+<code class="descname">get_starting_execution_address</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.get_starting_execution_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.get_starting_execution_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the starting execution address
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.get_symbol_data">
+<code class="descname">get_symbol_data</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.get_symbol_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.get_symbol_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the data for the given label
+Only works for the start of data
+This is not for reading in the middle of a set of data
+:param name:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.get_symbol_location">
+<code class="descname">get_symbol_location</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.get_symbol_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.get_symbol_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the associated location for a label
+:param name:
+:return: the location associated to the label, if it exists</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.insert_data">
+<code class="descname">insert_data</code><span class="sig-paren">(</span><em>location: int</em>, <em>data: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.insert_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.insert_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts the data at the given location into the list file
+This data should be a string of hexadecimal data
+:param location:
+:param data:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.insert_data_at_symbol">
+<code class="descname">insert_data_at_symbol</code><span class="sig-paren">(</span><em>name: str</em>, <em>data: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.insert_data_at_symbol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.insert_data_at_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts the data at the location for the given symbol
+:param name:
+:param data:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.load_from_json">
+<code class="descname">load_from_json</code><span class="sig-paren">(</span><em>json_str: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.load_from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.load_from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populates this object from a json str
+:param json_str:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.read_s_record_filename">
+<code class="descname">read_s_record_filename</code><span class="sig-paren">(</span><em>filepath: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.read_s_record_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.read_s_record_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the S record at the given file path, builds the content of this list
+file from it
+:param filepath: {str} Path to an S record
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.set_starting_execution_address">
+<code class="descname">set_starting_execution_address</code><span class="sig-paren">(</span><em>location: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.set_starting_execution_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.set_starting_execution_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the starting execution address
+:param location:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.list_file.ListFile.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dumps the current object into a JSON string
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.models.memory_value">
+<span id="easier68k-core-models-memory-value-module"></span><h2>easier68k.core.models.memory_value module<a class="headerlink" href="#module-easier68k.core.models.memory_value" title="Permalink to this headline">¶</a></h2>
+<p>Memory Value</p>
+<p>Representation of some value in memory with a length of a Byte, Word or Long Word,
+which can either be an array of bytes, an integer number, a single character
+or an array of characters.</p>
+<p>Supports operations like adding, subtracting, shift left, shift right, bitwise OR AND XOR, equals</p>
+<p>Supports getting the most significant bit, determining the signed or unsigned integer values, the value
+as a array of bytes, the value as a hex string.</p>
+<p>This was done to keep the interal handling of memory values consistent, instead of conversions back and forth between
+integers, hex strings and byte arrays.</p>
+<dl class="class">
+<dt id="easier68k.core.models.memory_value.MemoryValue">
+<em class="property">class </em><code class="descclassname">easier68k.core.models.memory_value.</code><code class="descname">MemoryValue</code><span class="sig-paren">(</span><em>len: easier68k.core.enum.op_size.OpSize = &lt;OpSize.WORD: 2&gt;</em>, <em>*</em>, <em>signed_int: int = None</em>, <em>unsigned_int: int = None</em>, <em>bytes: bytearray = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Representation of some value in memory</p>
+<p>Constructor</p>
+<p>Sets the initial value to zero with a length of OpSize.Wordprint
+:param len the length in bytes of this memory value
+:param signed_int the value to set as a signed int
+:param unsigned_int the value to set as an unsigned int
+:param bytes the value to set as a bytearray</p>
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_msb">
+<code class="descname">get_msb</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_msb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_msb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the most significant bit indicating that the value is negative
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_negative">
+<code class="descname">get_negative</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_negative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_negative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the negative flag for the memory value
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_size">
+<code class="descname">get_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; easier68k.core.enum.op_size.OpSize<a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the length of this memory value as an OpSize
+:return: the length in bytes of this value as defined by an OpSize</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_value_bytearray">
+<code class="descname">get_value_bytearray</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bytearray<a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_value_bytearray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_value_bytearray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value as a bytearray
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_value_bytes">
+<code class="descname">get_value_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bytes<a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_value_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_value_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the bytes value
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_value_signed">
+<code class="descname">get_value_signed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_value_signed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_value_signed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the signed value
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.get_value_unsigned">
+<code class="descname">get_value_unsigned</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.get_value_unsigned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.get_value_unsigned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the unsigned value
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.lsl">
+<code class="descname">lsl</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.lsl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.lsl" title="Permalink to this definition">¶</a></dt>
+<dd><p>logical shift left, allows for the msb to be set when shifted left
+:param other:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.lsr">
+<code class="descname">lsr</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.lsr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.lsr" title="Permalink to this definition">¶</a></dt>
+<dd><p>logical shift right, the msb will always be 0
+:param other:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.set_size">
+<code class="descname">set_size</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.set_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.set_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the length of this memory value
+:param size: the length in bytes of this value, defined by OpSize
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.set_value_bytes">
+<code class="descname">set_value_bytes</code><span class="sig-paren">(</span><em>bytes_value: bytes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.set_value_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.set_value_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of this MemoryValue from an array of bytes
+:param bytes_value:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.set_value_signed_int">
+<code class="descname">set_value_signed_int</code><span class="sig-paren">(</span><em>signed_int: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.set_value_signed_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.set_value_signed_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of this MemoryValue from a signed int
+:param signed_int:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="easier68k.core.models.memory_value.MemoryValue.set_value_unsigned_int">
+<code class="descname">set_value_unsigned_int</code><span class="sig-paren">(</span><em>unsigned_int: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue.set_value_unsigned_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue.set_value_unsigned_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of this MemoryValue from an unsigned int
+:param unsigned_int:
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.models.memory_value.mask_value_for_length">
+<code class="descclassname">easier68k.core.models.memory_value.</code><code class="descname">mask_value_for_length</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize</em>, <em>unsigned_value: int</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#mask_value_for_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.mask_value_for_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Masks an unsigned value to a certain size
+:param size:
+:param unsigned_value:
+:return:</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.models.trap_vector">
+<span id="easier68k-core-models-trap-vector-module"></span><h2>easier68k.core.models.trap_vector module<a class="headerlink" href="#module-easier68k.core.models.trap_vector" title="Permalink to this headline">¶</a></h2>
+<p>Trap Vector</p>
+<p>Represents the data type used by the TRAP opcode
+in ASM looks just like an immediate value</p>
+<dl class="class">
+<dt id="easier68k.core.models.trap_vector.TrapVector">
+<em class="property">class </em><code class="descclassname">easier68k.core.models.trap_vector.</code><code class="descname">TrapVector</code><span class="sig-paren">(</span><em>value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/trap_vector.html#TrapVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.trap_vector.TrapVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="easier68k.core.models.trap_vector.TrapVector.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/models/trap_vector.html#TrapVector.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.trap_vector.TrapVector.get_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="easier68k.core.models.trap_vector.TrapVector.parse">
+<em class="property">static </em><code class="descname">parse</code><span class="sig-paren">(</span><em>asm_str: str</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.trap_vector.TrapVector<a class="reference internal" href="_modules/easier68k/core/models/trap_vector.html#TrapVector.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.trap_vector.TrapVector.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a trap vector value from a string
+and returns a new TrapVector</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asm_str</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.core.models" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">easier68k.core.models package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.models.assembly_parameter">easier68k.core.models.assembly_parameter module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.models.list_file">easier68k.core.models.list_file module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.models.memory_value">easier68k.core.models.memory_value module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.models.trap_vector">easier68k.core.models.trap_vector module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.models">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.core.models.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

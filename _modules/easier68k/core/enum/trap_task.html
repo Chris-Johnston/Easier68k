@@ -1,0 +1,121 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.enum.trap_task &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.enum.trap_task</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">TrapTask</span>
+<span class="sd">Represents the different types of tasks that are done with the TRAP opcode</span>
+
+<span class="sd">Not all functions of TRAP are supported</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">IntEnum</span>
+
+<div class="viewcode-block" id="TrapTask"><a class="viewcode-back" href="../../../../easier68k.core.enum.html#easier68k.core.enum.trap_task.TrapTask">[docs]</a><span class="k">class</span> <span class="nc">TrapTask</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+
+    <span class="c1"># Read a null terminated string from the input</span>
+    <span class="c1"># store at (A1), length returned in D1.W (max 80)</span>
+    <span class="n">ReadNullTermString</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Displays signed number in D1.L in decimal</span>
+    <span class="n">DisplaySignedNumber</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="c1"># Read a number from the keyboard into D1.L</span>
+    <span class="n">ReadNumberFromKeyboard</span> <span class="o">=</span> <span class="mi">4</span>
+
+    <span class="c1"># Read a single character from the keyboard into D1.B</span>
+    <span class="n">ReadSingleCharacterFromKeyboard</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="c1"># Display single character in D1.B</span>
+    <span class="n">DisplaySingleCharacter</span> <span class="o">=</span> <span class="mi">6</span>
+
+    <span class="c1"># Terminate the program, same as SIMHALT</span>
+    <span class="n">Terminate</span> <span class="o">=</span> <span class="mi">9</span>
+
+    <span class="c1"># Display the null-terminated string at (A1) with CRLF</span>
+    <span class="n">DisplayNullTermStringWithCRLF</span> <span class="o">=</span> <span class="mi">13</span>
+
+    <span class="c1"># Display the null terminated string at (A1) (without CRLF)</span>
+    <span class="n">DisplayNullTermString</span> <span class="o">=</span> <span class="mi">14</span>
+
+    <span class="c1"># Display the null terminated string at (A1) without CR, LF then reads a number into D1.L</span>
+    <span class="n">DisplayNullTermStringAndReadNumberFromKeyboard</span> <span class="o">=</span> <span class="mi">18</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

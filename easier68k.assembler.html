@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.assembler package &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="easier68k-assembler-package">
+<h1>easier68k.assembler package<a class="headerlink" href="#easier68k-assembler-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-easier68k.assembler.assembler">
+<span id="easier68k-assembler-assembler-module"></span><h2>easier68k.assembler.assembler module<a class="headerlink" href="#module-easier68k.assembler.assembler" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.assembler.assembler.find_labels">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">find_labels</code><span class="sig-paren">(</span><em>text: str) -&gt; (&lt;class 'dict'&gt;</em>, <em>&lt;class 'dict'&gt;</em>, <em>&lt;class 'list'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/assembler/assembler.html#find_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.find_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds all labels from a file
+:param text: The text to search through for labels
+:return: In order, labels (dict of label to line index + label contents), equates (dict of label to contents), and</p>
+<blockquote>
+<div>issues (list of message + severity)</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.for_line_opcode_parse">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">for_line_opcode_parse</code><span class="sig-paren">(</span><em>full_text: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/assembler/assembler.html#for_line_opcode_parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.for_line_opcode_parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields the label (if it exists), opcode, and opcode contents for every line in a file
+:param full_text: The file text to parse
+:return: Yields the label (or None), opcode, and opcode contents (returns nothing)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.for_line_stripped_comments">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">for_line_stripped_comments</code><span class="sig-paren">(</span><em>full_text: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/assembler/assembler.html#for_line_stripped_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.for_line_stripped_comments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.parse">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">parse</code><span class="sig-paren">(</span><em>text: str) -&gt; (&lt;class 'easier68k.core.models.list_file.ListFile'&gt;</em>, <em>&lt;class 'list'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/assembler/assembler.html#parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses an assembly file and returns a list file, along with errors/warnings from the parsing process.
+:param text: The assembly file text to parse
+:return: The parsed list file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.replace_equates">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">replace_equates</code><span class="sig-paren">(</span><em>contents: str</em>, <em>equates: dict</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/assembler/assembler.html#replace_equates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.replace_equates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.replace_label_addresses">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">replace_label_addresses</code><span class="sig-paren">(</span><em>contents: str</em>, <em>label_addresses: dict</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/assembler/assembler.html#replace_label_addresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.replace_label_addresses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="easier68k.assembler.assembler.replace_labels_with_temps">
+<code class="descclassname">easier68k.assembler.assembler.</code><code class="descname">replace_labels_with_temps</code><span class="sig-paren">(</span><em>contents: str</em>, <em>labels: dict</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/assembler/assembler.html#replace_labels_with_temps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.assembler.assembler.replace_labels_with_temps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces all labels that we don’t know the location for with temporary addresses ($00000000)
+:param contents: The string to replace labels
+:param labels: The labels
+:return: The string with labels replaced</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.assembler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.assembler" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">easier68k.assembler package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-easier68k.assembler.assembler">easier68k.assembler.assembler module</a></li>
+<li><a class="reference internal" href="#module-easier68k.assembler">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.assembler.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,331 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.opcodes.lea &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.opcodes.lea</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">...core.enum.ea_mode</span> <span class="k">import</span> <span class="n">EAMode</span>
+<span class="kn">from</span> <span class="nn">...core.models.assembly_parameter</span> <span class="k">import</span> <span class="n">AssemblyParameter</span>
+<span class="kn">from</span> <span class="nn">...core.enum</span> <span class="k">import</span> <span class="n">ea_mode_bin</span>
+<span class="kn">from</span> <span class="nn">...core.enum.ea_mode_bin</span> <span class="k">import</span> <span class="n">parse_ea_from_binary</span>
+<span class="kn">from</span> <span class="nn">...simulator.m68k</span> <span class="k">import</span> <span class="n">M68K</span>
+<span class="kn">from</span> <span class="nn">...core.opcodes.opcode</span> <span class="k">import</span> <span class="n">Opcode</span>
+<span class="kn">from</span> <span class="nn">...core.util</span> <span class="k">import</span> <span class="n">opcode_util</span>
+<span class="kn">from</span> <span class="nn">...core.enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+<span class="kn">from</span> <span class="nn">..util.parsing</span> <span class="k">import</span> <span class="n">parse_assembly_parameter</span>
+<span class="kn">from</span> <span class="nn">..util.split_bits</span> <span class="k">import</span> <span class="n">split_bits</span>
+
+
+<span class="k">class</span> <span class="nc">Lea</span><span class="p">(</span><span class="n">Opcode</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="Lea"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea">[docs]</a><span class="k">class</span> <span class="nc">Lea</span><span class="p">(</span><span class="n">Opcode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LEA: Load Effective Address</span>
+
+<span class="sd">    Operation: &lt; ea &gt; → An</span>
+
+<span class="sd">    Syntax: LEA &lt; ea &gt; ,An</span>
+
+<span class="sd">    Attributes: Size = (Long)</span>
+
+<span class="sd">    Description: Loads the effective address into the specified address register. </span>
+<span class="sd">    All 32 bits of the address register are effected by this instruction.</span>
+
+<span class="sd">    Condition Codes: Not affected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">AssemblyParameter</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">AssemblyParameter</span><span class="p">)</span>
+        <span class="c1"># Can&#39;t take data register, address register, or ARI with modifications</span>
+        <span class="k">assert</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">DRD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARIPD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARIPI</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">IMM</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Check that the destination is of a proper type</span>
+        <span class="k">assert</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARD</span>  <span class="c1"># Can only take address register direct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Lea.assemble"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.assemble">[docs]</a>    <span class="k">def</span> <span class="nf">assemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assembles this opcode into hex to be inserted into memory</span>
+<span class="sd">        :return: The hex version of this opcode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create the opcode</span>
+        <span class="n">ret_opcode</span> <span class="o">=</span> <span class="mb">0b0100</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span>
+        <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span>
+        <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="mb">0b111</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+        <span class="n">ret_opcode</span> <span class="o">|=</span> <span class="n">ea_mode_bin</span><span class="o">.</span><span class="n">parse_from_ea_mode_modefirst</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
+
+        <span class="n">ret_bytes</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">ret_opcode</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="n">ret_bytes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="n">opcode_util</span><span class="o">.</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                             <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span> <span class="k">else</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">get_value_bytearray</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">ret_bytes</span></div>
+
+<div class="viewcode-block" id="Lea.execute"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">:</span> <span class="n">M68K</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes this command in a simulator</span>
+<span class="sd">        :param simulator: The simulator to execute the command on</span>
+<span class="sd">        :return: Nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">val_len</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">()</span>
+
+        <span class="c1"># get the value of the source</span>
+        <span class="n">src_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">val_len</span><span class="p">)</span>
+
+        <span class="c1"># set the value in the dest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">src_val</span><span class="p">)</span>
+
+        <span class="c1"># increment the program counter by at least 2 bytes (1 word)</span>
+        <span class="n">to_increment</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirect</span><span class="p">:</span>
+            <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">val_len</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">:</span>
+            <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteLongAddress</span><span class="p">:</span>
+            <span class="n">to_increment</span> <span class="o">+=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">simulator</span><span class="o">.</span><span class="n">increment_program_counter</span><span class="p">(</span><span class="n">to_increment</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Makes this a bit easier to read in doctest output</span>
+        <span class="k">return</span> <span class="s1">&#39;LEA command: src </span><span class="si">{}</span><span class="s1">, dest </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Lea.command_matches"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.command_matches">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">command_matches</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether a command string is an instance of this command type</span>
+<span class="sd">        :param command: The command string to check (e.g. &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">        :return: Whether the string is an instance of this command type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">command_matches</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="s1">&#39;LEA&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lea.get_word_length"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.get_word_length">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_word_length</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; Lea.get_word_length(&#39;LEA&#39;, &#39;(A0), A1&#39;)</span>
+<span class="sd">        1</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.get_word_length(&#39;LEA&#39;, &#39;#$90, A0&#39;)</span>
+<span class="sd">        2</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.get_word_length(&#39;LEA&#39;, &#39;#$ABCDE, A0&#39;)</span>
+<span class="sd">        3</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.get_word_length(&#39;LEA&#39;, &#39;($AAAA).L, A6&#39;)</span>
+<span class="sd">        3</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.get_word_length(&#39;LEA&#39;, &#39;($AAAA).W, A5&#39;)</span>
+<span class="sd">        2</span>
+
+<span class="sd">        Gets what the end length of this command will be in memory</span>
+<span class="sd">        :param command: The text of the command itself (e.g. &quot;LEA&quot;, &quot;MOVE.B&quot;, etc.)</span>
+<span class="sd">        :param parameters: The parameters after the command</span>
+<span class="sd">        :return: The length of the bytes in memory in words, as well as a list of warnings or errors encountered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span><span class="p">,</span> <span class="n">issues</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="c1"># We can forego asserts in here because we&#39;ve now confirmed this is valid assembly code</span>
+
+        <span class="c1"># Split the parameters into EA modes</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">parameters</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># We need exactly 2 parameters</span>
+            <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;Invalid syntax (missing a parameter/too many parameters)&#39;</span><span class="p">,</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Parse the source and make sure it parsed right</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+        <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Always 1 word not counting additions to end</span>
+
+        <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">IMM</span><span class="p">:</span>  <span class="c1"># If we&#39;re moving an immediate we have to append the value afterwards</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">2</span><span class="p">:])</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AWA</span><span class="p">:</span>  <span class="c1"># Appends a word</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span><span class="p">:</span>  <span class="c1"># Appends a long, so 2 words</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AWA</span><span class="p">:</span>  <span class="c1"># Appends a word</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ALA</span><span class="p">:</span>  <span class="c1"># Appends a long, so 2 words</span>
+            <span class="n">length</span> <span class="o">+=</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">length</span></div>
+
+<div class="viewcode-block" id="Lea.is_valid"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.is_valid">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests whether the given command is valid</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA&#39;, &#39;(A0), A1&#39;)[0]</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA&#39;, &#39;A0&#39;)[0]</span>
+<span class="sd">        False</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA.B&#39;, &#39;(A0), A1&#39;)[0]</span>
+<span class="sd">        False</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA&#39;, &#39;D0, A2&#39;)[0]</span>
+<span class="sd">        False</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA&#39;, &#39;#$0A, A4&#39;)[0]</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &gt;&gt;&gt; Lea.is_valid(&#39;LEA&#39;, &#39;($AAAA).L, A7&#39;)[0]</span>
+<span class="sd">        True</span>
+
+<span class="sd">        :param command: The command itself (e.g. &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">        :param parameters: The parameters after the command (such as the source and destination of a move)</span>
+<span class="sd">        :return: Whether the given command is valid and a list of issues/warnings encountered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">n_param_is_valid</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="s2">&quot;LEA&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                            <span class="p">[[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">DRD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARIPD</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARIPI</span><span class="p">],</span>
+                                             <span class="p">[</span><span class="n">mode</span> <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">EAMode</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">ARD</span><span class="p">]])</span>  <span class="c1"># Select all but ARD</span></div>
+
+<div class="viewcode-block" id="Lea.disassemble_instruction"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.disassemble_instruction">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">disassemble_instruction</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">Lea</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses some raw data into an instance of the opcode class</span>
+
+<span class="sd">        :param data: The data used to convert into an opcode instance</span>
+<span class="sd">        :return: The constructed instance or none if there was an error and</span>
+<span class="sd">            the amount of data in words that was used (e.g. extra for immediate</span>
+<span class="sd">            data) or 0 for not a match</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;opcode size is at least 1 word&#39;</span>
+
+        <span class="c1"># &#39;big&#39; endian byte order</span>
+        <span class="n">first_word</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;big&#39;</span><span class="p">)</span>
+
+        <span class="p">[</span><span class="n">opcode_bin</span><span class="p">,</span>
+         <span class="n">register_bin</span><span class="p">,</span>
+         <span class="n">ones_bin</span><span class="p">,</span>
+         <span class="n">ea_mode</span><span class="p">,</span>
+         <span class="n">ea_reg</span><span class="p">]</span> <span class="o">=</span> <span class="n">split_bits</span><span class="p">(</span><span class="n">first_word</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+        <span class="c1"># check opcode</span>
+        <span class="k">if</span> <span class="n">opcode_bin</span> <span class="o">!=</span> <span class="mb">0b0100</span> <span class="ow">or</span> <span class="n">ones_bin</span> <span class="o">!=</span> <span class="mb">0b111</span><span class="p">:</span>  <span class="c1"># Second condition to distinguish from TRAP</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">wordsUsed</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">src_EA</span> <span class="o">=</span> <span class="n">parse_ea_from_binary</span><span class="p">(</span><span class="n">ea_mode</span><span class="p">,</span> <span class="n">ea_reg</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">wordsUsed</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:])</span>
+        <span class="n">wordsUsed</span> <span class="o">+=</span> <span class="n">src_EA</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">dest_EA</span> <span class="o">=</span> <span class="n">AssemblyParameter</span><span class="p">(</span><span class="n">EAMode</span><span class="o">.</span><span class="n">ARD</span><span class="p">,</span> <span class="n">register_bin</span><span class="p">)</span>
+
+        <span class="c1"># when making the new Move, need to convert that MoveSize back into an OpSize</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">([</span><span class="n">src_EA</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dest_EA</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Lea.from_str"><a class="viewcode-back" href="../../../../easier68k.core.opcodes.html#easier68k.core.opcodes.lea.Lea.from_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses a LEA command from memory.</span>
+
+<span class="sd">        &gt;&gt;&gt; str(Lea.from_str(&#39;LEA&#39;, &#39;(A0), A1&#39;))</span>
+<span class="sd">        &#39;LEA command: src EA Mode: EAMode.ARI, Data: 0, dest EA Mode: EAMode.ARD, Data: 1&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; str(Lea.from_str(&#39;LEA&#39;, &#39;($0A).W, A2&#39;))</span>
+<span class="sd">        &#39;LEA command: src EA Mode: EAMode.AWA, Data: 10, dest EA Mode: EAMode.ARD, Data: 2&#39;</span>
+
+<span class="sd">        :param command: The command itself (e.g. &#39;MOVE.B&#39;, &#39;LEA&#39;, etc.)</span>
+<span class="sd">        :param parameters: The parameters after the command (such as the source and destination of a move)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">opcode_util</span><span class="o">.</span><span class="n">n_param_from_str</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">Lea</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

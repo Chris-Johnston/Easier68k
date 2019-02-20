@@ -1,0 +1,340 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.models.list_file &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.models.list_file</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">..enum.srecordtype</span> <span class="k">import</span> <span class="n">SRecordType</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">List File</span>
+
+<span class="sd">Represents the output from the assembler that contains all of the instructions and where in the</span>
+<span class="sd">destination memory they should end up.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">MAX_MEMORY_LOCATION</span> <span class="o">=</span> <span class="mi">16777216</span>  <span class="c1"># 2^24</span>
+
+<div class="viewcode-block" id="ListFile"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile">[docs]</a><span class="k">class</span> <span class="nc">ListFile</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents assembled instructions and their locations in memory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># the keys of data must be strings so that they will work with JSON</span>
+        <span class="c1"># but when working with it, integers are a lot cleaner and make more sense</span>
+        <span class="c1"># so all of the interfaces that work with it are going to use ints</span>
+        <span class="c1"># but internally it will use strings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="ListFile.set_starting_execution_address"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.set_starting_execution_address">[docs]</a>    <span class="k">def</span> <span class="nf">set_starting_execution_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the starting execution address</span>
+<span class="sd">        :param location:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">location</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;The starting execution address must be within the bounds [0, 2^24]!&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span> <span class="o">=</span> <span class="n">location</span></div>
+
+<div class="viewcode-block" id="ListFile.get_starting_execution_address"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.get_starting_execution_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_starting_execution_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the starting execution address</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span></div>
+
+<div class="viewcode-block" id="ListFile.insert_data"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.insert_data">[docs]</a>    <span class="k">def</span> <span class="nf">insert_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts the data at the given location into the list file</span>
+<span class="sd">        This data should be a string of hexadecimal data</span>
+<span class="sd">        :param location:</span>
+<span class="sd">        :param data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Location is invalid!&#39;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;Location is beyond possible bounds!&#39;</span>
+
+        <span class="c1"># ensure that the data is valid</span>
+        <span class="c1"># loop through every 2 or 1 characters</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;..?&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+            <span class="c1"># try to convert to an int of base 16</span>
+            <span class="c1"># just to ensure that it is valid</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">location</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="ListFile.insert_data_at_symbol"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.insert_data_at_symbol">[docs]</a>    <span class="k">def</span> <span class="nf">insert_data_at_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts the data at the location for the given symbol</span>
+<span class="sd">        :param name:</span>
+<span class="sd">        :param data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insert_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_location</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListFile.clear_location"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.clear_location">[docs]</a>    <span class="k">def</span> <span class="nf">clear_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the data at the given location</span>
+<span class="sd">        :param location:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Location is invalid!&#39;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;Location is beyond possible bounds!&#39;</span>
+        <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;Location not defined in data!&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">location</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListFile.define_symbol"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.define_symbol">[docs]</a>    <span class="k">def</span> <span class="nf">define_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines a label and it&#39;s associated location</span>
+<span class="sd">        :param name:</span>
+<span class="sd">        :param location:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Location is invalid!&#39;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;Location is beyond possible bounds!&#39;</span>
+
+        <span class="c1"># check that the symbol name is a single word</span>
+        <span class="k">assert</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(([A-z])+([A-z]*[0-9]*))\w$&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="s1">&#39;Symbol name was not a single word!&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">location</span></div>
+
+<div class="viewcode-block" id="ListFile.clear_symbol"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.clear_symbol">[docs]</a>    <span class="k">def</span> <span class="nf">clear_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears a label</span>
+<span class="sd">        :param name:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListFile.get_symbol_location"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.get_symbol_location">[docs]</a>    <span class="k">def</span> <span class="nf">get_symbol_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the associated location for a label</span>
+<span class="sd">        :param name:</span>
+<span class="sd">        :return: the location associated to the label, if it exists</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ListFile.get_symbol_data"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.get_symbol_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_symbol_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the data for the given label</span>
+<span class="sd">        Only works for the start of data</span>
+<span class="sd">        This is not for reading in the middle of a set of data</span>
+<span class="sd">        :param name:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">,</span> <span class="s1">&#39;Symbol key was not in the labels dictionary&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_starting_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_symbol_location</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ListFile.get_starting_data"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.get_starting_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_starting_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the data starting at the given location</span>
+<span class="sd">        :param location:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Location is invalid!&#39;</span>
+        <span class="k">assert</span> <span class="n">location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;Location is beyond possible bounds!&#39;</span>
+        <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;Location data not defined!&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">location</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="ListFile.to_json"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.to_json">[docs]</a>    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dumps the current object into a JSON string</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;startingExecutionAddress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListFile.load_from_json"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.load_from_json">[docs]</a>    <span class="k">def</span> <span class="nf">load_from_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Populates this object from a json str</span>
+<span class="sd">        :param json_str:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loaded</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">=</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span> <span class="o">=</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;startingExecutionAddress&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ListFile.read_s_record_filename"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.list_file.ListFile.read_s_record_filename">[docs]</a>    <span class="k">def</span> <span class="nf">read_s_record_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the S record at the given file path, builds the content of this list</span>
+<span class="sd">        file from it</span>
+<span class="sd">        :param filepath: {str} Path to an S record</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="c1"># process the line in the file</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__process_s_record_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__process_s_record_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process a single line of the S record</span>
+<span class="sd">        This is defined here: http://www.easy68k.com/easy68ksrecord.htm</span>
+<span class="sd">        :param line: {str} a single line of an S record file</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="c1"># type of record</span>
+        <span class="n">record_type</span> <span class="o">=</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">line</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+        <span class="c1"># count of remaining character pairs in the record</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="c1"># address 2 3 or 4 bytes as hex</span>
+        <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S0</span><span class="p">:</span>
+            <span class="c1"># address field is unused</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S1</span><span class="p">:</span>
+            <span class="c1"># 2 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S2</span><span class="p">:</span>
+            <span class="c1"># 3 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S3</span><span class="p">:</span>
+            <span class="c1"># 4 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S5</span><span class="p">:</span>
+            <span class="c1"># the address field is interpreted as a 2 byte value</span>
+            <span class="c1"># and contains the counts of S1 2 and 3 records prev</span>
+            <span class="c1"># transmitted</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S7</span><span class="p">:</span>
+            <span class="c1"># termination record</span>
+            <span class="c1"># contains the starting execution address</span>
+            <span class="c1"># as 4 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S8</span><span class="p">:</span>
+            <span class="c1"># termination record</span>
+            <span class="c1"># contains the starting execution address</span>
+            <span class="c1"># as 3 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="k">elif</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S9</span><span class="p">:</span>
+            <span class="c1"># termination record</span>
+            <span class="c1"># contains the starting execution address</span>
+            <span class="c1"># as 2 bytes</span>
+            <span class="n">address_val_len</span> <span class="o">=</span> <span class="mi">4</span>
+
+        <span class="c1"># get the address for the data</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="o">+</span><span class="n">address_val_len</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+
+        <span class="c1"># get the data that should be between 0-64 characters</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="o">+</span><span class="n">address_val_len</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># the last two characters as a hexadecimal value</span>
+        <span class="c1"># with the least significant byte of the ones complement of the sum</span>
+        <span class="c1"># of the byte values represented by the pairs of characters</span>
+        <span class="c1"># making up the count, address and data pairs</span>
+
+        <span class="c1"># for now, I don&#39;t care about the checksum</span>
+        <span class="n">checksum</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRecordType</span><span class="o">.</span><span class="n">S1</span><span class="p">,</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S2</span><span class="p">,</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S3</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">insert_data</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRecordType</span><span class="o">.</span><span class="n">S7</span><span class="p">,</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S8</span><span class="p">,</span> <span class="n">SRecordType</span><span class="o">.</span><span class="n">S9</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span> <span class="o">=</span> <span class="n">address</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Equals operator</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">symbols</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">starting_execution_address</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">starting_execution_address</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Not equals operator</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">symbols</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">data</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

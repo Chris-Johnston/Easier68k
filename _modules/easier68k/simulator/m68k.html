@@ -1,0 +1,394 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.simulator.m68k &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.simulator.m68k</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Motorola 68k chip definition</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">.memory</span> <span class="k">import</span> <span class="n">Memory</span>
+<span class="kn">from</span> <span class="nn">..core.enum.register</span> <span class="k">import</span> <span class="n">Register</span><span class="p">,</span> <span class="n">FULL_SIZE_REGISTERS</span><span class="p">,</span> <span class="n">ALL_ADDRESS_REGISTERS</span>
+<span class="kn">from</span> <span class="nn">..core.enum.condition_status_code</span> <span class="k">import</span> <span class="n">ConditionStatusCode</span>
+<span class="kn">from</span> <span class="nn">..core.models.list_file</span> <span class="k">import</span> <span class="n">ListFile</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">from</span> <span class="nn">..core.models.memory_value</span> <span class="k">import</span> <span class="n">MemoryValue</span>
+<span class="kn">from</span> <span class="nn">..core.enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+
+<span class="n">MAX_MEMORY_LOCATION</span> <span class="o">=</span> <span class="mi">16777216</span>  <span class="c1"># 2^24</span>
+
+<div class="viewcode-block" id="M68K"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K">[docs]</a><span class="k">class</span> <span class="nc">M68K</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">()</span>
+
+        <span class="c1"># has the simulation been halted using SIMHALT or .halt()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halted</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># should the clock automatically cycle?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clock_auto_cycle</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clock_cycles</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># todo add events for each clock cycle</span>
+        <span class="c1"># this is necessary for implementing breakpoints</span>
+        <span class="c1"># and watches for value changes</span>
+
+        <span class="c1"># set up the registers to their default values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init_registers</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init_registers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the registers to their default values</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># loop through all of the full size registers which are just 32 bits / 4 bytes long</span>
+        <span class="k">for</span> <span class="n">register</span> <span class="ow">in</span> <span class="n">FULL_SIZE_REGISTERS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register</span><span class="p">]</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">)</span>
+
+        <span class="c1"># set up all of the odd registers (in this case, just the Condition Code Register)</span>
+        <span class="c1"># which just uses 5 bits out of the lowermost byte (do we want to allocate it an entire word instead?)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">Register</span><span class="o">.</span><span class="n">ConditionCodeRegister</span><span class="p">]</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">)</span>
+
+        <span class="c1"># Easy68k initializes the step counter (A7) to 0x1000000 by default, so do the same</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">Register</span><span class="o">.</span><span class="n">A7</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="mh">0x1000000</span><span class="p">))</span>
+
+<div class="viewcode-block" id="M68K.get_register"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.get_register">[docs]</a>    <span class="k">def</span> <span class="nf">get_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">:</span> <span class="n">Register</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemoryValue</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the entire value of a register</span>
+<span class="sd">        :param register:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="M68K.set_register"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.set_register">[docs]</a>    <span class="k">def</span> <span class="nf">set_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">:</span> <span class="n">Register</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">MemoryValue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of a register using a 32-bit int</span>
+<span class="sd">        :param register:</span>
+<span class="sd">        :param val:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if the register is the CCR, use that method to handle setting it</span>
+        <span class="c1"># because of its different size</span>
+        <span class="k">if</span> <span class="n">register</span> <span class="o">==</span> <span class="n">Register</span><span class="o">.</span><span class="n">ConditionCodeRegister</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_condition_code_register_value</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># if the register is an address register that is limited to fit in the bounds of memory</span>
+        <span class="k">if</span> <span class="n">register</span> <span class="ow">in</span> <span class="n">ALL_ADDRESS_REGISTERS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_address_register_value</span><span class="p">(</span><span class="n">register</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># now for all other registers</span>
+        <span class="c1"># ensure that the value is within bounds</span>
+        <span class="c1"># actual negative numbers will need to be converted into 32-bit numbers</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">val</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="s1">&#39;The value for registers must fit into 4 bytes!&#39;</span>
+
+        <span class="c1"># set the value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_condition_code_register_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">MemoryValue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value for the condition code register</span>
+<span class="sd">        :param val:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ensure that the value is within bounds</span>
+        <span class="c1"># since the CCR is just a single byte</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">val</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mh">0xFF</span><span class="p">,</span> <span class="s1">&#39;The value for the CCR must fit in a single byte!&#39;</span>
+
+        <span class="c1"># now set the value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">Register</span><span class="o">.</span><span class="n">ConditionCodeRegister</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+
+<div class="viewcode-block" id="M68K.get_program_counter_value"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.get_program_counter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_program_counter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the 32-bit unsigned integer value for the program counter value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">Register</span><span class="o">.</span><span class="n">ProgramCounter</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">mv</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="M68K.set_address_register_value"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.set_address_register_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_address_register_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg</span><span class="p">:</span> <span class="n">Register</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">MemoryValue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of an address register, so the PC or A0-A7</span>
+<span class="sd">        :param reg:</span>
+<span class="sd">        :param new_value:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># no longer assert that the address register value is a pointer to memory</span>
+        <span class="c1"># since address register direct modes don&#39;t consider the amount of memory</span>
+        <span class="k">assert</span> <span class="n">reg</span> <span class="ow">in</span> <span class="n">ALL_ADDRESS_REGISTERS</span><span class="p">,</span> <span class="s1">&#39;The register given is not an address register!&#39;</span>
+
+        <span class="c1"># now set the value of the register</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">reg</span><span class="p">]</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">new_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="M68K.set_program_counter_value"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.set_program_counter_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_program_counter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of the program counter</span>
+<span class="sd">        Must be a non negative integer that is less than the maximum location size</span>
+<span class="sd">        :param new_value:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_address_register_value</span><span class="p">(</span><span class="n">Register</span><span class="o">.</span><span class="n">ProgramCounter</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">new_value</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="M68K.increment_program_counter"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.increment_program_counter">[docs]</a>    <span class="k">def</span> <span class="nf">increment_program_counter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inc</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Increments the program counter by the given value</span>
+<span class="sd">        :param inc:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_program_counter_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_program_counter_value</span><span class="p">()</span> <span class="o">+</span> <span class="n">inc</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="M68K.get_condition_status_code"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.get_condition_status_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_condition_status_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="n">ConditionStatusCode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the status of a code from the Condition Code Register</span>
+<span class="sd">        :param code:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ccr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">Register</span><span class="o">.</span><span class="n">CCR</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+        <span class="c1"># ccr is only 1 byte, bit mask away the bit being looked for</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ccr</span> <span class="o">&amp;</span> <span class="n">code</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="M68K.set_condition_status_code"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.set_condition_status_code">[docs]</a>    <span class="k">def</span> <span class="nf">set_condition_status_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="n">ConditionStatusCode</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the status of a code from the Condition Code Register to value</span>
+<span class="sd">        :param code:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ccr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">Register</span><span class="o">.</span><span class="n">CCR</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">ccr</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">|=</span> <span class="n">code</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">code</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_condition_code_register_value</span><span class="p">(</span><span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="M68K.run"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Starts the automatic execution</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">halted</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock_auto_cycle</span><span class="p">:</span>
+                <span class="c1"># run a single instruction</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">step_instruction</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock_auto_cycle</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">step_instruction</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="M68K.halt"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.halt">[docs]</a>    <span class="k">def</span> <span class="nf">halt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Halts the auto simulation execution</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clock_auto_cycle</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halted</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="M68K.step_instruction"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.step_instruction">[docs]</a>    <span class="k">def</span> <span class="nf">step_instruction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Increments the clock until the program</span>
+<span class="sd">        counter increments</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">halted</span><span class="p">:</span>
+            <span class="c1"># must be here or we get circular dependency issues</span>
+            <span class="kn">from</span> <span class="nn">..core.util.find_module</span> <span class="k">import</span> <span class="n">find_opcode_cls</span><span class="p">,</span> <span class="n">valid_opcodes</span>
+
+            <span class="k">for</span> <span class="n">op_str</span> <span class="ow">in</span> <span class="n">valid_opcodes</span><span class="p">:</span>
+                <span class="n">op_class</span> <span class="o">=</span> <span class="n">find_opcode_cls</span><span class="p">(</span><span class="n">op_str</span><span class="p">)</span>
+
+                <span class="c1"># We don&#39;t know this opcode, there&#39;s no module for it</span>
+                <span class="k">if</span> <span class="n">op_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opcode </span><span class="si">{}</span><span class="s1"> is not known: skipping and continuing&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">op_str</span><span class="p">))</span>
+                    <span class="k">assert</span> <span class="kc">False</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes</span>
+                <span class="c1"># note: this currently has the edge case that it will fail unintelligibly</span>
+                <span class="c1"># if encountered at the end of memory</span>
+                <span class="n">pc_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_program_counter_value</span><span class="p">()</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">op_class</span><span class="o">.</span><span class="n">disassemble_instruction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">memory</span><span class="p">[</span><span class="n">pc_val</span><span class="p">:</span><span class="n">pc_val</span><span class="o">+</span><span class="mi">10</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">op</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="c1"># done exeucting after doing an operation</span>
+                    <span class="k">return</span></div>
+
+<div class="viewcode-block" id="M68K.reload_execution"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.reload_execution">[docs]</a>    <span class="k">def</span> <span class="nf">reload_execution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        restarts execution of the program</span>
+<span class="sd">        up to the current program counter location</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the current PC</span>
+        <span class="n">current_pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_program_counter_value</span><span class="p">()</span></div>
+
+        <span class="c1"># reset the PC value</span>
+        <span class="c1"># todo, need to store the starting location</span>
+
+        <span class="c1"># set the starting PC value</span>
+
+        <span class="c1"># run until hits that PC value</span>
+
+<div class="viewcode-block" id="M68K.get_cycles"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.get_cycles">[docs]</a>    <span class="k">def</span> <span class="nf">get_cycles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns how many clock cycles have been performed</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clock_cycles</span></div>
+
+<div class="viewcode-block" id="M68K.clear_cycles"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.clear_cycles">[docs]</a>    <span class="k">def</span> <span class="nf">clear_cycles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the count of clock cycles</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clock_cycles</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="M68K.load_list_file"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.load_list_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_list_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_file</span><span class="p">:</span> <span class="n">ListFile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load List File</span>
+
+<span class="sd">        load the contents of a list file into memory</span>
+<span class="sd">        using the locations specified inside of the list file</span>
+<span class="sd">        :param list_file:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">load_list_file</span><span class="p">(</span><span class="n">list_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_program_counter_value</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">list_file</span><span class="o">.</span><span class="n">starting_execution_address</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="M68K.load_memory"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.load_memory">[docs]</a>    <span class="k">def</span> <span class="nf">load_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span> <span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">BinaryIO</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        saves the raw memory into the designated file</span>
+<span class="sd">        NOTE: file must be opened as binary or this won&#39;t work</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">load_memory</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="M68K.save_memory"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.save_memory">[docs]</a>    <span class="k">def</span> <span class="nf">save_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span> <span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">BinaryIO</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the raw memory from the designated file</span>
+<span class="sd">        This includes programs</span>
+<span class="sd">        NOTE: file must be opened as binary or this won&#39;t work</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">save_memory</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="M68K.set_ccr_reg"><a class="viewcode-back" href="../../../easier68k.simulator.html#easier68k.simulator.m68k.M68K.set_ccr_reg">[docs]</a>    <span class="k">def</span> <span class="nf">set_ccr_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extend</span><span class="p">,</span> <span class="n">negative</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">overflow</span><span class="p">,</span> <span class="n">carry</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accepts Boolean values for X,N,Z,V, and C, respectively and sets the CCR accordingly.</span>
+<span class="sd">        Passing None in for any argument will cause it to ignore that bit.</span>
+<span class="sd">        Returns nothing.</span>
+<span class="sd">        :param extend:</span>
+<span class="sd">        :param negative:</span>
+<span class="sd">        :param zero:</span>
+<span class="sd">        :param overflow:</span>
+<span class="sd">        :param carry:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">extend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extend</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">extend</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_condition_status_code</span><span class="p">(</span><span class="n">ConditionStatusCode</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">extend</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">negative</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">negative</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_condition_status_code</span><span class="p">(</span><span class="n">ConditionStatusCode</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">negative</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">zero</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">zero</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_condition_status_code</span><span class="p">(</span><span class="n">ConditionStatusCode</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">zero</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">overflow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">overflow</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">overflow</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_condition_status_code</span><span class="p">(</span><span class="n">ConditionStatusCode</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="n">overflow</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">carry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">carry</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">carry</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_condition_status_code</span><span class="p">(</span><span class="n">ConditionStatusCode</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">carry</span><span class="p">)</span></div></div>
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

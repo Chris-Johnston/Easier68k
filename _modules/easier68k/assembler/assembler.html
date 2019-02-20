@@ -1,0 +1,300 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.assembler.assembler &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.assembler.assembler</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">..core.util.parsing</span> <span class="k">import</span> <span class="n">strip_comments</span><span class="p">,</span> <span class="n">has_label</span><span class="p">,</span> <span class="n">get_label</span><span class="p">,</span> <span class="n">strip_label</span><span class="p">,</span> <span class="n">get_opcode</span><span class="p">,</span> <span class="n">strip_opcode</span><span class="p">,</span> \
+    <span class="n">parse_literal</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">from</span> <span class="nn">..core</span> <span class="k">import</span> <span class="n">opcodes</span>
+<span class="kn">from</span> <span class="nn">..core.models.list_file</span> <span class="k">import</span> <span class="n">ListFile</span>
+
+<span class="kn">from</span> <span class="nn">..core.util.find_module</span> <span class="k">import</span> <span class="n">find_opcode_cls</span>
+<span class="c1"># This *is* actually a necessary import due to using &quot;reflection&quot; style code further down</span>
+<span class="c1"># noinspection PyUnresolvedReferences</span>
+<span class="kn">from</span> <span class="nn">..core.opcodes</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">MAX_MEMORY_LOCATION</span> <span class="o">=</span> <span class="mi">16777216</span>  <span class="c1"># 2^24</span>
+
+
+<div class="viewcode-block" id="for_line_stripped_comments"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.for_line_stripped_comments">[docs]</a><span class="k">def</span> <span class="nf">for_line_stripped_comments</span><span class="p">(</span><span class="n">full_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">full_text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()):</span>
+        <span class="n">stripped</span> <span class="o">=</span> <span class="n">strip_comments</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stripped</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">continue</span>
+
+        <span class="k">yield</span> <span class="n">line_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">stripped</span>  <span class="c1"># line_index + 1 because here the line indices are zero-based</span></div>
+
+
+<div class="viewcode-block" id="for_line_opcode_parse"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.for_line_opcode_parse">[docs]</a><span class="k">def</span> <span class="nf">for_line_opcode_parse</span><span class="p">(</span><span class="n">full_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Yields the label (if it exists), opcode, and opcode contents for every line in a file</span>
+<span class="sd">    :param full_text: The file text to parse</span>
+<span class="sd">    :return: Yields the label (or None), opcode, and opcode contents (returns nothing)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">stripped</span> <span class="ow">in</span> <span class="n">for_line_stripped_comments</span><span class="p">(</span><span class="n">full_text</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">get_label</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span> <span class="k">if</span> <span class="n">has_label</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">get_opcode</span><span class="p">(</span><span class="n">stripped</span><span class="p">),</span> <span class="n">strip_opcode</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_labels"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.find_labels">[docs]</a><span class="k">def</span> <span class="nf">find_labels</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds all labels from a file</span>
+<span class="sd">    :param text: The text to search through for labels</span>
+<span class="sd">    :return: In order, labels (dict of label to line index + label contents), equates (dict of label to contents), and</span>
+<span class="sd">             issues (list of message + severity)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">equates</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">issues</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">line_index</span><span class="p">,</span> <span class="n">stripped</span> <span class="ow">in</span> <span class="n">for_line_stripped_comments</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">has_label</span><span class="p">(</span><span class="n">stripped</span><span class="p">):</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">get_label</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span>
+
+            <span class="c1"># Remove extra spaces at this point because they&#39;re no use</span>
+            <span class="c1"># and could only have negative implications</span>
+            <span class="n">label_contents</span> <span class="o">=</span> <span class="n">strip_label</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;Label </span><span class="si">{}</span><span class="s1"> already declared&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">),</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">line_index</span><span class="p">,</span> <span class="n">label_contents</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">get_opcode</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;EQU&#39;</span><span class="p">:</span>
+                    <span class="n">equates</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">strip_opcode</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">equates</span><span class="p">,</span> <span class="n">issues</span></div>
+
+
+<div class="viewcode-block" id="replace_equates"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.replace_equates">[docs]</a><span class="k">def</span> <span class="nf">replace_equates</span><span class="p">(</span><span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">equates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">equate</span> <span class="ow">in</span> <span class="n">equates</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">equate</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">equate</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">contents</span></div>
+
+
+<div class="viewcode-block" id="replace_label_addresses"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.replace_label_addresses">[docs]</a><span class="k">def</span> <span class="nf">replace_label_addresses</span><span class="p">(</span><span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_addresses</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">label_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;($</span><span class="si">{0:08x}</span><span class="s1">).L&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">contents</span></div>
+
+
+<div class="viewcode-block" id="replace_labels_with_temps"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.replace_labels_with_temps">[docs]</a><span class="k">def</span> <span class="nf">replace_labels_with_temps</span><span class="p">(</span><span class="n">contents</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replaces all labels that we don&#39;t know the location for with temporary addresses ($00000000)</span>
+<span class="sd">    :param contents: The string to replace labels</span>
+<span class="sd">    :param labels: The labels</span>
+<span class="sd">    :return: The string with labels replaced</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;($00000000).L&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">contents</span></div>
+
+
+<div class="viewcode-block" id="parse"><a class="viewcode-back" href="../../../easier68k.assembler.html#easier68k.assembler.assembler.parse">[docs]</a><span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">ListFile</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parses an assembly file and returns a list file, along with errors/warnings from the parsing process.</span>
+<span class="sd">    :param text: The assembly file text to parse</span>
+<span class="sd">    :return: The parsed list file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># --- PART 1: process for labels and equates ---</span>
+    <span class="n">labels</span><span class="p">,</span> <span class="n">equates</span><span class="p">,</span> <span class="n">issues</span> <span class="o">=</span> <span class="n">find_labels</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># --- PART 2: process operations for sizing and lay out memory ---</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="n">ListFile</span><span class="p">()</span>
+    <span class="n">current_memory_location</span> <span class="o">=</span> <span class="mh">0x00000000</span>
+    <span class="n">label_addresses</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Stores all of the label memory locations</span>
+
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span> <span class="ow">in</span> <span class="n">for_line_opcode_parse</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="c1"># Equates have already been processed, skip them</span>
+        <span class="c1"># ENDs aren&#39;t processed until phase 3, skip them for now</span>
+        <span class="c1"># (this idea could be expanded for more preprocessor directives)</span>
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;EQU&#39;</span> <span class="ow">or</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;END&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Replace all substitutions in the current line with their corresponding values</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">replace_equates</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="n">equates</span><span class="p">)</span>
+        <span class="c1"># Replace all labels with temporary addresses because we don&#39;t know their actual values yet</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">replace_labels_with_temps</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_addresses</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_memory_location</span>
+            <span class="n">to_return</span><span class="o">.</span><span class="n">define_symbol</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">current_memory_location</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;ORG&#39;</span><span class="p">:</span>  <span class="c1"># This will shift our current memory location, it&#39;s a special case</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_memory_location</span> <span class="o">=</span> <span class="n">parse_literal</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;Error parsing ORG value&#39;</span><span class="p">,</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">new_memory_location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">):</span>
+                <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;ORG address must be between 0 and 2^24!&#39;</span><span class="p">,</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">current_memory_location</span> <span class="o">=</span> <span class="n">new_memory_location</span>
+            <span class="c1"># Update the label with the new address, if it exists</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">label_addresses</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_memory_location</span>
+                <span class="n">to_return</span><span class="o">.</span><span class="n">define_symbol</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">current_memory_location</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># TODO: Possibly cache this (and the module search) for Part 3 later so we don&#39;t have to redo introspection?</span>
+        <span class="n">op_class</span> <span class="o">=</span> <span class="n">find_opcode_cls</span><span class="p">(</span><span class="n">opcode</span><span class="p">)</span>
+        <span class="c1"># We don&#39;t know this opcode, there&#39;s no module for it</span>
+        <span class="k">if</span> <span class="n">op_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;Opcode </span><span class="si">{}</span><span class="s1"> is not known: skipping and continuing&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opcode</span><span class="p">),</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">length</span> <span class="o">=</span> <span class="n">op_class</span><span class="o">.</span><span class="n">get_word_length</span><span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+
+        <span class="n">current_memory_location</span> <span class="o">+=</span> <span class="n">length</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="n">current_memory_location</span> <span class="o">=</span> <span class="mh">0x00000000</span>
+
+    <span class="c1"># --- PART 3: actually create the list file ---</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span> <span class="ow">in</span> <span class="n">for_line_opcode_parse</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="c1"># Equates have already been processed, skip them</span>
+        <span class="c1"># (this idea could be expanded for more preprocessor directives)</span>
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;EQU&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Replace all substitutions in the current line with their corresponding values</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="n">replace_equates</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="n">equates</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;END&#39;</span><span class="p">:</span>
+            <span class="c1"># End doesn&#39;t take an absolute long address, replace it differently</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">label_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">contents</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;$</span><span class="si">{:x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Replace all memory labels with their proper values (that&#39;s the difference in this step)</span>
+            <span class="n">contents</span> <span class="o">=</span> <span class="n">replace_label_addresses</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="n">label_addresses</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;ORG&#39;</span><span class="p">:</span>  <span class="c1"># This will shift our current memory location, it&#39;s a special case</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_memory_location</span> <span class="o">=</span> <span class="n">parse_literal</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="c1"># Don&#39;t need to print assertion, we already did that earlier</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">new_memory_location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">current_memory_location</span> <span class="o">=</span> <span class="n">new_memory_location</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">opcode</span> <span class="o">==</span> <span class="s1">&#39;END&#39;</span><span class="p">:</span>  <span class="c1"># This will set our end memory location, it&#39;s a special case</span>
+            <span class="n">start_location</span> <span class="o">=</span> <span class="n">parse_literal</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">start_location</span> <span class="o">&lt;</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">to_return</span><span class="o">.</span><span class="n">set_starting_execution_address</span><span class="p">(</span><span class="n">start_location</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># TODO: Possibly use a cached version?</span>
+        <span class="n">op_class</span> <span class="o">=</span> <span class="n">find_opcode_cls</span><span class="p">(</span><span class="n">opcode</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">op_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;Opcode </span><span class="si">{}</span><span class="s1"> is not known: skipping and continuing&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opcode</span><span class="p">),</span> <span class="s1">&#39;ERROR&#39;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># check that the input is valid the opcode at the module level</span>
+        <span class="n">is_valid</span><span class="p">,</span> <span class="n">issues</span> <span class="o">=</span> <span class="n">op_class</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+
+        <span class="c1"># for BRA and probably in the future JMP ops...</span>
+        <span class="c1"># addr must be handed off so that they can pull an offset out of the operand address.</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">op_class</span><span class="p">,</span> <span class="n">bcc</span><span class="o">.</span><span class="n">branch_code</span><span class="p">):</span>
+            <span class="n">contents</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_memory_location</span><span class="p">)</span>
+
+        <span class="c1"># if valid, then actually construct the opcode</span>
+        <span class="k">if</span> <span class="n">is_valid</span><span class="p">:</span>
+            <span class="c1"># get the length of the operation in # of words</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">op_class</span><span class="o">.</span><span class="n">get_word_length</span><span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+            <span class="c1"># make the opcode</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">op_class</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">opcode</span><span class="p">,</span> <span class="n">contents</span><span class="p">)</span>
+
+            <span class="c1"># ensure that the data was built correctly and append it</span>
+            <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># instead of converting to a string here, we should make this a method of the base opcode class</span>
+                <span class="n">to_return</span><span class="o">.</span><span class="n">insert_data</span><span class="p">(</span><span class="n">current_memory_location</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">assemble</span><span class="p">()))[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                <span class="c1"># Increment our memory counter</span>
+                <span class="n">current_memory_location</span> <span class="o">+=</span> <span class="n">length</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">to_return</span><span class="p">,</span> <span class="n">issues</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

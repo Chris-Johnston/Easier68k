@@ -1,0 +1,726 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.util package &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="easier68k-core-util-package">
+<h1>easier68k.core.util package<a class="headerlink" href="#easier68k-core-util-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-easier68k.core.util.conversions">
+<span id="easier68k-core-util-conversions-module"></span><h2>easier68k.core.util.conversions module<a class="headerlink" href="#module-easier68k.core.util.conversions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.conversions.to_byte">
+<code class="descclassname">easier68k.core.util.conversions.</code><code class="descname">to_byte</code><span class="sig-paren">(</span><em>word: int</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/util/conversions.html#to_byte"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.conversions.to_byte" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">to_byte</span><span class="p">(</span><span class="mh">0x12345678</span><span class="p">))</span>
+<span class="go">&#39;0x78&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">to_byte</span><span class="p">(</span><span class="mi">257</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">to_byte</span><span class="p">(</span><span class="mh">0x00001101</span><span class="p">))</span>
+<span class="go">&#39;0x1&#39;</span>
+</pre></div>
+</div>
+<p>Masks the given value to the size of a byte (8 bits)
+:param word:
+:return:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.conversions.to_word">
+<code class="descclassname">easier68k.core.util.conversions.</code><code class="descname">to_word</code><span class="sig-paren">(</span><em>word: int</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/util/conversions.html#to_word"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.conversions.to_word" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">to_word</span><span class="p">(</span><span class="mh">0x1234ABCD</span><span class="p">))</span>
+<span class="go">&#39;0xabcd&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">to_word</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="go">&#39;0x0&#39;</span>
+</pre></div>
+</div>
+<p>This size should never happen!
+&gt;&gt;&gt; hex(to_word(0x12345678ABCD))
+‘0xabcd’</p>
+<p>Masks the given value to the size of a word (16 bits)
+:param word:
+:return:</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util.find_module">
+<span id="easier68k-core-util-find-module-module"></span><h2>easier68k.core.util.find_module module<a class="headerlink" href="#module-easier68k.core.util.find_module" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.find_module.find_opcode_cls">
+<code class="descclassname">easier68k.core.util.find_module.</code><code class="descname">find_opcode_cls</code><span class="sig-paren">(</span><em>opcode: str</em><span class="sig-paren">)</span> &#x2192; type<a class="reference internal" href="_modules/easier68k/core/util/find_module.html#find_opcode_cls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.find_module.find_opcode_cls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the proper module and module class based on the opcode
+:param opcode: The opcode to search for
+:return: The module and class found (or (None, None) if it doesn’t find any)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util.input">
+<span id="easier68k-core-util-input-module"></span><h2>easier68k.core.util.input module<a class="headerlink" href="#module-easier68k.core.util.input" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.input.get_input">
+<code class="descclassname">easier68k.core.util.input.</code><code class="descname">get_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/util/input.html#get_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.input.get_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap input in this method so that it can be wrapped with &#64;patch in tests
+:return:</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util.opcode_util">
+<span id="easier68k-core-util-opcode-util-module"></span><h2>easier68k.core.util.opcode_util module<a class="headerlink" href="#module-easier68k.core.util.opcode_util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.check_valid_command">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">check_valid_command</code><span class="sig-paren">(</span><em>command: str, template: str, can_take_size=True, valid_sizes=[&lt;OpSize.LONG: 4&gt;, &lt;OpSize.WORD: 2&gt;, &lt;OpSize.BYTE: 1&gt;]</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#check_valid_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.check_valid_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether this command is valid</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;MOVE.B&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;MOVE&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;MOV&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;LEA&quot;</span><span class="p">,</span> <span class="s2">&quot;LEA&quot;</span><span class="p">,</span> <span class="n">can_take_size</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;LEA.B&quot;</span><span class="p">,</span> <span class="s2">&quot;LEA&quot;</span><span class="p">,</span> <span class="n">can_take_size</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;MOVEA.W&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVEA&quot;</span><span class="p">,</span> <span class="n">valid_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_valid_command</span><span class="p">(</span><span class="s2">&quot;MOVEA.B&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVEA&quot;</span><span class="p">,</span> <span class="n">valid_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">])</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> – The command to check</li>
+<li><strong>template</strong> – The type of command we’re checking for (like ‘MOVE’, ‘LEA’, etc.)</li>
+<li><strong>can_take_size</strong> – Whether this command takes a size argument or not</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Whether this command is valid or not</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.command_matches">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">command_matches</code><span class="sig-paren">(</span><em>command: str</em>, <em>template: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#command_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.command_matches" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">command_matches</span><span class="p">(</span><span class="s2">&quot;MOVE.B&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">command_matches</span><span class="p">(</span><span class="s2">&quot;MOVE&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">command_matches</span><span class="p">(</span><span class="s2">&quot;MOV&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">command_matches</span><span class="p">(</span><span class="s2">&quot;MOV.B&quot;</span><span class="p">,</span> <span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>Handles the typical checking of a command string (like ‘MOVE.B’, ‘LEA’, etc.).
+NOTE: this will match some error conditions, this just does the broadest possible checks. The main one is that this
+doesn’t check for more than 1 period (MOVE.B.W, for example) or check for valid sizes/lack of sizes. The assumption
+is that this will be handled in the actual parsing methods for proper error handling.
+:param command: The command string to parse
+:param template: The template to check with
+:return: Whether the command matches</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.ea_to_binary_post_op">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">ea_to_binary_post_op</code><span class="sig-paren">(</span><em>ea: easier68k.core.enum.ea_mode.EAMode</em>, <em>size: easier68k.core.enum.op_size.OpSize</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.memory_value.MemoryValue<a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#ea_to_binary_post_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.ea_to_binary_post_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the binary (if any) of an EA Mode to append after the command itself. For example, if we were to do
+‘MOVE.B #$42, D0’, the immediate would need to be appended after the command: this returns the part that
+needs to be appended.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#$42&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">))</span>
+<span class="go">&#39;WORD MemoryValue 0x42&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;D0&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">))</span>
+<span class="go">&#39;None&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#$42&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">))</span>
+<span class="go">&#39;LONG MemoryValue 0x42&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;($242).W&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">))</span>
+<span class="go">&#39;WORD MemoryValue 0x242&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;($242).L&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">))</span>
+<span class="go">&#39;LONG MemoryValue 0x242&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#-1&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">))</span>
+<span class="go">&#39;WORD MemoryValue 0xffff&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ea_to_binary_post_op</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#-113442343&#39;</span><span class="p">),</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">))</span>
+<span class="go">&#39;LONG MemoryValue 0xf93d01d9&#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ea</strong> – The effective address that needs to be converted</li>
+<li><strong>size</strong> – The size of the operation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The binary that needs to be appended, in string form (or an empty string)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.get_size">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">get_size</code><span class="sig-paren">(</span><em>command: str</em>, <em>default_size=&lt;OpSize.WORD: 2&gt;</em><span class="sig-paren">)</span> &#x2192; easier68k.core.enum.op_size.OpSize<a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#get_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.get_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the size of a command, or supplies the default size</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_size</span><span class="p">(</span><span class="s2">&quot;MOVE.B&quot;</span><span class="p">)</span>
+<span class="go">&lt;OpSize.BYTE: 1&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_size</span><span class="p">(</span><span class="s2">&quot;MOVE&quot;</span><span class="p">)</span>
+<span class="go">&lt;OpSize.WORD: 2&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_size</span><span class="p">(</span><span class="s2">&quot;MOVE&quot;</span><span class="p">,</span> <span class="n">default_size</span><span class="o">=</span><span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">)</span>
+<span class="go">&lt;OpSize.BYTE: 1&gt;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> – The command string to parse</li>
+<li><strong>default_size</strong> – The default size if no size is found</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The size of the command</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.n_param_from_str">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">n_param_from_str</code><span class="sig-paren">(</span><em>command: str</em>, <em>parameters: str</em>, <em>opcode_cls</em>, <em>n: int = 2</em>, <em>default_size: easier68k.core.enum.op_size.OpSize = &lt;OpSize.WORD: 2&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#n_param_from_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.n_param_from_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a command from text. Note that this assumes that is_valid has already been run and was successful.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> – The command itself (e.g. ‘MOVE.B’, ‘LEA’, etc.)</li>
+<li><strong>parameters</strong> – The parameters after the command (such as the source and destination of a move)</li>
+<li><strong>opcode_cls</strong> – The class of opcode we’re parsing to</li>
+<li><strong>n</strong> – The number of parameters to parse</li>
+<li><strong>default_size</strong> – The default size if no size is specified, or None if this is an unsized opcode</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The parsed command</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.opcode_util.n_param_is_valid">
+<code class="descclassname">easier68k.core.util.opcode_util.</code><code class="descname">n_param_is_valid</code><span class="sig-paren">(</span><em>command: str, parameters: str, opcode: str, n: int = 2, valid_sizes=[&lt;OpSize.LONG: 4&gt;, &lt;OpSize.WORD: 2&gt;, &lt;OpSize.BYTE: 1&gt;], default_size=&lt;OpSize.WORD: 2&gt;, param_invalid_modes=[]) -&gt; (&lt;class 'bool'&gt;, &lt;class 'list'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/util/opcode_util.html#n_param_is_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.opcode_util.n_param_is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests whether the given command is valid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> – The command itself (e.g. ‘MOVE.B’, ‘LEA’, etc.)</li>
+<li><strong>parameters</strong> – The parameters after the command (such as the source and destination of a move)</li>
+<li><strong>opcode</strong> – The opcode to check for (‘MOVE’, ‘LEA’, etc.)</li>
+<li><strong>valid_sizes</strong> – valid sizes of the command (empty list or None for no size)</li>
+<li><strong>default_size</strong> – the default size for the command (can be None if it doesn’t take a command)</li>
+<li><strong>n</strong> – the number of parameters to parse</li>
+<li><strong>param_invalid_modes</strong> – list of lists of invalid parameter modes (in order)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Whether the given command is valid and a list of issues/warnings encountered</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util.parsing">
+<span id="easier68k-core-util-parsing-module"></span><h2>easier68k.core.util.parsing module<a class="headerlink" href="#module-easier68k.core.util.parsing" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.parsing.from_str_util">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">from_str_util</code><span class="sig-paren">(</span><em>command: str</em>, <em>parameters: str) -&gt; (&lt;enum 'OpSize'&gt;</em>, <em>&lt;class 'list'&gt;</em>, <em>&lt;class 'list'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/util/parsing.html#from_str_util"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.from_str_util" title="Permalink to this definition">¶</a></dt>
+<dd><p>Util method for from_str
+Splits the command into both parts, gets the normalized size
+and splits the parameters</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">from_str_util</span><span class="p">(</span><span class="s1">&#39;MOVE.B&#39;</span><span class="p">,</span> <span class="s1">&#39;#123, D0&#39;</span><span class="p">)</span>
+<span class="go">(&lt;OpSize.BYTE: 1&gt;, [&#39;#123&#39;, &#39;D0&#39;], [&#39;MOVE&#39;, &#39;B&#39;])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">from_str_util</span><span class="p">(</span><span class="s1">&#39;FAKEOP&#39;</span><span class="p">,</span> <span class="s1">&#39;$AAAA, #123, $AAAA&#39;</span><span class="p">)</span>
+<span class="go">(&lt;OpSize.WORD: 2&gt;, [&#39;$AAAA&#39;, &#39;#123&#39;, &#39;$AAAA&#39;], [&#39;FAKEOP&#39;])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">from_str_util</span><span class="p">(</span><span class="s1">&#39;NOPARAM.L&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="go">(&lt;OpSize.LONG: 4&gt;, [&#39;&#39;], [&#39;NOPARAM&#39;, &#39;L&#39;])</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> – the command str</li>
+<li><strong>parameters</strong> – the parameters str</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">size {str}, params {list} of str, parts - both sides of the command after split</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.get_label">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">get_label</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#get_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.get_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the label from a line (if it has one, if not returns None)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_label</span><span class="p">(</span><span class="s1">&#39;test DC.B $0A&#39;</span><span class="p">)</span>
+<span class="go">&#39;test&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_label</span><span class="p">(</span><span class="s1">&#39;;test DC.B $0A&#39;</span><span class="p">)</span>  <span class="c1"># should return nothing</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_label</span><span class="p">(</span><span class="s1">&#39;    BEQ test&#39;</span><span class="p">)</span>  <span class="c1"># should return nothing</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> – The line to get the label from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The label in the line</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.get_opcode">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">get_opcode</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#get_opcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.get_opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the opcode out of a line (with or without label)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_opcode</span><span class="p">(</span><span class="s1">&#39;start EQU $400&#39;</span><span class="p">)</span>
+<span class="go">&#39;EQU&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_opcode</span><span class="p">(</span><span class="s1">&#39;    MOVE.B D0, D1&#39;</span><span class="p">)</span>
+<span class="go">&#39;MOVE.B&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_opcode</span><span class="p">(</span><span class="s1">&#39;; start EQU $400&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> – The line to get the opcode from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The opcode found in said line</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.has_label">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">has_label</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#has_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.has_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether or not this line has a label in it (basically if it starts with a space or not)
+:param line: The line to test
+:return: Whether the test line has a label in it</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_label</span><span class="p">(</span><span class="s1">&#39;data    DC.B $A3&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_label</span><span class="p">(</span><span class="s1">&#39;    BEQ test&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_label</span><span class="p">(</span><span class="s1">&#39;  TRAP #15&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">has_label</span><span class="p">(</span><span class="s1">&#39;;start EQU $400&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.parse_assembly_parameter">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">parse_assembly_parameter</code><span class="sig-paren">(</span><em>addr: str</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.assembly_parameter.AssemblyParameter<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#parse_assembly_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.parse_assembly_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses an effective addressing mode (such as D0, (A1), #$01)
+and makes a new AssemblyParameter</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">AssertionError</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;D3&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.DRD, Data: 3&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;A6&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.ARD, Data: 6&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;(A4)&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.ARI, Data: 4&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;(A2)+&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.ARIPI, Data: 2&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;(A2)-&#39;</span><span class="p">))</span>  <span class="c1"># Invalid, can&#39;t do &quot;post-decrement&quot;</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">AssertionError</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;($45).W&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.AWA, Data: 69&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;(%01010111).L&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.ALA, Data: 87&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#$FF&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.IMM, Data: 255&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#$ABCD&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.IMM, Data: 43981&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#-1&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.IMM, Data: -1&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;#-100&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.IMM, Data: -100&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">parse_assembly_parameter</span><span class="p">(</span><span class="s1">&#39;-(A2)&#39;</span><span class="p">))</span>
+<span class="go">&#39;EA Mode: EAMode.ARIPD, Data: 2&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.parse_literal">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">parse_literal</code><span class="sig-paren">(</span><em>literal: str</em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#parse_literal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.parse_literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a literal (aka “1234” or “$A0F” or “%1001”)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;$BA1&#39;</span><span class="p">)</span>
+<span class="go">2977</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;%01010111&#39;</span><span class="p">)</span>
+<span class="go">87</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;57&#39;</span><span class="p">)</span>
+<span class="go">57</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;400&#39;</span><span class="p">)</span>
+<span class="go">400</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;-100&#39;</span><span class="p">)</span>
+<span class="go">-100</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_literal</span><span class="p">(</span><span class="s1">&#39;-1&#39;</span><span class="p">)</span>
+<span class="go">-1</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>literal</strong> – A string containing the literal to parse</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The parsed literal (a bytearray type)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.strip_comments">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">strip_comments</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#strip_comments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.strip_comments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all comments from a line (basically makes this line into the ‘compiler’ version)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_comments</span><span class="p">(</span><span class="s1">&#39;label TRAP #15 * This does a thing&#39;</span><span class="p">)</span>
+<span class="go">&#39;label TRAP #15 &#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_comments</span><span class="p">(</span><span class="s1">&#39;    ORG start ;label&#39;</span><span class="p">)</span>
+<span class="go">&#39;    ORG start &#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_comments</span><span class="p">(</span><span class="s1">&#39;;    ADD D0, D1 * asdf&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> – The line to strip comments from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The stripped line</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.strip_label">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">strip_label</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#strip_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.strip_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strips the label from a line, isolating the rest of the line
+(side effect: also strips comments)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_label</span><span class="p">(</span><span class="s1">&#39;ORG start&#39;</span><span class="p">)</span>
+<span class="go">&#39;start&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_label</span><span class="p">(</span><span class="s1">&#39;RTS ;comm&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_label</span><span class="p">(</span><span class="s1">&#39;;all commented&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_label</span><span class="p">(</span><span class="s1">&#39;MOVE D0, D1 * Moves D0 into D1&#39;</span><span class="p">)</span>
+<span class="go">&#39;D0, D1 &#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> – The line to strip the label from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The stripped line</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="easier68k.core.util.parsing.strip_opcode">
+<code class="descclassname">easier68k.core.util.parsing.</code><code class="descname">strip_opcode</code><span class="sig-paren">(</span><em>line: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/easier68k/core/util/parsing.html#strip_opcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.parsing.strip_opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strips the opcode from a line</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_opcode</span><span class="p">(</span><span class="s1">&#39;start EQU $400&#39;</span><span class="p">)</span>
+<span class="go">&#39;$400&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_opcode</span><span class="p">(</span><span class="s1">&#39;    MOVE.B D0, D1&#39;</span><span class="p">)</span>
+<span class="go">&#39;D0, D1&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_opcode</span><span class="p">(</span><span class="s1">&#39;    RTS&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">strip_opcode</span><span class="p">(</span><span class="s1">&#39;start EQU $400 ; comments!&#39;</span><span class="p">)</span>
+<span class="go">&#39;$400&#39;</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> – The line to strip the opcode from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The line with the opcode stripped (as well as comments and labels)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util.split_bits">
+<span id="easier68k-core-util-split-bits-module"></span><h2>easier68k.core.util.split_bits module<a class="headerlink" href="#module-easier68k.core.util.split_bits" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="easier68k.core.util.split_bits.split_bits">
+<code class="descclassname">easier68k.core.util.split_bits.</code><code class="descname">split_bits</code><span class="sig-paren">(</span><em>word: int</em>, <em>amounts: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/util/split_bits.html#split_bits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.util.split_bits.split_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes in a word and a list of bit amounts and returns
+the bits in the word split up. See the doctests for concrete examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">bin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">split_bits</span><span class="p">(</span><span class="mb">0b1001111010000001</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">])]</span>
+<span class="go">[&#39;0b1001111010000001&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">bin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">split_bits</span><span class="p">(</span><span class="mb">0b1001111010000001</span><span class="p">,</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">])]</span>
+<span class="go">[&#39;0b10011110&#39;, &#39;0b10000001&#39;]</span>
+</pre></div>
+</div>
+<p>not the whole 16 bits!
+&gt;&gt;&gt; [bin(x) for x in split_bits(0b1001111010000001, [8])]
+Traceback (most recent call last):
+AssertionError: expected to split exactly one word</p>
+<p>This is a test splitting MOVE.B (A1),D4
+&gt;&gt;&gt; [bin(x) for x in split_bits(0b0001001010000100, [2,2,3,3,3,3])]
+[‘0b0’, ‘0b1’, ‘0b1’, ‘0b10’, ‘0b0’, ‘0b100’]</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-easier68k.core.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.core.util" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">easier68k.core.util package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.conversions">easier68k.core.util.conversions module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.find_module">easier68k.core.util.find_module module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.input">easier68k.core.util.input module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.opcode_util">easier68k.core.util.opcode_util module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.parsing">easier68k.core.util.parsing module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util.split_bits">easier68k.core.util.split_bits module</a></li>
+<li><a class="reference internal" href="#module-easier68k.core.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.core.util.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

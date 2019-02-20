@@ -1,0 +1,314 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.models.assembly_parameter &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.models.assembly_parameter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Assembly Parameter</span>
+
+<span class="sd">Represents a single parameter in assembly code</span>
+<span class="sd">this is the new &#39;EAMode&#39; class</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">..enum.ea_mode</span> <span class="k">import</span> <span class="n">EAMode</span>
+<span class="kn">from</span> <span class="nn">..enum.register</span> <span class="k">import</span> <span class="n">Register</span><span class="p">,</span> <span class="n">ALL_ADDRESS_REGISTERS</span>
+<span class="kn">from</span> <span class="nn">...simulator.m68k</span> <span class="k">import</span> <span class="n">M68K</span>
+<span class="kn">from</span> <span class="nn">..util.conversions</span> <span class="k">import</span> <span class="n">to_word</span>
+<span class="kn">from</span> <span class="nn">..models.memory_value</span> <span class="k">import</span> <span class="n">MemoryValue</span>
+<span class="kn">from</span> <span class="nn">..enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+
+<span class="c1"># should try to make this a constant only defined once</span>
+<span class="n">MAX_MEMORY_LOCATION</span> <span class="o">=</span> <span class="mi">16777216</span>  <span class="c1"># 2^24</span>
+
+
+<div class="viewcode-block" id="AssemblyParameter"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.assembly_parameter.AssemblyParameter">[docs]</a><span class="k">class</span> <span class="nc">AssemblyParameter</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">EAMode</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        Checks that the mode and the data are considered to be valid, like</span>
+<span class="sd">        registers are within the correct bounds and addresses are not out of bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ensure that the values are valid</span>
+
+        <span class="c1"># when referencing a register, ensure that the data is within [0, 7]</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">DataRegisterDirect</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPreDecrement</span><span class="p">,</span>
+                    <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirect</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPostIncrement</span><span class="p">,</span>
+                    <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterDirect</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;The register number for this mode must be in the range [0, 7]!&#39;</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteLongAddress</span><span class="p">]:</span>
+            <span class="c1"># ensure that the address isn&#39;t outside the bounds of max memory location</span>
+            <span class="c1"># and is greater than or eq to 0</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;An absolute address must be in the bounds [0, 2^24]!&#39;</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">Immediate</span><span class="p">:</span>
+            <span class="c1"># ensure that the value isn&#39;t too large, cannot be larger than a long word</span>
+            <span class="c1"># negative values need to be converted into unsigned integers</span>
+            <span class="k">assert</span> <span class="o">-</span><span class="mi">2147483648</span> <span class="o">&lt;=</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">2147483647</span> <span class="ow">or</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">data</span> <span class="o">&lt;=</span> <span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="s1">&#39;Value must fit inside a long word!&#39;</span>
+        <span class="c1"># set values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        str util method</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;EA Mode: </span><span class="si">{}</span><span class="s2">, Data: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AssemblyParameter.get_value"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.assembly_parameter.AssemblyParameter.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">:</span> <span class="n">M68K</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="n">OpSize</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemoryValue</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the value for this EAMode from the simulator</span>
+<span class="sd">        :param simulator: reference to the 68k simulator</span>
+<span class="sd">        :param length: the length in bytes associated with this operation, must be 1 2 or 4</span>
+<span class="sd">        :return: the value associated with this assembly parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># this check is probably useless now that the enum is being used</span>
+        <span class="k">assert</span> <span class="n">length</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">],</span> <span class="s1">&#39;The length for this operation must be 1 2 or 4 bytes!&#39;</span>
+
+        <span class="c1"># immediates are assumed to be signed values</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">IMM</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ret</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">DRD</span><span class="p">:</span>
+            <span class="c1"># convert the data into the register value</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="n">data_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">data_register</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterDirect</span><span class="p">:</span>
+            <span class="c1"># address register direct gets the value of the register</span>
+            <span class="k">assert</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span> <span class="o">&lt;=</span> <span class="n">Register</span><span class="o">.</span><span class="n">A7</span>
+            <span class="c1"># offset the value to compensate for the enum offset</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="c1"># get the value of the register, that&#39;s it</span>
+            <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirect</span><span class="p">:</span>
+            <span class="c1"># address register indirect gets the value that the register points to</span>
+            <span class="c1"># check that the register number is valid</span>
+            <span class="k">assert</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">Register</span><span class="o">.</span><span class="n">A7</span><span class="o">.</span><span class="n">value</span>
+            <span class="c1"># offset the value to compensate for the enum offset</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="c1"># this gets the value of the register, which points to a location</span>
+            <span class="c1"># in memory where the target value is</span>
+            <span class="n">register_value</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span>
+            <span class="c1"># now get the value in memory of that register</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">register_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">val</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPostIncrement</span><span class="p">:</span>
+            <span class="c1"># address register indirect gets the value that the register points to</span>
+            <span class="c1"># check that the register number is valid</span>
+            <span class="k">assert</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">Register</span><span class="o">.</span><span class="n">A7</span><span class="o">.</span><span class="n">value</span>
+            <span class="c1"># offset the value to compensate for the enum offset</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="c1"># this gets the value of the register, which points to a location</span>
+            <span class="c1"># in memory where the target value is</span>
+            <span class="n">register_value</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span>
+            <span class="c1"># now get the value in memory of that register</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">register_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">())</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">register_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">+</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">mv</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
+
+            <span class="c1"># do the post increment</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">,</span> <span class="n">mv</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">val</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPreDecrement</span><span class="p">:</span>
+            <span class="c1"># address register indirect gets the value that the register points to</span>
+            <span class="c1"># check that the register number is valid</span>
+            <span class="k">assert</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span> <span class="o">&lt;=</span> <span class="n">Register</span><span class="o">.</span><span class="n">A7</span>
+            <span class="c1"># offset the value to compensate for the enum offset</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="c1"># this gets the value of the register, which points to a location</span>
+            <span class="c1"># in memory where the target value is</span>
+            <span class="n">register_value</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span>
+
+            <span class="n">total</span> <span class="o">=</span> <span class="n">register_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">-</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">mv</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
+
+            <span class="c1"># do the pre decrement (this does not update the value of register_value)</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">,</span> <span class="n">mv</span><span class="p">)</span>
+
+            <span class="c1"># now get the value in memory of that register</span>
+            <span class="c1"># and return that value</span>
+            <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">register_value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteLongAddress</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">]:</span>
+            <span class="c1"># if mode is absolute long or word address</span>
+            <span class="c1"># then get the value in memory for that value</span>
+
+            <span class="c1"># ensure that the data is valid</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;The address must be in the range [0, 2^24]!&#39;</span>
+
+            <span class="c1"># get the address being looked for</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+            <span class="c1"># if word address, mask out extra bits</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">:</span>
+                <span class="n">addr</span> <span class="o">=</span> <span class="n">to_word</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+            <span class="c1"># now get the value of that absolute long address</span>
+            <span class="k">return</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span>
+
+        <span class="c1"># if nothing was done by now, surely something must be wrong</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Invalid effective addressing mode!&#39;</span></div>
+
+<div class="viewcode-block" id="AssemblyParameter.set_value"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.assembly_parameter.AssemblyParameter.set_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">:</span> <span class="n">M68K</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">MemoryValue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of a destination mode</span>
+<span class="sd">        :param simulator: the reference to the simulator</span>
+<span class="sd">        :param value: the value to set for this assembly parameter</span>
+<span class="sd">        :param length: the number of bits associated for this instruction, must be 1 2 or 4</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;The value parameter must be of type MemoryValue&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">Immediate</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Cannot set the value of an immediate.&#39;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">DRD</span><span class="p">:</span>
+            <span class="c1"># set the value for the data register</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="n">data_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">data_register</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterDirect</span><span class="p">:</span>
+            <span class="c1"># set the value for the address register</span>
+            <span class="c1"># only ensure that it is referring to a valid address register</span>
+            <span class="c1"># since this is a direct addressing mode, and not treated as a &#39;pointer&#39;</span>
+            <span class="c1"># to memory, this is not bounded by the number of address lines</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirect</span><span class="p">:</span>
+            <span class="c1"># sets the value in memory that the address register points to</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;The value must fit in the memory space [0, 2^24]&#39;</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPreDecrement</span><span class="p">:</span>
+            <span class="c1"># sets the value in memory that the address register points to</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;The value must fit in the memory space [0, 2^24]&#39;</span>
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+            <span class="n">location</span> <span class="o">-=</span> <span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">()</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">location</span><span class="p">))</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AddressRegisterIndirectPostIncrement</span><span class="p">:</span>
+            <span class="c1"># sets the value in memory that the address register points to</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="mi">7</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span><span class="p">,</span> <span class="s1">&#39;The value must fit in the memory space [0, 2^24]&#39;</span>
+
+            <span class="n">addr_register</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">Register</span><span class="o">.</span><span class="n">A0</span><span class="p">)</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">get_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">)</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">location</span> <span class="o">+=</span> <span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">()</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">set_register</span><span class="p">(</span><span class="n">addr_register</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">location</span><span class="p">))</span>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteLongAddress</span><span class="p">,</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">]:</span>
+            <span class="c1"># assert that the value fits in the bounds of memory</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">&lt;=</span> <span class="n">MAX_MEMORY_LOCATION</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="s1">&#39;The value must fit inside of a long word!&#39;</span>
+
+            <span class="c1"># if the mode is a word</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">is</span> <span class="n">EAMode</span><span class="o">.</span><span class="n">AbsoluteWordAddress</span><span class="p">:</span>
+                <span class="c1"># mask it to only be a word</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="o">=</span><span class="n">to_word</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()))</span>
+
+            <span class="c1"># set the value in memory to that</span>
+            <span class="n">simulator</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>

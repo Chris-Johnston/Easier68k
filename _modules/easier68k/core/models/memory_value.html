@@ -1,0 +1,666 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>easier68k.core.models.memory_value &#8212; Easier68k  documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for easier68k.core.models.memory_value</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Memory Value</span>
+
+<span class="sd">Representation of some value in memory with a length of a Byte, Word or Long Word,</span>
+<span class="sd">which can either be an array of bytes, an integer number, a single character</span>
+<span class="sd">or an array of characters.</span>
+
+<span class="sd">Supports operations like adding, subtracting, shift left, shift right, bitwise OR AND XOR, equals</span>
+
+<span class="sd">Supports getting the most significant bit, determining the signed or unsigned integer values, the value</span>
+<span class="sd">as a array of bytes, the value as a hex string.</span>
+
+<span class="sd">This was done to keep the interal handling of memory values consistent, instead of conversions back and forth between</span>
+<span class="sd">integers, hex strings and byte arrays.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">..enum.op_size</span> <span class="k">import</span> <span class="n">OpSize</span>
+
+
+<div class="viewcode-block" id="mask_value_for_length"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.mask_value_for_length">[docs]</a><span class="k">def</span> <span class="nf">mask_value_for_length</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">,</span> <span class="n">unsigned_value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Masks an unsigned value to a certain size</span>
+<span class="sd">    :param size:</span>
+<span class="sd">    :param unsigned_value:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mh">0xFF</span> <span class="o">&amp;</span> <span class="n">unsigned_value</span>
+    <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mh">0xFFFF</span> <span class="o">&amp;</span> <span class="n">unsigned_value</span>
+    <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mh">0xFFFFFFFF</span> <span class="o">&amp;</span> <span class="n">unsigned_value</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MemoryValue"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue">[docs]</a><span class="k">class</span> <span class="nc">MemoryValue</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Representation of some value in memory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">len</span><span class="p">:</span> <span class="n">OpSize</span> <span class="o">=</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">signed_int</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">unsigned_int</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="nb">bytes</span><span class="p">:</span> <span class="nb">bytearray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        Sets the initial value to zero with a length of OpSize.Wordprint</span>
+<span class="sd">        :param len the length in bytes of this memory value</span>
+<span class="sd">        :param signed_int the value to set as a signed int</span>
+<span class="sd">        :param unsigned_int the value to set as an unsigned int</span>
+<span class="sd">        :param bytes the value to set as a bytearray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use OpSize for length in bytes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">len</span>
+
+        <span class="k">if</span> <span class="n">signed_int</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">signed_int</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">unsigned_int</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">unsigned_int</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">bytes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_value_bytes</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># use integers as the interal storage of the value</span>
+            <span class="c1"># this should be an UNSIGNED value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># consider adding CCR bits for the last operation?</span>
+        <span class="c1"># or just have CCR bit getters, in the ops just compare before and after</span>
+
+<div class="viewcode-block" id="MemoryValue.set_size"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the length of this memory value</span>
+<span class="sd">        :param size: the length in bytes of this value, defined by OpSize</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">size</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_size"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpSize</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the length of this memory value as an OpSize</span>
+<span class="sd">        :return: the length in bytes of this value as defined by an OpSize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span></div>
+
+<div class="viewcode-block" id="MemoryValue.set_value_signed_int"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_signed_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_signed_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of this MemoryValue from a signed int</span>
+<span class="sd">        :param signed_int:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signed_int</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;The signed_int parameter must be an integer!&#39;</span><span class="p">)</span>
+
+        <span class="c1"># assert that the value can fit within the possible range for the size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="o">-</span><span class="mi">128</span> <span class="o">&lt;=</span> <span class="n">signed_int</span> <span class="o">&lt;=</span> <span class="mi">127</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [-128, 127].&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="o">-</span><span class="mi">32768</span> <span class="o">&lt;=</span> <span class="n">signed_int</span> <span class="o">&lt;=</span> <span class="mi">32767</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [-32768, 32767]&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="o">-</span><span class="mi">2147483648</span> <span class="o">&lt;=</span> <span class="n">signed_int</span> <span class="o">&lt;=</span> <span class="mi">2147483647</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [-2147483648, 2147483647]&#39;</span>
+
+        <span class="c1"># if the value is negative, take the 2s comp for the length</span>
+        <span class="k">if</span> <span class="n">signed_int</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__twos_complement</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">signed_int</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="n">signed_int</span></div>
+
+<div class="viewcode-block" id="MemoryValue.set_value_unsigned_int"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_unsigned_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_unsigned_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of this MemoryValue from an unsigned int</span>
+<span class="sd">        :param unsigned_int:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unsigned_int</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+           <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;The unsigned_int parameter must be an integer!&#39;</span><span class="p">)</span>
+
+        <span class="c1"># assert that the value can fit within the possible range for the size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">unsigned_int</span> <span class="o">&lt;=</span> <span class="mh">0xFFFFFFFF</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [0, 0xFFFFFFFF].&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">unsigned_int</span> <span class="o">&lt;=</span> <span class="mh">0xFFFF</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [0, 0xFFFF]&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">BYTE</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">unsigned_int</span> <span class="o">&lt;=</span> <span class="mh">0xFF</span><span class="p">),</span> <span class="s1">&#39;Value must fit in the range [0, 0xFF]&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="n">unsigned_int</span></div>
+
+<div class="viewcode-block" id="MemoryValue.set_value_bytes"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bytes_value</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the value of this MemoryValue from an array of bytes</span>
+<span class="sd">        :param bytes_value:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">bytes_value</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bytes_value</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;The bytes_value parameter must be bytes or bytearray!&#39;</span><span class="p">)</span>
+
+        <span class="c1"># optional, should we trim the input bytes to fit to the length of this</span>
+        <span class="c1"># get the value from bytes</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="n">bytes_value</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># then set it using the set value unsigned method to perform checking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__twos_complement</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the twos complement of the given value</span>
+<span class="sd">        :pasram value: the value to take the 2s comp of</span>
+<span class="sd">        :param length: the length in bytes of the value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># flip all of the bits and set the value</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFF</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFF</span>
+        <span class="k">elif</span> <span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">value</span> <span class="o">^</span> <span class="n">mask</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="MemoryValue.get_value_unsigned"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_unsigned">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_unsigned</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the unsigned value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_value_signed"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_signed">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the signed value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if the msb is set</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_msb</span><span class="p">():</span>
+            <span class="n">ret_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__twos_complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">ret_val</span>
+        <span class="c1"># otherwise, is positive and don&#39;t have to convert</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_negative"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_negative">[docs]</a>    <span class="k">def</span> <span class="nf">get_negative</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the negative flag for the memory value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_msb</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_value_bytes"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the bytes value</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__bytes__</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_value_bytearray"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytearray">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytearray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value as a bytearray</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__bytes__</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="MemoryValue.get_msb"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_msb">[docs]</a>    <span class="k">def</span> <span class="nf">get_msb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the most significant bit indicating that the value is negative</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
+
+        <span class="c1"># default mask is one byte</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="mh">0x80</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0x8000</span>
+        <span class="k">elif</span> <span class="n">size</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0x80000000</span>
+
+        <span class="c1"># determine if the unsigned value MSB is set to 1</span>
+        <span class="c1"># by masking only the MSB and checking that the result</span>
+        <span class="c1"># has some value set</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">&amp;</span> <span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Equals, compares to see that the value is the same</span>
+<span class="sd">        don&#39;t care about the len</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add, adds the value of two MemoryValues to each other</span>
+<span class="sd">        Also supports adding integer values to the result</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="n">total_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">total_value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">total_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">+</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">total_value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Subtracts the value of two memory values from each other</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">mask_value_for_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">-</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">mask_value_for_length</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Greater than</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Less than</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Less than or equals</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Not equal</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Greater or equal</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        to str, show the hex representation</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{1}</span><span class="s1"> MemoryValue </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__bytes__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the bytes representation of this</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MemoryValue.lsl"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.lsl">[docs]</a>    <span class="k">def</span> <span class="nf">lsl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        logical shift left, allows for the msb to be set when shifted left</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># shift the signed value to the left</span>
+            <span class="c1"># preserve the sign</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+<div class="viewcode-block" id="MemoryValue.lsr"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.lsr">[docs]</a>    <span class="k">def</span> <span class="nf">lsr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        logical shift right, the msb will always be 0</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># shift the signed value to the left</span>
+            <span class="c1"># preserve the sign</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_unsigned</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+    <span class="k">def</span> <span class="nf">__lshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arithmetic left shift operator, sign of the result will be preserved</span>
+<span class="sd">        :param other: an int or MemoryValue representing how much to shift the value of this by</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># shift the signed value to the left</span>
+            <span class="c1"># preserve the sign</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__rshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arithmetic right shift operator, sign of the result will be preserved</span>
+<span class="sd">        :param other: an int or MemoryValue representing how much to shift the value of this by</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># need to deal with this at a bit level, so doing it later</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># shift the signed value to the left</span>
+            <span class="c1"># preserve the sign</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__xor__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        XOR operator</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">^</span> <span class="n">other</span><span class="o">.</span><span class="n">unsigned_value</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">^</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_signed_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Not operator</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># flip all of the bits and set the value</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFF</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">WORD</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFF</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="n">OpSize</span><span class="o">.</span><span class="n">LONG</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
+        <span class="c1"># xor w/ the mask to invert the value</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">^</span> <span class="n">mask</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="nf">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        bitwise or</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :reeturn:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">unsigned_value</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">|</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        bitwise and</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">&amp;</span> <span class="n">other</span><span class="o">.</span><span class="n">unsigned_value</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__floordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Floor div</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">//</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">//</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multiply</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">*</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mod</span>
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">%</span> <span class="n">other</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">()</span> <span class="o">%</span> <span class="n">other</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="p">,</span> <span class="n">modulo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Power</span>
+<span class="sd">        :param power:</span>
+<span class="sd">        :param modulo:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="n">MemoryValue</span><span class="p">):</span>
+            <span class="c1"># need to xor the bytes, and not with the signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">(),</span> <span class="n">power</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">())</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">power</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="c1"># can do a lazy xor by using a signed value</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value_signed</span><span class="p">(),</span> <span class="n">power</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">MemoryValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">set_value_unsigned_int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Easier68k Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+    </div>
+  </body>
+</html>
