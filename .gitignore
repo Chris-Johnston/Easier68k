@@ -159,3 +159,10 @@ temp_output_file.txt
 
 # emacs stuff
 \#*\#
+
+# vscode stuff
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
