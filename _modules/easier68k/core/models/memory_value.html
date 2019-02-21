@@ -74,7 +74,7 @@
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="MemoryValue"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue">[docs]</a><span class="k">class</span> <span class="nc">MemoryValue</span><span class="p">:</span>
+<div class="viewcode-block" id="MemoryValue"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue">[docs]</a><span class="k">class</span> <span class="nc">MemoryValue</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Representation of some value in memory</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -109,7 +109,7 @@
         <span class="c1"># consider adding CCR bits for the last operation?</span>
         <span class="c1"># or just have CCR bit getters, in the ops just compare before and after</span>
 
-<div class="viewcode-block" id="MemoryValue.set_size"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.set_size"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.set_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the length of this memory value</span>
 <span class="sd">        :param size: the length in bytes of this value, defined by OpSize</span>
@@ -117,14 +117,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">size</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_size"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpSize</span><span class="p">:</span>
+<div class="viewcode-block" id="MemoryValue.get_size"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpSize</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the length of this memory value as an OpSize</span>
 <span class="sd">        :return: the length in bytes of this value as defined by an OpSize</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span></div>
 
-<div class="viewcode-block" id="MemoryValue.set_value_signed_int"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_signed_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_signed_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.set_value_signed_int"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.set_value_signed_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_signed_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the value of this MemoryValue from a signed int</span>
 <span class="sd">        :param signed_int:</span>
@@ -147,7 +147,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="n">signed_int</span></div>
 
-<div class="viewcode-block" id="MemoryValue.set_value_unsigned_int"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_unsigned_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_unsigned_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.set_value_unsigned_int"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.set_value_unsigned_int">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_unsigned_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unsigned_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the value of this MemoryValue from an unsigned int</span>
 <span class="sd">        :param unsigned_int:</span>
@@ -166,7 +166,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span> <span class="o">=</span> <span class="n">unsigned_int</span></div>
 
-<div class="viewcode-block" id="MemoryValue.set_value_bytes"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.set_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bytes_value</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.set_value_bytes"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.set_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">set_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bytes_value</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the value of this MemoryValue from an array of bytes</span>
 <span class="sd">        :param bytes_value:</span>
@@ -199,14 +199,14 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">value</span> <span class="o">^</span> <span class="n">mask</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="MemoryValue.get_value_unsigned"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_unsigned">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_unsigned</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.get_value_unsigned"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_value_unsigned">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_unsigned</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the unsigned value</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_value_signed"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_signed">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.get_value_signed"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_value_signed">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the signed value</span>
 <span class="sd">        :return:</span>
@@ -218,28 +218,28 @@
         <span class="c1"># otherwise, is positive and don&#39;t have to convert</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_negative"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_negative">[docs]</a>    <span class="k">def</span> <span class="nf">get_negative</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.get_negative"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_negative">[docs]</a>    <span class="k">def</span> <span class="nf">get_negative</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the negative flag for the memory value</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_msb</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_value_bytes"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<div class="viewcode-block" id="MemoryValue.get_value_bytes"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the bytes value</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__bytes__</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_value_bytearray"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytearray">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytearray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+<div class="viewcode-block" id="MemoryValue.get_value_bytearray"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_value_bytearray">[docs]</a>    <span class="k">def</span> <span class="nf">get_value_bytearray</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the value as a bytearray</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__bytes__</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="MemoryValue.get_msb"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.get_msb">[docs]</a>    <span class="k">def</span> <span class="nf">get_msb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.get_msb"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.get_msb">[docs]</a>    <span class="k">def</span> <span class="nf">get_msb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">OpSize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the most significant bit indicating that the value is negative</span>
 <span class="sd">        :return:</span>
@@ -383,7 +383,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsigned_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">.</span><span class="n">get_number_of_bytes</span><span class="p">(),</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MemoryValue.lsl"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.lsl">[docs]</a>    <span class="k">def</span> <span class="nf">lsl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.lsl"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.lsl">[docs]</a>    <span class="k">def</span> <span class="nf">lsl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        logical shift left, allows for the msb to be set when shifted left</span>
 <span class="sd">        :param other:</span>
@@ -403,7 +403,7 @@
             <span class="k">return</span> <span class="n">n</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
-<div class="viewcode-block" id="MemoryValue.lsr"><a class="viewcode-back" href="../../../../index.html#easier68k.core.models.memory_value.MemoryValue.lsr">[docs]</a>    <span class="k">def</span> <span class="nf">lsr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryValue.lsr"><a class="viewcode-back" href="../../../../easier68k.core.models.html#easier68k.core.models.memory_value.MemoryValue.lsr">[docs]</a>    <span class="k">def</span> <span class="nf">lsr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        logical shift right, the msb will always be 0</span>
 <span class="sd">        :param other:</span>

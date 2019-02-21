@@ -17,7 +17,9 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="easier68k.core.models package" href="easier68k.core.models.html" />
+    <link rel="prev" title="easier68k.core package" href="easier68k.core.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,7 +30,15 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.models.html" title="easier68k.core.models package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="easier68k.core.html" title="easier68k.core package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" >easier68k package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="easier68k.core.html" accesskey="U">easier68k.core package</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -49,8 +59,7 @@ and their corresponding bit values</p>
 <dl class="class">
 <dt id="easier68k.core.enum.condition.Condition">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.condition.</code><code class="descname">Condition</code><a class="reference internal" href="_modules/easier68k/core/enum/condition.html#Condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.condition.Condition" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="attribute">
+<dd><dl class="attribute">
 <dt id="easier68k.core.enum.condition.Condition.CC">
 <code class="descname">CC</code><em class="property"> = 4</em><a class="headerlink" href="#easier68k.core.enum.condition.Condition.CC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -140,8 +149,7 @@ that are stored in the condition code register</p>
 <dl class="class">
 <dt id="easier68k.core.enum.condition_status_code.ConditionStatusCode">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.condition_status_code.</code><code class="descname">ConditionStatusCode</code><a class="reference internal" href="_modules/easier68k/core/enum/condition_status_code.html#ConditionStatusCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.condition_status_code.ConditionStatusCode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>X - Extend - Set to the value of the C-bit for
+<dd><p>X - Extend - Set to the value of the C-bit for
 arithmetic operations; otherwise not affected or set
 to a specified result.</p>
 <p>N - Negative - Set if the most significant bit of the
@@ -214,8 +222,7 @@ and methods associated with it</p>
 <dl class="class">
 <dt id="easier68k.core.enum.ea_mode.EAMode">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.ea_mode.</code><code class="descname">EAMode</code><a class="reference internal" href="_modules/easier68k/core/enum/ea_mode.html#EAMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.ea_mode.EAMode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.ea_mode.EAMode.ALA">
 <code class="descname">ALA</code><em class="property"> = 6</em><a class="headerlink" href="#easier68k.core.enum.ea_mode.EAMode.ALA" title="Permalink to this definition">¶</a></dt>
@@ -306,8 +313,7 @@ Represents binary translations for various EA modes</p>
 <dl class="class">
 <dt id="easier68k.core.enum.ea_mode_bin.EAModeBinary">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.ea_mode_bin.</code><code class="descname">EAModeBinary</code><a class="reference internal" href="_modules/easier68k/core/enum/ea_mode_bin.html#EAModeBinary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.ea_mode_bin.EAModeBinary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.ea_mode_bin.EAModeBinary.MODE_ALA">
 <code class="descname">MODE_ALA</code><em class="property"> = 7</em><a class="headerlink" href="#easier68k.core.enum.ea_mode_bin.EAModeBinary.MODE_ALA" title="Permalink to this definition">¶</a></dt>
@@ -554,8 +560,7 @@ Holds the values for various binary translations of size codes</p>
 <dl class="class">
 <dt id="easier68k.core.enum.op_size.MoveSize">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.op_size.</code><code class="descname">MoveSize</code><a class="reference internal" href="_modules/easier68k/core/enum/op_size.html#MoveSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.op_size.MoveSize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>Represents the “Big S” sizes (dark purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
+<dd><p>Represents the “Big S” sizes (dark purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.op_size.MoveSize.BYTE">
 <code class="descname">BYTE</code><em class="property"> = 1</em><a class="headerlink" href="#easier68k.core.enum.op_size.MoveSize.BYTE" title="Permalink to this definition">¶</a></dt>
@@ -593,8 +598,7 @@ Holds the values for various binary translations of size codes</p>
 <dl class="class">
 <dt id="easier68k.core.enum.op_size.OpSize">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.op_size.</code><code class="descname">OpSize</code><a class="reference internal" href="_modules/easier68k/core/enum/op_size.html#OpSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.op_size.OpSize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Represents the 3 lengths associated with operations, either Byte Word or Long word</p>
+<dd><p>Represents the 3 lengths associated with operations, either Byte Word or Long word</p>
 <p>For example: the OpSize for MOVE.B xxx, yyy is Byte</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.op_size.OpSize.BYTE">
@@ -629,8 +633,7 @@ Holds the values for various binary translations of size codes</p>
 <dl class="class">
 <dt id="easier68k.core.enum.op_size.SingleBitSize">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.op_size.</code><code class="descname">SingleBitSize</code><a class="reference internal" href="_modules/easier68k/core/enum/op_size.html#SingleBitSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.op_size.SingleBitSize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>Represents the single bit sizes (medium purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
+<dd><p>Represents the single bit sizes (medium purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.op_size.SingleBitSize.LONG">
 <code class="descname">LONG</code><em class="property"> = 1</em><a class="headerlink" href="#easier68k.core.enum.op_size.SingleBitSize.LONG" title="Permalink to this definition">¶</a></dt>
@@ -651,8 +654,7 @@ Holds the values for various binary translations of size codes</p>
 <dl class="class">
 <dt id="easier68k.core.enum.op_size.Size">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.op_size.</code><code class="descname">Size</code><a class="reference internal" href="_modules/easier68k/core/enum/op_size.html#Size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.op_size.Size" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>Represents the “Small S” sizes (light purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
+<dd><p>Represents the “Small S” sizes (light purple on this chart: <a class="reference external" href="http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf">http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf</a>)</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.op_size.Size.BYTE">
 <code class="descname">BYTE</code><em class="property"> = 0</em><a class="headerlink" href="#easier68k.core.enum.op_size.Size.BYTE" title="Permalink to this definition">¶</a></dt>
@@ -683,8 +685,7 @@ Represents the different types of registers</p>
 <dl class="class">
 <dt id="easier68k.core.enum.register.Register">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.register.</code><code class="descname">Register</code><a class="reference internal" href="_modules/easier68k/core/enum/register.html#Register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.register.Register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.register.Register.A0">
 <code class="descname">A0</code><em class="property"> = 8</em><a class="headerlink" href="#easier68k.core.enum.register.Register.A0" title="Permalink to this definition">¶</a></dt>
@@ -794,8 +795,7 @@ Represents the different types of registers</p>
 <dl class="class">
 <dt id="easier68k.core.enum.srecordtype.SRecordType">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.srecordtype.</code><code class="descname">SRecordType</code><a class="reference internal" href="_modules/easier68k/core/enum/srecordtype.html#SRecordType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.srecordtype.SRecordType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.srecordtype.SRecordType.S0">
 <code class="descname">S0</code><em class="property"> = 0</em><a class="headerlink" href="#easier68k.core.enum.srecordtype.SRecordType.S0" title="Permalink to this definition">¶</a></dt>
@@ -861,8 +861,7 @@ See Fig 1-8</p>
 <dl class="class">
 <dt id="easier68k.core.enum.system_status_code.SystemStatusCode">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.system_status_code.</code><code class="descname">SystemStatusCode</code><a class="reference internal" href="_modules/easier68k/core/enum/system_status_code.html#SystemStatusCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.system_status_code.SystemStatusCode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="attribute">
+<dd><dl class="attribute">
 <dt id="easier68k.core.enum.system_status_code.SystemStatusCode.I0">
 <code class="descname">I0</code><em class="property"> = 256</em><a class="headerlink" href="#easier68k.core.enum.system_status_code.SystemStatusCode.I0" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -938,8 +937,7 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
 <dl class="class">
 <dt id="easier68k.core.enum.trap_task.TrapTask">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.trap_task.</code><code class="descname">TrapTask</code><a class="reference internal" href="_modules/easier68k/core/enum/trap_task.html#TrapTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.trap_task.TrapTask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.trap_task.TrapTask.DisplayNullTermString">
 <code class="descname">DisplayNullTermString</code><em class="property"> = 14</em><a class="headerlink" href="#easier68k.core.enum.trap_task.TrapTask.DisplayNullTermString" title="Permalink to this definition">¶</a></dt>
@@ -993,8 +991,7 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
 <dl class="class">
 <dt id="easier68k.core.enum.trap_vector.TrapVectors">
 <em class="property">class </em><code class="descclassname">easier68k.core.enum.trap_vector.</code><code class="descname">TrapVectors</code><a class="reference internal" href="_modules/easier68k/core/enum/trap_vector.html#TrapVectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.enum.trap_vector.TrapVectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>An enumeration.</p>
+<dd><p>An enumeration.</p>
 <dl class="attribute">
 <dt id="easier68k.core.enum.trap_vector.TrapVectors.IO">
 <code class="descname">IO</code><em class="property"> = 15</em><a class="headerlink" href="#easier68k.core.enum.trap_vector.TrapVectors.IO" title="Permalink to this definition">¶</a></dt>
@@ -1007,9 +1004,6 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-easier68k.core.enum">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.core.enum" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -1033,18 +1027,10 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
 <li><a class="reference internal" href="#module-easier68k.core.enum.system_status_code">easier68k.core.enum.system_status_code module</a></li>
 <li><a class="reference internal" href="#module-easier68k.core.enum.trap_task">easier68k.core.enum.trap_task module</a></li>
 <li><a class="reference internal" href="#module-easier68k.core.enum.trap_vector">easier68k.core.enum.trap_vector module</a></li>
-<li><a class="reference internal" href="#module-easier68k.core.enum">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/easier68k.core.enum.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -1057,6 +1043,13 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.core.enum.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1070,7 +1063,15 @@ Represents the different types of tasks that are done with the TRAP opcode</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.models.html" title="easier68k.core.models package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="easier68k.core.html" title="easier68k.core package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" >easier68k package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="easier68k.core.html" >easier68k.core package</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

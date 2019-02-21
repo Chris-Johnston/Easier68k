@@ -17,7 +17,9 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="easier68k.core.opcodes package" href="easier68k.core.opcodes.html" />
+    <link rel="prev" title="easier68k.core.enum package" href="easier68k.core.enum.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,7 +30,15 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.opcodes.html" title="easier68k.core.opcodes package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="easier68k.core.enum.html" title="easier68k.core.enum package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" >easier68k package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="easier68k.core.html" accesskey="U">easier68k.core package</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -50,8 +60,7 @@ this is the new ‘EAMode’ class</p>
 <dl class="class">
 <dt id="easier68k.core.models.assembly_parameter.AssemblyParameter">
 <em class="property">class </em><code class="descclassname">easier68k.core.models.assembly_parameter.</code><code class="descname">AssemblyParameter</code><span class="sig-paren">(</span><em>mode: easier68k.core.enum.ea_mode.EAMode</em>, <em>data: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/assembly_parameter.html#AssemblyParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.assembly_parameter.AssemblyParameter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Constructor</p>
+<dd><p>Constructor</p>
 <p>Checks that the mode and the data are considered to be valid, like
 registers are within the correct bounds and addresses are not out of bounds.</p>
 <dl class="method">
@@ -81,8 +90,7 @@ registers are within the correct bounds and addresses are not out of bounds.</p>
 <dl class="class">
 <dt id="easier68k.core.models.list_file.ListFile">
 <em class="property">class </em><code class="descclassname">easier68k.core.models.list_file.</code><code class="descname">ListFile</code><a class="reference internal" href="_modules/easier68k/core/models/list_file.html#ListFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.list_file.ListFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents assembled instructions and their locations in memory</p>
+<dd><p>Represents assembled instructions and their locations in memory</p>
 <p>Constructor</p>
 <dl class="method">
 <dt id="easier68k.core.models.list_file.ListFile.clear_location">
@@ -210,8 +218,7 @@ integers, hex strings and byte arrays.</p>
 <dl class="class">
 <dt id="easier68k.core.models.memory_value.MemoryValue">
 <em class="property">class </em><code class="descclassname">easier68k.core.models.memory_value.</code><code class="descname">MemoryValue</code><span class="sig-paren">(</span><em>len: easier68k.core.enum.op_size.OpSize = &lt;OpSize.WORD: 2&gt;</em>, <em>*</em>, <em>signed_int: int = None</em>, <em>unsigned_int: int = None</em>, <em>bytes: bytearray = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/memory_value.html#MemoryValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.memory_value.MemoryValue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Representation of some value in memory</p>
+<dd><p>Representation of some value in memory</p>
 <p>Constructor</p>
 <p>Sets the initial value to zero with a length of OpSize.Wordprint
 :param len the length in bytes of this memory value
@@ -335,8 +342,7 @@ in ASM looks just like an immediate value</p>
 <dl class="class">
 <dt id="easier68k.core.models.trap_vector.TrapVector">
 <em class="property">class </em><code class="descclassname">easier68k.core.models.trap_vector.</code><code class="descname">TrapVector</code><span class="sig-paren">(</span><em>value: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/core/models/trap_vector.html#TrapVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.trap_vector.TrapVector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
+<dd><dl class="method">
 <dt id="easier68k.core.models.trap_vector.TrapVector.get_value">
 <code class="descname">get_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/easier68k/core/models/trap_vector.html#TrapVector.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.core.models.trap_vector.TrapVector.get_value" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -361,9 +367,6 @@ and returns a new TrapVector</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-easier68k.core.models">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.core.models" title="Permalink to this headline">¶</a></h2>
-</div>
 </div>
 
 
@@ -380,18 +383,10 @@ and returns a new TrapVector</p>
 <li><a class="reference internal" href="#module-easier68k.core.models.list_file">easier68k.core.models.list_file module</a></li>
 <li><a class="reference internal" href="#module-easier68k.core.models.memory_value">easier68k.core.models.memory_value module</a></li>
 <li><a class="reference internal" href="#module-easier68k.core.models.trap_vector">easier68k.core.models.trap_vector module</a></li>
-<li><a class="reference internal" href="#module-easier68k.core.models">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/easier68k.core.models.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -404,6 +399,13 @@ and returns a new TrapVector</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.core.models.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -417,7 +419,15 @@ and returns a new TrapVector</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.opcodes.html" title="easier68k.core.opcodes package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="easier68k.core.enum.html" title="easier68k.core.enum package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" >easier68k package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="easier68k.core.html" >easier68k.core package</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

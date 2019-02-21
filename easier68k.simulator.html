@@ -17,7 +17,8 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="easier68k.core.util package" href="easier68k.core.util.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,7 +29,11 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.util.html" title="easier68k.core.util package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" accesskey="U">easier68k package</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -59,8 +64,7 @@
 <dl class="class">
 <dt id="easier68k.simulator.m68k.M68K">
 <em class="property">class </em><code class="descclassname">easier68k.simulator.m68k.</code><code class="descname">M68K</code><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Constructor</p>
+<dd><p>Constructor</p>
 <dl class="method">
 <dt id="easier68k.simulator.m68k.M68K.clear_cycles">
 <code class="descname">clear_cycles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/easier68k/simulator/m68k.html#M68K.clear_cycles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.m68k.M68K.clear_cycles" title="Permalink to this definition">¶</a></dt>
@@ -221,14 +225,12 @@ and accessed completely</p>
 <dl class="exception">
 <dt id="easier68k.simulator.memory.AssignWrongMemorySizeError">
 <em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">AssignWrongMemorySizeError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#AssignWrongMemorySizeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.AssignWrongMemorySizeError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="class">
 <dt id="easier68k.simulator.memory.Memory">
 <em class="property">class </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">Memory</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Constructor</p>
+<dd><p>Constructor</p>
 <dl class="method">
 <dt id="easier68k.simulator.memory.Memory.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>size: easier68k.core.enum.op_size.OpSize</em>, <em>location: int</em><span class="sig-paren">)</span> &#x2192; easier68k.core.models.memory_value.MemoryValue<a class="reference internal" href="_modules/easier68k/simulator/memory.html#Memory.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.Memory.get" title="Permalink to this definition">¶</a></dt>
@@ -273,18 +275,13 @@ NOTE: file must be opened as binary or this won’t work</p>
 <dl class="exception">
 <dt id="easier68k.simulator.memory.OutOfBoundsMemoryError">
 <em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">OutOfBoundsMemoryError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#OutOfBoundsMemoryError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.OutOfBoundsMemoryError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="exception">
 <dt id="easier68k.simulator.memory.UnalignedMemoryAccessError">
 <em class="property">exception </em><code class="descclassname">easier68k.simulator.memory.</code><code class="descname">UnalignedMemoryAccessError</code><a class="reference internal" href="_modules/easier68k/simulator/memory.html#UnalignedMemoryAccessError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#easier68k.simulator.memory.UnalignedMemoryAccessError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
+<dd></dd></dl>
 
-</div>
-<div class="section" id="module-easier68k.simulator">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-easier68k.simulator" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -301,18 +298,10 @@ NOTE: file must be opened as binary or this won’t work</p>
 <li><a class="reference internal" href="#module-easier68k.simulator.clock">easier68k.simulator.clock module</a></li>
 <li><a class="reference internal" href="#module-easier68k.simulator.m68k">easier68k.simulator.m68k module</a></li>
 <li><a class="reference internal" href="#module-easier68k.simulator.memory">easier68k.simulator.memory module</a></li>
-<li><a class="reference internal" href="#module-easier68k.simulator">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/easier68k.simulator.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -325,6 +314,13 @@ NOTE: file must be opened as binary or this won’t work</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/easier68k.simulator.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -338,7 +334,11 @@ NOTE: file must be opened as binary or this won’t work</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="easier68k.core.util.html" title="easier68k.core.util package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Easier68k  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="easier68k.html" >easier68k package</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
