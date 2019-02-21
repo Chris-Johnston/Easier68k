@@ -11,7 +11,7 @@ or emulation (among other features).
     EASy68k implemented. As a result, it's not quite ready for any wide-spread use
     (although why are you writing 68k in the first place?).
     
-`A sample use case of Easier68k can be found at github.com/Chris-Johnston/Easier68k-SampleProject <https://github.com/Chris-Johnston/Easier68k-SampleProject>`_.
+`A sample use-case of Easier68k can be found at github.com/Chris-Johnston/Easier68k-SampleProject <https://github.com/Chris-Johnston/Easier68k-SampleProject>`_.
 
 If you would like to contribute to Easier68k's development, refer to
 `our Issue list on GitHub <https://github.com/Chris-Johnston/Easier68k/issues>`_

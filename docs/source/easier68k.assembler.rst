@@ -1,7 +1,7 @@
 easier68k.assembler package
 ===========================
 
-The asembler modules are responsible for parsing and converting instructions
+The assembler modules are responsible for parsing and converting instructions
 into machine code.
 
 Submodules
