@@ -3,14 +3,10 @@ from ..util.parsing import parse_literal
 
 
 class TrapVectors(IntEnum):
-    pass
-
-
-class TrapVectors(IntEnum):
     IO = 15
 
     @staticmethod
-    def parse(asm_str: str) -> TrapVectors:
+    def parse(asm_str: str):
         """
         Parses a trap vector value from a string
         and returns a new TrapVector
