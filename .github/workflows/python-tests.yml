@@ -21,9 +21,13 @@ jobs:
         python -m pip install -r requirements.txt
         python -m pip install -r testing_requirements.txt
     - name: Install the library
-      run: python setup.py install
+      run: |
+        cd tests
+        python setup.py install
     - name: Run Doctests
-      run: python run_doctest.py
+      run: |
+        cd tests
+        python run_doctest.py
     - name: Run Pytests
       run: python run_pytest.py
     - name: Lint Files
