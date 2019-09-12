@@ -198,7 +198,7 @@ class M68K:
         """
         if not self.halted:
             # must be here or we get circular dependency issues
-            from ..core.util.find_module import find_opcode_cls, valid_opcodes
+            from .find_module import find_opcode_cls, valid_opcodes
 
             for op_str in valid_opcodes:
                 op_class = find_opcode_cls(op_str)

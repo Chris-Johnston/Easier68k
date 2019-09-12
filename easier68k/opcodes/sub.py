@@ -1,6 +1,6 @@
 from ..ea_mode import EAMode
 from ..op_size import OpSize
-from ..ea_mode_bin import parse_ea_from_binary
+from ..ea_mode_bin import parse_ea_from_binary, parse_from_ea_mode_modefirst
 from ..m68k import M68K
 from .opcode import Opcode
 from ..split_bits import split_bits
@@ -105,7 +105,7 @@ class Sub(Opcode):
             elif self.size == OpSize.LONG:
                 ret_opcode |= 0b110 << 6
 
-            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest)
+            ret_opcode |= parse_from_ea_mode_modefirst(self.dest)
         else:  # dest must be DRD
             ret_opcode |= self.dest.data << 9
 
@@ -117,7 +117,7 @@ class Sub(Opcode):
             elif self.size == OpSize.LONG:
                 ret_opcode |= 0b010 << 6
 
-            ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+            ret_opcode |= parse_from_ea_mode_modefirst(self.src)
 
         # convert the int to a bytes, then to a mutable bytearray
         return bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))

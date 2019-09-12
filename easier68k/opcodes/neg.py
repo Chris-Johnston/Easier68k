@@ -1,6 +1,6 @@
 from ..ea_mode import EAMode
 from ..op_size import OpSize
-from ..ea_mode_bin import parse_ea_from_binary
+from ..ea_mode_bin import parse_ea_from_binary, parse_from_ea_mode_modefirst
 from ..m68k import M68K
 from .opcode import Opcode
 from ..split_bits import split_bits
@@ -8,7 +8,7 @@ from ..parsing import parse_assembly_parameter
 from ..assembly_parameter import AssemblyParameter
 from ..condition_status_code import ConditionStatusCode
 from ..memory_value import MemoryValue
-from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches, ea_to_binary_post_op
 
 
 class Neg(Opcode):
@@ -67,7 +67,7 @@ class Neg(Opcode):
         elif self.size == OpSize.LONG:
             ret_opcode |= 0b10 << 6
 
-        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest) << 0
+        ret_opcode |= parse_from_ea_mode_modefirst(self.dest) << 0
 
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 

@@ -1,7 +1,7 @@
 from .opcode import Opcode
 from ..ea_mode import EAMode
 from ..op_size import OpSize
-from ..ea_mode_bin import parse_ea_from_binary
+from ..ea_mode_bin import parse_ea_from_binary, parse_from_ea_mode_modefirst
 from ..m68k import M68K
 from ..split_bits import split_bits
 from ..parsing import parse_assembly_parameter
@@ -84,7 +84,7 @@ class Cmpi(Opcode):
         elif self.size == OpSize.LONG:
             ret_opcode |= 0b10 << 6
 
-        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest) << 0
+        ret_opcode |= parse_from_ea_mode_modefirst(self.dest) << 0
 
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 

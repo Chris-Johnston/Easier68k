@@ -8,7 +8,8 @@ from ..assembly_parameter import AssemblyParameter
 from ..memory_value import MemoryValue
 from ..register import Register
 from typing import Union
-from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
+from ..ea_mode_bin import parse_from_ea_mode_modefirst
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches, ea_to_binary_post_op
 
 
 class Jsr(Opcode):
@@ -45,7 +46,7 @@ class Jsr(Opcode):
         # ret_opcode is the binary value which represents the assembled instruction
         ret_opcode = 0b0100111010 << 6
 
-        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.dest) << 0
+        ret_opcode |= parse_from_ea_mode_modefirst(self.dest) << 0
 
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 

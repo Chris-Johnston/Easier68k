@@ -9,7 +9,7 @@ from ..parsing import *
 from bitstring import Bits
 from math import log
 from abc import ABC, ABCMeta, abstractmethod
-from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 COND_CODE_TO_OPCODE = {
     '\x00': 'BRA',
@@ -212,7 +212,7 @@ class branch_code(Opcode):
         parameters[1] = int(parameters[1])
 
         offutilset = abs(int(parameters[0]) - int(parameters[1] + 2))
-        size = 1 if offset < 128 else (2 if offset < 326778 else 3)
+        size = 1 if offutilset < 128 else (2 if offutilset < 326778 else 3)
 
         return size
     

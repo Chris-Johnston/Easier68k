@@ -1,12 +1,12 @@
 from ..ea_mode import EAMode
 from ..op_size import MoveSize, OpSize
-from ..ea_mode_bin import parse_ea_from_binary
+from ..ea_mode_bin import parse_ea_from_binary, parse_from_ea_mode_regfirst, parse_from_ea_mode_modefirst
 from ..m68k import M68K
 from .opcode import Opcode
 from ..split_bits import split_bits
 from ..parsing import parse_assembly_parameter, from_str_util
 from ..assembly_parameter import AssemblyParameter
-from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches, ea_to_binary_post_op
 
 
 class Move(Opcode):  # Forward declaration
@@ -83,10 +83,10 @@ class Move(Opcode):
         ret_opcode |= MoveSize.from_op_size(self.size) << 12
 
         # add the destination reg and dest mode
-        ret_opcode |= ea_mode_bin.parse_from_ea_mode_regfirst(self.dest) << 6
+        ret_opcode |= parse_from_ea_mode_regfirst(self.dest) << 6
 
         # add the src mode and src reg
-        ret_opcode |= ea_mode_bin.parse_from_ea_mode_modefirst(self.src)
+        ret_opcode |= parse_from_ea_mode_modefirst(self.src)
 
         # convert the opcode word to bytes
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))

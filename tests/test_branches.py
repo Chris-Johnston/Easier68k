@@ -3,7 +3,7 @@ Test methods for all branch opcodes
 """
 
 from easier68k.opcodes import *
-from easier68k import OpSize
+from easier68k import OpSize, M68K
 
 def test_bcc_construction():
     b = Bra.from_str("BRA", "$2002, " + str(0x2000) )
