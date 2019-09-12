@@ -29,9 +29,9 @@ jobs:
     - name: Lint Files
       # || true to avoid failing the build
       run: |
-      (find easier68k -iname "*.py" | xargs pylint) || true
-      (find easier68k-cli -iname "*.py" | xargs pylint) || true
-      (find tests -iname "*.py" | xargs pylint) || true
+        (find easier68k -iname "*.py" | xargs pylint) || true
+        (find easier68k-cli -iname "*.py" | xargs pylint) || true
+        (find tests -iname "*.py" | xargs pylint) || true
     - name: Build Docs
       run: |
         cd docs
