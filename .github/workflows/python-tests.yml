@@ -1,0 +1,38 @@
+name: Setup and run tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.5, 3.6, 3.7]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install -r requirements.txt
+        python -m pip install -r testing_requirements.txt
+    - name: Install the library
+      run: python setup.py install
+    - name: Run Doctests
+      run: python run_doctest.py
+    - name: Run Pytests
+      run: python run_pytest.py
+    - name: Lint Files
+      # || true to avoid failing the build
+      run: |
+      (find easier68k -iname "*.py" | xargs pylint) || true
+      (find easier68k-cli -iname "*.py" | xargs pylint) || true
+      (find tests -iname "*.py" | xargs pylint) || true
+    - name: Build Docs
+      run: |
+        cd docs
+        make html
