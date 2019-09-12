@@ -7,6 +7,7 @@ from ..parsing import parse_assembly_parameter
 from ..op_size import OpSize
 from ..split_bits import split_bits
 from ..memory_value import MemoryValue
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 class Adda(Opcode):
     pass
@@ -65,7 +66,7 @@ class Adda(Opcode):
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
         if self.src.mode == EAMode.IMM or self.src.mode == EAMode.AWA or self.src.mode == EAMode.ALA:
-            ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.src, self.size).get_value_bytearray())
+            ret_bytes.extend(ea_to_binary_post_op(self.src, self.size).get_value_bytearray())
 
         return ret_bytes
 
@@ -128,7 +129,7 @@ class Adda(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'ADDA')
+        return command_matches(command, 'ADDA')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -226,7 +227,7 @@ class Adda(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "ADDA", 2, Adda.valid_sizes)
+        return n_param_is_valid(command, parameters, "ADDA", 2, Adda.valid_sizes)
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> (Adda, int):
@@ -322,4 +323,4 @@ class Adda(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Adda, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Adda, 2, OpSize.WORD)

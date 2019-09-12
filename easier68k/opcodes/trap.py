@@ -8,6 +8,8 @@ from ..register import Register
 from ..op_size import OpSize
 from ..input import get_input
 from ..trap_vectors import TrapVectors
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
+
 
 class Trap(Opcode): # forward declaration
     pass

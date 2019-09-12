@@ -8,6 +8,7 @@ from ..parsing import parse_assembly_parameter
 from ..assembly_parameter import AssemblyParameter
 from ..condition_status_code import ConditionStatusCode
 from ..memory_value import MemoryValue
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Sub(Opcode):  # Forward declaration
@@ -227,7 +228,7 @@ class Sub(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'SUB')
+        return command_matches(command, 'SUB')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -320,7 +321,7 @@ class Sub(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "SUB", 2, param_invalid_modes=[[EAMode.ARD],
+        return n_param_is_valid(command, parameters, "SUB", 2, param_invalid_modes=[[EAMode.ARD],
                                                                                                 [EAMode.ARD,
                                                                                                  EAMode.IMM]])[:2]
 
@@ -435,4 +436,4 @@ class Sub(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Sub, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Sub, 2, OpSize.WORD)

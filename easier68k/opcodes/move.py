@@ -6,6 +6,7 @@ from .opcode import Opcode
 from ..split_bits import split_bits
 from ..parsing import parse_assembly_parameter, from_str_util
 from ..assembly_parameter import AssemblyParameter
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Move(Opcode):  # Forward declaration
@@ -92,8 +93,8 @@ class Move(Opcode):
 
         # append the immediates / absolute addresses after the command opcode
         # this data can be done if the value is not an immediate or absolute addr
-        data_to_append = (opcode_util.ea_to_binary_post_op(self.src, self.size),
-                          opcode_util.ea_to_binary_post_op(self.dest, self.size))
+        data_to_append = (ea_to_binary_post_op(self.src, self.size),
+                          ea_to_binary_post_op(self.dest, self.size))
         for data in data_to_append:
             if data is not None:
                 ret_bytes.extend(data.get_value_bytearray())
@@ -154,7 +155,7 @@ class Move(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'MOVE')
+        return command_matches(command, 'MOVE')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -253,7 +254,7 @@ class Move(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "MOVE", 2, param_invalid_modes=[[EAMode.ARD],
+        return n_param_is_valid(command, parameters, "MOVE", 2, param_invalid_modes=[[EAMode.ARD],
                                                                                                  [EAMode.ARD,
                                                                                                   EAMode.IMM]])
 
@@ -356,4 +357,4 @@ class Move(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Move, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Move, 2, OpSize.WORD)

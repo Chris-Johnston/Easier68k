@@ -4,6 +4,7 @@ from ..m68k import M68K
 from ..parsing import parse_literal
 from itertools import zip_longest
 import math
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class DC(Opcode):
@@ -49,7 +50,7 @@ class DC(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'DC')
+        return command_matches(command, 'DC')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -188,7 +189,7 @@ class DC(Opcode):
         """
         issues = []
         try:
-            assert opcode_util.check_valid_command(command, 'DC', valid_sizes=DC.valid_sizes), 'Command invalid'
+            assert check_valid_command(command, 'DC', valid_sizes=DC.valid_sizes), 'Command invalid'
 
             param_count = 0
             in_quote = False

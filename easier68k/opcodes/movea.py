@@ -6,6 +6,7 @@ from ..assembly_parameter import AssemblyParameter
 from ..parsing import parse_assembly_parameter
 from ..op_size import OpSize
 from ..split_bits import split_bits
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Movea(Opcode):
@@ -67,7 +68,7 @@ class Movea(Opcode):
         src_mode = self.src.mode
 
         if src_mode == EAMode.IMM or src_mode == EAMode.AWA or src_mode == EAMode.ALA:
-            to_extend = opcode_util.ea_to_binary_post_op(self.src, self.size).get_value_bytearray()
+            to_extend = ea_to_binary_post_op(self.src, self.size).get_value_bytearray()
             ret_bytes.extend(to_extend)
 
         return ret_bytes
@@ -114,7 +115,7 @@ class Movea(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'ADDA')
+        return command_matches(command, 'ADDA')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -213,7 +214,7 @@ class Movea(Opcode):
                            (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "MOVEA", 2, Movea.valid_sizes)
+        return n_param_is_valid(command, parameters, "MOVEA", 2, Movea.valid_sizes)
 
     @classmethod
     def disassemble_instruction(cls, data: bytearray) -> Opcode:
@@ -308,4 +309,4 @@ class Movea(Opcode):
                            (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Movea, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Movea, 2, OpSize.WORD)

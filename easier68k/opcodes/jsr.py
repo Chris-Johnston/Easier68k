@@ -8,6 +8,7 @@ from ..assembly_parameter import AssemblyParameter
 from ..memory_value import MemoryValue
 from ..register import Register
 from typing import Union
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Jsr(Opcode):
@@ -50,7 +51,7 @@ class Jsr(Opcode):
 
         if self.dest.mode == EAMode.AWA or self.dest.mode == EAMode.ALA:
             size = OpSize.WORD if self.dest.mode == EAMode.AWA else OpSize.LONG
-            ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.dest, size).get_value_bytearray())
+            ret_bytes.extend(ea_to_binary_post_op(self.dest, size).get_value_bytearray())
 
         return ret_bytes
 
@@ -101,7 +102,7 @@ class Jsr(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'JSR')
+        return command_matches(command, 'JSR')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -172,7 +173,7 @@ class Jsr(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "JSR", 1, param_invalid_modes=[[EAMode.DRD,
+        return n_param_is_valid(command, parameters, "JSR", 1, param_invalid_modes=[[EAMode.DRD,
                                                                                                  EAMode.ARD,
                                                                                                  EAMode.ARIPD,
                                                                                                  EAMode.ARIPI,
@@ -251,4 +252,4 @@ class Jsr(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Jsr, 1, None)
+        return n_param_from_str(command, parameters, Jsr, 1, None)

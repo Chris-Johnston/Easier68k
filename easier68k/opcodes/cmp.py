@@ -8,6 +8,7 @@ from ..parsing import parse_assembly_parameter
 from ..assembly_parameter import AssemblyParameter
 from ..condition_status_code import ConditionStatusCode
 from ..memory_value import MemoryValue, mask_value_for_length
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Cmp(Opcode):
@@ -173,7 +174,7 @@ class Cmp(Opcode):
         :param command: The command string to check 'CMP.W', 'CMP'
         :return: Whether the string is an instance of CMP
         """
-        return opcode_util.command_matches(command, 'CMP')
+        return command_matches(command, 'CMP')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -248,7 +249,7 @@ class Cmp(Opcode):
         :return:
         """
         # don't bother with param invalid modes
-        return opcode_util.n_param_is_valid(
+        return n_param_is_valid(
             command,
             parameters,
             "CMP",
@@ -303,4 +304,4 @@ class Cmp(Opcode):
         :param parameters: The parameters after the command
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Cmp, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Cmp, 2, OpSize.WORD)

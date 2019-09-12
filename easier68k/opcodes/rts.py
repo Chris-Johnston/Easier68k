@@ -7,6 +7,7 @@ from ..split_bits import split_bits
 from ..assembly_parameter import AssemblyParameter
 from ..memory_value import MemoryValue
 from ..register import Register
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Rts(Opcode):
@@ -66,7 +67,7 @@ class Rts(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'RTS')
+        return command_matches(command, 'RTS')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -121,7 +122,7 @@ class Rts(Opcode):
         """
         issues = []
         try:
-            assert opcode_util.check_valid_command(command, 'RTS', can_take_size=False), 'RTS Command invalid'
+            assert check_valid_command(command, 'RTS', can_take_size=False), 'RTS Command invalid'
             assert not parameters.strip(), 'RTS takes no parameters'
 
             return True, issues

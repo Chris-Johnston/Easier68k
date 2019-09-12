@@ -9,6 +9,7 @@ from ..parsing import *
 from bitstring import Bits
 from math import log
 from abc import ABC, ABCMeta, abstractmethod
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str
 
 COND_CODE_TO_OPCODE = {
     '\x00': 'BRA',
@@ -361,7 +362,7 @@ class Bra(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BRA')
+        return command_matches(command, 'BRA')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -391,7 +392,7 @@ class Bhi(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BHI')
+        return command_matches(command, 'BHI')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -421,7 +422,7 @@ class Bls(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BLS')
+        return command_matches(command, 'BLS')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -445,7 +446,7 @@ class Bcc(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BCC')
+        return command_matches(command, 'BCC')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -469,7 +470,7 @@ class Bcs(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BCS')
+        return command_matches(command, 'BCS')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -493,7 +494,7 @@ class Bne(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BNE')
+        return command_matches(command, 'BNE')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -517,7 +518,7 @@ class Beq(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BEQ')
+        return command_matches(command, 'BEQ')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -541,7 +542,7 @@ class Bvc(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BVC')
+        return command_matches(command, 'BVC')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -565,7 +566,7 @@ class Bvs(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BVS')
+        return command_matches(command, 'BVS')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -589,7 +590,7 @@ class Bpl(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BPL')
+        return command_matches(command, 'BPL')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -613,7 +614,7 @@ class Bmi(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BMI')
+        return command_matches(command, 'BMI')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -640,7 +641,7 @@ class Bge(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BGE')
+        return command_matches(command, 'BGE')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -667,7 +668,7 @@ class Blt(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BLT')
+        return command_matches(command, 'BLT')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -695,7 +696,7 @@ class Bgt(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BGT')
+        return command_matches(command, 'BGT')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):
@@ -724,7 +725,7 @@ class Ble(branch_code):
 
     @classmethod
     def command_matches(cls, command: str):
-        return opcode_util.command_matches(command, 'BLE')
+        return command_matches(command, 'BLE')
 
     @classmethod
     def disassemble_instruction(cls, data: bytes):

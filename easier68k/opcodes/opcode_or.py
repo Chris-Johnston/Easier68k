@@ -7,6 +7,7 @@ from .opcode import Opcode
 from ..op_size import OpSize
 from ..parsing import parse_assembly_parameter
 from ..condition_status_code import ConditionStatusCode
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Or(Opcode):
@@ -186,7 +187,7 @@ class Or(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'OR')
+        return command_matches(command, 'OR')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -275,7 +276,7 @@ class Or(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "OR", 2, param_invalid_modes=[[EAMode.ARD],
+        return n_param_is_valid(command, parameters, "OR", 2, param_invalid_modes=[[EAMode.ARD],
             [EAMode.ARD, EAMode.IMM]])[:2]
 
     @classmethod
@@ -377,4 +378,4 @@ class Or(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Or, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Or, 2, OpSize.WORD)

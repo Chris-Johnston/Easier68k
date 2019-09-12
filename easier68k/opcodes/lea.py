@@ -6,6 +6,7 @@ from .opcode import Opcode
 from ..op_size import OpSize
 from ..parsing import parse_assembly_parameter
 from ..split_bits import split_bits
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Lea(Opcode):
@@ -54,7 +55,7 @@ class Lea(Opcode):
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
         ret_bytes.extend(
-            opcode_util.ea_to_binary_post_op(self.src,
+            ea_to_binary_post_op(self.src,
                                              OpSize.LONG if self.src.mode == EAMode.ALA else OpSize.WORD)
         .get_value_bytearray())
 
@@ -101,7 +102,7 @@ class Lea(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'LEA')
+        return command_matches(command, 'LEA')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -190,7 +191,7 @@ class Lea(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "LEA", 2, None, None,
+        return n_param_is_valid(command, parameters, "LEA", 2, None, None,
                                             [[EAMode.DRD, EAMode.ARD, EAMode.ARIPD, EAMode.ARIPI],
                                              [mode for mode in EAMode if mode is not EAMode.ARD]])  # Select all but ARD
 
@@ -243,4 +244,4 @@ class Lea(Opcode):
         :param command: The command itself (e.g. 'MOVE.B', 'LEA', etc.)
         :param parameters: The parameters after the command (such as the source and destination of a move)
         """
-        return opcode_util.n_param_from_str(command, parameters, Lea, 2, None)
+        return n_param_from_str(command, parameters, Lea, 2, None)

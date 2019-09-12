@@ -8,6 +8,7 @@ from ..parsing import parse_assembly_parameter
 from ..assembly_parameter import AssemblyParameter
 from ..condition_status_code import ConditionStatusCode
 from ..memory_value import MemoryValue, mask_value_for_length
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches, ea_to_binary_post_op
 
 
 class Cmpi(Opcode):
@@ -88,11 +89,11 @@ class Cmpi(Opcode):
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
         # extend to include source
-        ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.src, self.size).get_value_bytearray())
+        ret_bytes.extend(ea_to_binary_post_op(self.src, self.size).get_value_bytearray())
 
         # extend to include destination (if needed)
         if self.dest.mode == EAMode.IMM or self.dest.mode == EAMode.AWA or self.dest.mode == EAMode.ALA:
-            ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.dest, self.size).get_value_bytearray())
+            ret_bytes.extend(ea_to_binary_post_op(self.dest, self.size).get_value_bytearray())
 
         return ret_bytes
 
@@ -173,7 +174,7 @@ class Cmpi(Opcode):
         :param command: The command string to check 'CMPI.W', 'CMPI'
         :return: Whether the string is an instance of CMPI
         """
-        return opcode_util.command_matches(command, 'CMPI')
+        return command_matches(command, 'CMPI')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -246,7 +247,7 @@ class Cmpi(Opcode):
         :return:
         """
         # don't bother with param invalid modes
-        return opcode_util.n_param_is_valid(
+        return n_param_is_valid(
             command,
             parameters,
             "CMPI",
@@ -318,4 +319,4 @@ class Cmpi(Opcode):
         :param parameters: The parameters after the command
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Cmpi, 2, OpSize.WORD)
+        return n_param_from_str(command, parameters, Cmpi, 2, OpSize.WORD)

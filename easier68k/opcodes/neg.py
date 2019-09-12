@@ -8,6 +8,7 @@ from ..parsing import parse_assembly_parameter
 from ..assembly_parameter import AssemblyParameter
 from ..condition_status_code import ConditionStatusCode
 from ..memory_value import MemoryValue
+from ..opcode_util import check_valid_command, n_param_is_valid, n_param_from_str, command_matches
 
 
 class Neg(Opcode):
@@ -71,7 +72,7 @@ class Neg(Opcode):
         ret_bytes = bytearray(ret_opcode.to_bytes(2, byteorder='big', signed=False))
 
         if self.dest.mode == EAMode.AWA or self.dest.mode == EAMode.ALA:
-            ret_bytes.extend(opcode_util.ea_to_binary_post_op(self.dest, self.size).get_value_bytearray())
+            ret_bytes.extend(ea_to_binary_post_op(self.dest, self.size).get_value_bytearray())
 
         return ret_bytes
 
@@ -164,7 +165,7 @@ class Neg(Opcode):
         :param command: The command string to check (e.g. 'MOVE.B', 'LEA', etc.)
         :return: Whether the string is an instance of this command type
         """
-        return opcode_util.command_matches(command, 'SUB')
+        return command_matches(command, 'SUB')
 
     @classmethod
     def get_word_length(cls, command: str, parameters: str) -> int:
@@ -239,7 +240,7 @@ class Neg(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: Whether the given command is valid and a list of issues/warnings encountered
         """
-        return opcode_util.n_param_is_valid(command, parameters, "NEG", 1, param_invalid_modes=[[EAMode.ARD,
+        return n_param_is_valid(command, parameters, "NEG", 1, param_invalid_modes=[[EAMode.ARD,
                                                                                                  EAMode.IMM]])[:2]
 
     @classmethod
@@ -321,4 +322,4 @@ class Neg(Opcode):
         :param parameters: The parameters after the command (such as the source and destination of a move)
         :return: The parsed command
         """
-        return opcode_util.n_param_from_str(command, parameters, Neg, 1, OpSize.WORD)
+        return n_param_from_str(command, parameters, Neg, 1, OpSize.WORD)
