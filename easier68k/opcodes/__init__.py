@@ -1,7 +1,7 @@
 from .opcode import Opcode
 from .add import Add
 from .adda import Adda
-from .bcc import Bcc, Bcs, Beq, Bge, Bgt, Bhi, Ble, Bls, Blt, Bmi, Bne, Bpl, Bvs, Bra, Bvc
+from .bcc import Bcc, Bcs, Beq, Bge, Bgt, Bhi, Ble, Bls, Blt, Bmi, Bne, Bpl, Bvs, Bra, Bvc, Ble
 from .cmp import Cmp
 from .cmpi import Cmpi
 from .dc import DC
