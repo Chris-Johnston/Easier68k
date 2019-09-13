@@ -211,8 +211,8 @@ class branch_code(Opcode):
         parameters[0] = parse_literal(parameters[0])
         parameters[1] = int(parameters[1])
 
-        offutilset = abs(int(parameters[0]) - int(parameters[1] + 2))
-        size = 1 if offutilset < 128 else (2 if offutilset < 326778 else 3)
+        offset = abs(int(parameters[0]) - int(parameters[1] + 2))
+        size = 1 if offset < 128 else (2 if offset < 326778 else 3)
 
         return size
     
