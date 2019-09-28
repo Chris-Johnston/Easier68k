@@ -21,6 +21,59 @@ class BytePrefixOpCodeAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
             ]
 
+class WordOpCodeAssembler(OpCodeAssembler):
+    @abstractproperty
+    def opcode(self):
+        pass
+
+    @property
+    def literal_prefix(self):
+        return self.opcode, 16
+    
+    @property
+    def format(self):
+        return [(16, 0, self.opcode)]
+
+class ResetAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0000
+
+class NopAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0001
+
+class StopAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0010
+
+class RteAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0011
+
+class RtsAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0101
+
+class TrapvAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0110
+
+class RtrAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1110_0111_0111
+
+class IllegalAssembler(WordOpCodeAssembler):
+    @property
+    def opcode(self):
+        return 0b0100_1010_1111_1100
+
 class OriAssembler(BytePrefixOpCodeAssembler):
     @property
     def prefix(self):
@@ -138,7 +191,15 @@ assemblers = [
     TstAssembler(),
     AddAssembler(),
     MoveAssembler(),
-    BtstAssembler()
+    BtstAssembler(),
+    ResetAssembler(),
+    NopAssembler(),
+    StopAssembler(),
+    RteAssembler(),
+    RtsAssembler(),
+    TrapvAssembler(),
+    RtrAssembler(),
+    IllegalAssembler(),
     ]
 
 # if __name__ == "__main__":
