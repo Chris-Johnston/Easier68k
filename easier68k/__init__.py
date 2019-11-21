@@ -11,6 +11,7 @@ __copyright__ = 'Copyright 2019 Easier68k Contributors'
 __version__ = '0.1.1'
 
 from .assembler import *
+from .assemblers import *
 from .assembly_parameter import *
 from .clock import *
 from .condition_status_code import *
