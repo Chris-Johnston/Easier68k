@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+# from .opcode_base import OpCodeBase
 
 class OpCodeAssembler(ABC):
     @abstractproperty
@@ -55,3 +56,13 @@ class OpCodeAssembler(ABC):
                 value = (word & value_mask) >> offset
                 values.append(value)
         return values
+    
+    # @abstractmethod
+    def get_opcode(self): # -> OpCodeBase:
+        pass
+
+    def disassemble_opcode(self, word): # -> OpCodeBase:
+        values = self.disassemble_values(word)
+        op = self.get_opcode()
+        op.from_asm_values(values)
+        return op

@@ -231,6 +231,20 @@ class MemoryValue:
             return self.get_value_signed() == other
         return NotImplemented
 
+    def add_unsigned(self, other):
+        total = self.get_value_unsigned() + other.get_value_unsigned()
+        overflow = False
+        # 1/21 TODO
+        # set when the register cannot properly represent the result as a signed value (you overflowed into the sign bit). 
+        carry = False
+        if self.length == OpSize.BYTE:
+            carry = total > 0xFF # this might be wrong?
+        elif self.length == OpSize.WORD:
+            carry = total > 0xFFFF
+        elif self.length == OpSize.LONG:
+            carry = total > 0xFFFF_FFFF
+        return MemoryValue(self.length, unsigned_int=total), carry
+
     def __add__(self, other):
         """
         Add, adds the value of two MemoryValues to each other
@@ -239,9 +253,9 @@ class MemoryValue:
         :return:
         """
         if isinstance(other, MemoryValue):
-            total_value = self.get_value_signed() + other.get_value_signed()
+            total_value = self.get_value_unsigned() + other.get_value_unsigned()
             n = MemoryValue(self.length)
-            n.set_value_signed_int(total_value)
+            n.set_value_unsigned_int(total_value)
             return n
         elif isinstance(other, int):
             total_value = self.get_value_signed() + other

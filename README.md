@@ -4,6 +4,12 @@ Easier68k is a python library that assembles and simulates the Motorola 68k CPU 
 
 NOTE: Easier68k is currently under heavy production and is not stable.
 
+### dev notes / reference material
+
+http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
+
+https://www.nxp.com/files-static/archives/doc/ref_manual/M68000PRM.pdf
+
 ### Future Development Roadmap
 
 Currently Easier68k is incomplete and is lacking in some ways that prevent it from being considered

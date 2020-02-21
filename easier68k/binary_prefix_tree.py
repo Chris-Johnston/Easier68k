@@ -1,3 +1,8 @@
+"""
+Contains a binary prefix tree implementation for assembling opcodes.
+"""
+
+
 class BinaryTreeNode():
     def __init__(self):
         self.left = None # 0

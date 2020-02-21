@@ -51,7 +51,7 @@ class AssemblyParameter:
         str util method
         :return:
         """
-        return "EA Mode: {}, Data: {}".format(self.mode, self.data)
+        return "[EA Mode: {}, Data: {}]".format(self.mode, self.data)
 
     def get_value(self, simulator: M68K, length: OpSize = OpSize.WORD) -> MemoryValue:
         """

@@ -1,6 +1,13 @@
 from abc import abstractproperty
 from .opcode_assembler import OpCodeAssembler
 from .binary_prefix_tree import BinaryPrefixTree
+from .opcode_base import (
+    OpCodeBase,
+    OpCodeAdd,
+    OpCodeSub,
+    OpCodeOr,
+    OpCodeAnd,
+)
 
 # base class that handles the case of 1 byte prefix, S, M, Xn
 class BytePrefixOpCodeAssembler(OpCodeAssembler):
@@ -129,24 +136,60 @@ class TstAssembler(BytePrefixOpCodeAssembler):
     def prefix(self):
         return 0b0100_1010
 
-class AddAssembler(OpCodeAssembler):
-    @property
-    def literal_prefix(self):
-        return 0b1101, 4
+class FourBitAssemblerBase(OpCodeAssembler):
+    @abstractproperty
+    def prefix(self):
+        pass
 
     @property
+    def literal_prefix(self):
+        return self.prefix, 4
+    
+    @property
     def format(self):
-        # gets pattern of how copcode is in Asm
-        # used for asm and disasm
         return [
-            # size, offset, literal
-            (4, 12, 0b1101),
+            (4, 12, self.prefix),
             (3, 9, None), # Dn
             (1, 8, None), # D
             (2, 6, None), # S
             (3, 3, None), # M
             (3, 0, None), # Xn
         ]
+
+class AddAssembler(FourBitAssemblerBase):
+    @property
+    def prefix(self):
+        return 0b1101
+
+    def get_opcode(self):
+        return OpCodeAdd()
+
+class SubAssembler(FourBitAssemblerBase):
+    @property
+    def prefix(self):
+        return 0b1001
+
+    def get_opcode(self):
+        return OpCodeSub()
+
+class AndAssembler(FourBitAssemblerBase):
+    @property
+    def prefix(self):
+        return 0b1100
+
+    def get_opcode(self):
+        return OpCodeAnd()
+
+class OrAssembler(FourBitAssemblerBase):
+    @property
+    def prefix(self):
+        return 0b1000
+
+    def get_opcode(self):
+        return OpCodeOr()
+
+# TODO: should probably be consistent with prefixes or suffixes with "OpCode" and "Assembler"
+# since <op>Assembler is here, but elsewhere it's OpCode<op>
 
 class MoveAssembler(OpCodeAssembler):
     @property
@@ -190,6 +233,9 @@ assemblers = [
     NotAssembler(),
     TstAssembler(),
     AddAssembler(),
+    SubAssembler(),
+    AndAssembler(),
+    OrAssembler(),
     MoveAssembler(),
     BtstAssembler(),
     ResetAssembler(),
