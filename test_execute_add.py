@@ -15,8 +15,13 @@ from easier68k.binary_prefix_tree import BinaryPrefixTree
 from easier68k.assemblers import assemblers
 from easier68k.m68k import M68K
 from easier68k.register import Register
+from easier68k.op_size import OpSize
+from easier68k.memory_value import MemoryValue
 
 assembler_tree = BinaryPrefixTree(assemblers)
+
+
+# tests disassembling ADD SUB AND OR
 
 def assemble(op):
     opcode_assembler = assembler_tree.get_assembler(op)
@@ -29,3 +34,22 @@ def assemble(op):
 
 for op in [ADD, SUB, AND, OR]:
     assemble(op)
+
+# test assembling and simulating ADD
+
+# initialize it
+op_asm = assembler_tree.get_assembler(ADD)
+values = op_asm.disassemble_values(ADD)
+add_op = op_asm.get_opcode()
+add_op.from_asm_values(values)
+
+# simulate it
+cpu = M68K()
+
+# store #1 in 0x1002
+cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, signed_int=0x123))
+
+# start at 0x1000
+cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000) ) # 0x1000
+
+add_op.execute(cpu)

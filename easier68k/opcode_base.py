@@ -5,6 +5,8 @@ from .ea_mode import EAMode
 from .ea_mode_bin import EAModeBinary
 from .op_size import Size, OpSize
 from .m68k import M68K
+from .register import Register
+from .memory_value import MemoryValue
 
 # bytes -> assembler tree find match -> add assembler
 # add assembler -> add opcode -> execute
@@ -68,6 +70,67 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             self.ea_mode = self._ea_mode_lookup[mode]
             self.register = register
 
+    def _get_ea_mode_value(self, size: Size, cpu: M68K) -> MemoryValue:
+        """
+        Uses the ea_mode and register to get the value specified.
+        TODO should also create one to set the value
+        """
+
+        if self.ea_mode == EAMode.Immediate:
+            # get value at PC + 2 (word)
+            imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+            return cpu.memory.get(self.size, imm_location)
+
+        if self.ea_mode == EAMode.DataRegisterDirect:
+            # Direct, so look up the location from the register
+            # then return the value at that location            
+            # TODO move this to the class so this doesn't have to be instantiated each time
+            data_register = {
+                0: Register.D0,
+                1: Register.D1,
+                2: Register.D2,
+                3: Register.D3,
+                4: Register.D4,
+                5: Register.D5,
+                6: Register.D6,
+                7: Register.D7,
+            }[self.register]
+            return cpu.get_register(data_register)
+
+        if self.ea_mode in [EAMode.AddressRegisterIndirectPostIncrement, EAMode.AddressRegisterIndirectPreDecrement, EAMode.AddressRegisterIndirect]:
+            address_register = {
+                0: Register.A0,
+                1: Register.A1,
+                2: Register.A2,
+                3: Register.A3,
+                4: Register.A4,
+                5: Register.A5,
+                6: Register.A6,
+                7: Register.A7,
+            }[self.register]
+
+            if self.ea_mode == EAMode.AddressRegisterIndirect:
+                address = cpu.get_register(address_register)
+            elif self.ea_mode == EAMode.AddressRegisterIndirectPostIncrement:
+                address = cpu.get_register(address_register)
+                # increment the register
+                new_address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + address.get_value_unsigned())
+                cpu.set_register(address_register, new_address)
+            elif self.ea_mode == EAMode.AddressRegisterIndirectPreDecrement:
+                old_address = cpu.get_register(address_register)
+                # increment the reigster
+                address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + old_address.get_value_unsigned())
+                cpu.set_register(address_register, address)
+
+            return cpu.memory.get(self.size, address.get_value_unsigned())
+        
+        if self.ea_mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
+            # TODO handle distinction between long and word here
+            imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+            address = MemoryValue(self.size, unsigned_int=imm_location)
+            return cpu.memory.get(self.size, address)
+        
+
 class OpCodeAdd(DynamicAddressingModeOpCodeBase):
     """
     Add opcode. Also serves as the base for AND, OR, and SUB, since they all assemble
@@ -88,8 +151,14 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         self.size = Size(size)
 
     def execute(self, cpu: M68K):
-        print("implement ADD you dummy")
-        pass
+        print("ADD")
+
+        print(f"data register {self.data_register} dir {self.direction} size {self.size}")
+        print(f"ea mode {self.ea_mode} register {self.register}")
+
+        # get the value
+        result = self._get_ea_mode_value(self.size, cpu)
+        print(f"result: {result}")
 
 class OpCodeOr(OpCodeAdd):
     def __init__(self):
