@@ -36,6 +36,7 @@ for op in [ADD, SUB, AND, OR]:
     assemble(op)
 
 # test assembling and simulating ADD
+# aka how many LOC does it take to add 2 + 2
 
 # initialize it
 op_asm = assembler_tree.get_assembler(ADD)
@@ -46,10 +47,41 @@ add_op.from_asm_values(values)
 # simulate it
 cpu = M68K()
 
-# store #1 in 0x1002
-cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, signed_int=0x123))
+# store #2 in D1
+cpu.set_register(Register.D1, MemoryValue(signed_int=0x2))
+
+# store #2 in 0x1002
+cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, signed_int=0x2))
 
 # start at 0x1000
-cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000) ) # 0x1000
+cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
 
 add_op.execute(cpu)
+
+# get the value in D1
+d1_val = cpu.get_register(Register.D1)
+print(f"d1 {d1_val} == 4!?")
+
+# now do it again
+
+ADD = 0b1101_0011_0111_1000
+# $beee (0) + D1 (4) -> $beee (4)
+# word
+
+op_asm = assembler_tree.get_assembler(ADD)
+values = op_asm.disassemble_values(ADD)
+add_op = op_asm.get_opcode()
+add_op.from_asm_values(values)
+
+# was going to use beef but odd numbered memory, though not sure if that should be a concern
+cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, unsigned_int=0xbeee))
+
+# start at 0x1000
+cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
+
+add_op.execute(cpu)
+
+# check val in $beef
+# beef = MemoryValue(len = OpSize.WORD, unsigned_int=0xbeef)
+val = cpu.memory.get(OpSize.WORD, 0xbeee)
+print(f"$beef {val} == 4")

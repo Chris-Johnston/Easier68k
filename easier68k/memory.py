@@ -93,6 +93,11 @@ class Memory:
         """
         gets the memory at the given location index of size
         """
+        if isinstance(location, MemoryValue):
+            location = location.get_value_unsigned()
+        elif not isinstance(location, int):
+            raise AssertionError("invalid type")
+
         if not isinstance(size, OpSize):
             size = OpSize(size)
         self.__validateLocation(size, location)
@@ -101,8 +106,8 @@ class Memory:
         b = None
         try:
             b = self.memory[location:end]
-        except TypeError:
-            pass
+        except TypeError as e:
+            raise e
         ret.set_value_bytes(b)
         return ret
 
@@ -118,5 +123,11 @@ class Memory:
 
         self.__validateLocation(size, location)
         if value.get_size() != size:
-            raise AssignWrongMemorySizeError
+            raise AssignWrongMemorySizeError(f"{value.get_size()} was not {size}")
+        print(f"{self.memory[location:location+size.get_number_of_bytes()]}")
+        print(f"{value.get_value_bytes()}")
         self.memory[location:location+size.get_number_of_bytes()] = value.get_value_bytes()
+
+        print(size)
+        print(f"{self.memory[location:location+size.get_number_of_bytes()]}")
+        print(f"{value.get_value_bytes()}")

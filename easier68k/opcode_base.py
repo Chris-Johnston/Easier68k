@@ -70,6 +70,86 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             self.ea_mode = self._ea_mode_lookup[mode]
             self.register = register
 
+    def __get_address(self, size: Size, cpu: M68K) -> MemoryValue:
+        """
+        Gets the address register to use for 
+        ARI, ARIPI, ARIPD
+        """
+        if self.ea_mode in [
+            EAMode.AddressRegisterIndirect,
+            EAMode.AddressRegisterIndirectPostIncrement,
+            EAMode.AddressRegisterIndirectPreDecrement,
+        ]:
+            # handle ARI
+            address_register = {
+                0: Register.A0,
+                1: Register.A1,
+                2: Register.A2,
+                3: Register.A3,
+                4: Register.A4,
+                5: Register.A5,
+                6: Register.A6,
+                7: Register.A7,
+            }[self.register]
+
+            # lint: see if I can re-use this code
+            if self.ea_mode == EAMode.AddressRegisterIndirect:
+                address = cpu.get_register(address_register)
+            elif self.ea_mode == EAMode.AddressRegisterIndirectPostIncrement:
+                address = cpu.get_register(address_register)
+                # increment the register
+                new_address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + address.get_value_unsigned())
+                cpu.set_register(address_register, new_address)
+            elif self.ea_mode == EAMode.AddressRegisterIndirectPreDecrement:
+                old_address = cpu.get_register(address_register)
+                # increment the reigster
+                address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + old_address.get_value_unsigned())
+                cpu.set_register(address_register, address)
+            return address
+        else:
+            return None
+
+    def _get_immediate_address(self, size: Size, cpu: M68K) -> MemoryValue:
+        """
+        gets the memory value of the address of the immediate data. makes it easier to get IMM data/address
+        """
+        address = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+        return MemoryValue(size, unsigned_int=address)
+
+    def _set_ea_mode_value(self, size: Size, cpu: M68K, value: MemoryValue):
+        """
+        uses the ea_mode and register to set a new value
+        """
+
+        # see page 4-6
+        # only memory alterable ea_modes are used here
+        # cannot use drd
+
+        assert self.ea_mode != EAMode.Immediate, "This doesn't make sense?"
+        assert self.ea_mode not in [
+            EAMode.DRD, EAMode.AddressRegisterDirect
+        ], "These are not valid modes for setting the value"
+
+        if self.ea_mode in [
+            EAMode.AddressRegisterIndirect,
+            EAMode.AddressRegisterIndirectPostIncrement,
+            EAMode.AddressRegisterIndirectPreDecrement,
+        ]:
+            # get the address
+            adr = self.__get_address(size, cpu)
+            cpu.memory.set(self.size, adr.get_value_unsigned(), value)
+
+        if self.ea_mode == EAMode.AbsoluteLongAddress or self.ea_mode == EAMode.AbsoluteWordAddress:
+            # get the address following the PC
+            # set the value at that address
+            imm_size = OpSize.WORD if self.ea_mode == EAMode.AbsoluteWordAddress else OpSize.LONG
+            addr = self._get_immediate_address(OpSize.WORD, cpu).get_value_unsigned()
+            print(f"addr {addr:x} value {value}")
+            # cpu.memory.set(self.size, addr, value)
+            addr = cpu.memory.get(OpSize.WORD, addr).get_value_unsigned()
+            cpu.memory.set(imm_size, addr, value)
+
+
     def _get_ea_mode_value(self, size: Size, cpu: M68K) -> MemoryValue:
         """
         Uses the ea_mode and register to get the value specified.
@@ -128,7 +208,8 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             # TODO handle distinction between long and word here
             imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
             address = MemoryValue(self.size, unsigned_int=imm_location)
-            return cpu.memory.get(self.size, address)
+            location = cpu.memory.get(self.size, address).get_value_unsigned()
+            return cpu.memory.get(self.size, location)
         
 
 class OpCodeAdd(DynamicAddressingModeOpCodeBase):
@@ -147,8 +228,18 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         # Dn D S [M Xn]
         # [M Xn] already covered by DynamicAddressingModeOpCodeBase
         # and are set to ea_mode and register
-        self.data_register, self.direction, size, _, _ = values
+        data_register_num, self.direction, size, _, _ = values
         self.size = Size(size)
+        self.data_register = {
+                0: Register.D0,
+                1: Register.D1,
+                2: Register.D2,
+                3: Register.D3,
+                4: Register.D4,
+                5: Register.D5,
+                6: Register.D6,
+                7: Register.D7,
+            }[data_register_num]
 
     def execute(self, cpu: M68K):
         print("ADD")
@@ -159,6 +250,26 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         # get the value
         result = self._get_ea_mode_value(self.size, cpu)
         print(f"result: {result}")
+
+        # get the register value
+        reg = cpu.get_register(self.data_register)
+        print(f"register: {reg}")
+
+        # add them based on direction
+
+        if self.direction == 1:
+            # store in ea
+            final_val = result + reg
+            # BUG: final_val has byte size when it should be word
+            final_val.set_size(OpSize.WORD)
+            print(f"1 storing {final_val} in ea")
+            self._set_ea_mode_value(self.size, cpu, final_val)
+        else:
+            # store in dn
+            final_val = reg + result
+            print(f"0 storing {final_val} in dx")
+            cpu.set_register(self.data_register, final_val)
+
 
 class OpCodeOr(OpCodeAdd):
     def __init__(self):
