@@ -5,8 +5,8 @@
 # d register 1
 # saved into d1
 # add immediate 0b111
-# add long
-ADD = 0b1101_0010_1011_1100
+# add word
+ADD = 0b1101_0010_0111_1100
 AND = 0b1100_0010_1011_1100
 SUB = 0b1001_0010_1011_1100
 OR = 0b1000_0010_1011_1100

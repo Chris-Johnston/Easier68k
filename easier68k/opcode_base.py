@@ -150,12 +150,11 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             cpu.memory.set(imm_size, addr, value)
 
 
-    def _get_ea_mode_value(self, size: Size, cpu: M68K) -> MemoryValue:
+    def _get_ea_mode_value(self, size: OpSize, cpu: M68K) -> MemoryValue:
         """
         Uses the ea_mode and register to get the value specified.
         TODO should also create one to set the value
         """
-
         if self.ea_mode == EAMode.Immediate:
             # get value at PC + 2 (word)
             imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
@@ -229,7 +228,13 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         # [M Xn] already covered by DynamicAddressingModeOpCodeBase
         # and are set to ea_mode and register
         data_register_num, self.direction, size, _, _ = values
-        self.size = Size(size)
+        # self.size = OpSize(size)
+        self.size = {
+            0b00: OpSize.BYTE,
+            0b01: OpSize.WORD,
+            0b10: OpSize.LONG,
+        }[size]
+        print(f"self size {self.size} size {size}")
         self.data_register = {
                 0: Register.D0,
                 1: Register.D1,
@@ -249,19 +254,18 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
 
         # get the value
         result = self._get_ea_mode_value(self.size, cpu)
-        print(f"result: {result}")
+        print(f"result: {result} size: {self.size}")
 
         # get the register value
         reg = cpu.get_register(self.data_register)
         print(f"register: {reg}")
 
         # add them based on direction
+        print(f"result size {result.get_size()}")
 
         if self.direction == 1:
             # store in ea
             final_val = result + reg
-            # BUG: final_val has byte size when it should be word
-            final_val.set_size(OpSize.WORD)
             print(f"1 storing {final_val} in ea")
             self._set_ea_mode_value(self.size, cpu, final_val)
         else:
