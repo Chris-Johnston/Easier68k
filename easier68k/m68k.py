@@ -99,7 +99,6 @@ class M68K:
         # now set the value
         self.registers[Register.ConditionCodeRegister] = val
 
-
     def get_program_counter_value(self) -> int:
         """
         Gets the 32-bit unsigned integer value for the program counter value
@@ -108,7 +107,6 @@ class M68K:
         mv = self.get_register(Register.ProgramCounter)
         ret = mv.get_value_unsigned()
         return ret
-
 
     def set_address_register_value(self, reg: Register, new_value: MemoryValue):
         """
@@ -123,7 +121,6 @@ class M68K:
 
         # now set the value of the register
         self.registers[reg].set_value_unsigned_int(new_value.get_value_unsigned())
-
 
     def set_program_counter_value(self, new_value: int):
         """
@@ -275,7 +272,6 @@ class M68K:
         NOTE: file must be opened as binary or this won't work
         """
         self.memory.save_memory(file)
-
 
     def set_ccr_reg(self, extend, negative, zero, overflow, carry): 
         """

@@ -10,6 +10,15 @@ http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 
 https://www.nxp.com/files-static/archives/doc/ref_manual/M68000PRM.pdf
 
+Types reimplemented in dev branch:
+
+-[x] OpCodeAdd
+  - CCR now gets set, still need to test that it actually works
+-[] OpCodeOr
+-[] OpCodeSub
+-[] OpCodeAnd
+
+
 ### Future Development Roadmap
 
 Currently Easier68k is incomplete and is lacking in some ways that prevent it from being considered

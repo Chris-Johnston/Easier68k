@@ -198,10 +198,10 @@ class MemoryValue:
         """
         return bytearray(self.__bytes__())
 
-    def get_msb(self, size: OpSize=None):
+    def get_msb(self, size: OpSize=None) -> bool:
         """
         Get the most significant bit indicating that the value is negative
-        :return:
+        :return: Returns the bool value of the MSB.
         """
         if size is None:
             size = self.length

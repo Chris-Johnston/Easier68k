@@ -265,14 +265,18 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
 
         if self.direction == 1:
             # store in ea
-            final_val = result + reg
+            # final_val = result + reg
+            final_val, carry = result.add_unsigned(reg)
             print(f"1 storing {final_val} in ea")
             self._set_ea_mode_value(self.size, cpu, final_val)
         else:
             # store in dn
-            final_val = reg + result
+            # final_val = reg + result
+            final_val, carry = reg.add_unsigned(result)
             print(f"0 storing {final_val} in dx")
             cpu.set_register(self.data_register, final_val)
+
+        cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, result.get_msb() != final_val.get_msb(), carry)
 
 
 class OpCodeOr(OpCodeAdd):
