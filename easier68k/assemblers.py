@@ -8,12 +8,44 @@ from .opcode_base import (
     OpCodeOr,
     OpCodeAnd,
 )
+# problem: having to import all of the opcode classes will add up quickly
+# instead, maybe I could insteaad have get_opcode return a string literal which corresponds to the opcode
+# also, instead of having one class for each type of assembler, we could have lists of classifications
+# so that I'm not creating a million different classes for each type
+# future cleanup: have consts for the opcodes to avoid magic strings/typos
+
+WORD_OPCODE_ASSEMBLER_DATA = [
+    # OpCode (will be converted to upper), Word
+    ("reset", 0b0100_1110_0111_0000),
+    ("nop", 0b0100_1110_0111_0000),
+    ("stop", 0b0100_1110_0111_0010),
+    ("rte", 0b0100_1110_0111_0011),
+    # todo, do the rest
+]
+
+BYTE_OPCODE_ASSEMBLER_DATA = [
+    # opcode, byte
+    ("ori", 0b0000_0000),
+]
+
+FOUR_BIT_ASSEMBLER_BASE_DATA = [
+    # OpCode, First 4 bits
+    ("add", 0b1101),
+    ("sub", 0b1001),
+    ("and", 0b1100),
+    ("or", 0b1000),
+    # todo, do the rest
+]
 
 # base class that handles the case of 1 byte prefix, S, M, Xn
 class BytePrefixOpCodeAssembler(OpCodeAssembler):
+    def __init__(self, opcode, prefix):
+        super().__init__(opcode)
+        self._prefix = prefix
+
     @abstractproperty
     def prefix(self):
-        pass
+        return self._prefix
 
     @property
     def literal_prefix(self):
@@ -28,57 +60,45 @@ class BytePrefixOpCodeAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
             ]
 
-class WordOpCodeAssembler(OpCodeAssembler):
     @abstractproperty
-    def opcode(self):
-        pass
+    def get_opcode(self):
+        return self._opcode
+
+class WordOpCodeAssembler(OpCodeAssembler):
+    def __init__(self, opcode, word):
+        super().__init__(opcode)
+        self._word = word
+
+    @abstractproperty
+    def word_opcode(self):
+        return self._word
 
     @property
     def literal_prefix(self):
-        return self.opcode, 16
+        return self.word_opcode, 16
     
     @property
     def format(self):
-        return [(16, 0, self.opcode)]
-
-class ResetAssembler(WordOpCodeAssembler):
-    @property
-    def opcode(self):
-        return 0b0100_1110_0111_0000
-
-class NopAssembler(WordOpCodeAssembler):
-    @property
-    def opcode(self):
-        return 0b0100_1110_0111_0001
-
-class StopAssembler(WordOpCodeAssembler):
-    @property
-    def opcode(self):
-        return 0b0100_1110_0111_0010
-
-class RteAssembler(WordOpCodeAssembler):
-    @property
-    def opcode(self):
-        return 0b0100_1110_0111_0011
+        return [(16, 0, self.word_opcode)]
 
 class RtsAssembler(WordOpCodeAssembler):
     @property
-    def opcode(self):
+    def word_opcode(self):
         return 0b0100_1110_0111_0101
 
 class TrapvAssembler(WordOpCodeAssembler):
     @property
-    def opcode(self):
+    def word_opcode(self):
         return 0b0100_1110_0111_0110
 
 class RtrAssembler(WordOpCodeAssembler):
     @property
-    def opcode(self):
+    def word_opcode(self):
         return 0b0100_1110_0111_0111
 
 class IllegalAssembler(WordOpCodeAssembler):
     @property
-    def opcode(self):
+    def word_opcode(self):
         return 0b0100_1010_1111_1100
 
 class OriAssembler(BytePrefixOpCodeAssembler):
@@ -137,9 +157,13 @@ class TstAssembler(BytePrefixOpCodeAssembler):
         return 0b0100_1010
 
 class FourBitAssemblerBase(OpCodeAssembler):
+    def __init__(self, opcode, prefix):
+        super().__init__(opcode)
+        self._prefix = prefix
+
     @abstractproperty
     def prefix(self):
-        pass
+        return self._prefix
 
     @property
     def literal_prefix(self):
@@ -155,22 +179,6 @@ class FourBitAssemblerBase(OpCodeAssembler):
             (3, 3, None), # M
             (3, 0, None), # Xn
         ]
-
-class AddAssembler(FourBitAssemblerBase):
-    @property
-    def prefix(self):
-        return 0b1101
-
-    def get_opcode(self):
-        return OpCodeAdd()
-
-class SubAssembler(FourBitAssemblerBase):
-    @property
-    def prefix(self):
-        return 0b1001
-
-    def get_opcode(self):
-        return OpCodeSub()
 
 class AndAssembler(FourBitAssemblerBase):
     @property
@@ -220,33 +228,52 @@ class BtstAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
         ]
 
-assemblers = [
-    OriAssembler(),
-    AndiAssembler(),
-    SubiAssembler(),
-    AddiAssembler(),
-    EoriAssembler(),
-    CmpiAssembler(),
-    NegxAssembler(),
-    ClrAssembler(),
-    NegAssembler(),
-    NotAssembler(),
-    TstAssembler(),
-    AddAssembler(),
-    SubAssembler(),
-    AndAssembler(),
-    OrAssembler(),
-    MoveAssembler(),
-    BtstAssembler(),
-    ResetAssembler(),
-    NopAssembler(),
-    StopAssembler(),
-    RteAssembler(),
-    RtsAssembler(),
-    TrapvAssembler(),
-    RtrAssembler(),
-    IllegalAssembler(),
-    ]
+def generate_assembler_list():
+    """
+    uses the constants in this file to generate a list of assemblers
+    """
+    # word prefix ones
+    words = [WordOpCodeAssembler(opcode, word) for opcode, word in WORD_OPCODE_ASSEMBLER_DATA]
+
+    # byte prefix ones
+    byte_prefix = [BytePrefixOpCodeAssembler(opcode, byte) for opcode, byte in BYTE_OPCODE_ASSEMBLER_DATA]
+
+    # 4 bit prefix ones
+    four_bit = [BytePrefixOpCodeAssembler(opcode, prefix) for opcode, prefix in FOUR_BIT_ASSEMBLER_BASE_DATA]
+
+    result = words + byte_prefix + four_bit
+    print("assemblers:", len(result))
+    return result
+
+# assemblers = [
+#     OriAssembler(),
+#     AndiAssembler(),
+#     SubiAssembler(),
+#     AddiAssembler(),
+#     EoriAssembler(),
+#     CmpiAssembler(),
+#     NegxAssembler(),
+#     ClrAssembler(),
+#     NegAssembler(),
+#     NotAssembler(),
+#     TstAssembler(),
+#     AddAssembler(),
+#     SubAssembler(),
+#     AndAssembler(),
+#     OrAssembler(),
+#     MoveAssembler(),
+#     BtstAssembler(),
+#     ResetAssembler(),
+#     NopAssembler(),
+#     StopAssembler(),
+#     RteAssembler(),
+#     RtsAssembler(),
+#     TrapvAssembler(),
+#     RtrAssembler(),
+#     IllegalAssembler(),
+#     ]
+
+assemblers = generate_assembler_list()
 
 # if __name__ == "__main__":
 

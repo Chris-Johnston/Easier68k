@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod, abstractproperty
 # from .opcode_base import OpCodeBase
 
-class OpCodeAssembler(ABC):
+class OpCodeAssembler():
+    def __init__(self, opcode):
+        self._opcode = opcode
+
     @abstractproperty
     def literal_prefix(self) -> int:
         pass
@@ -58,11 +61,11 @@ class OpCodeAssembler(ABC):
         return values
     
     # @abstractmethod
-    def get_opcode(self): # -> OpCodeBase:
-        pass
+    def get_opcode(self): # -> str:
+        return self._opcode
 
-    def disassemble_opcode(self, word): # -> OpCodeBase:
-        values = self.disassemble_values(word)
-        op = self.get_opcode()
-        op.from_asm_values(values)
-        return op
+    # def disassemble_opcode(self, word): # -> OpCodeBase:
+    #     values = self.disassemble_values(word)
+    #     op = self.get_opcode()
+    #     op.from_asm_values(values)
+    #     return op
