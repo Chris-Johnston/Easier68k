@@ -18,6 +18,91 @@ Types reimplemented in dev branch:
 -[] OpCodeSub
 -[] OpCodeAnd
 
+## rewrite progress
+
+Assemblers: (not in priority order)
+- [x] ORI
+- [x] AND
+- [x] SUBI
+- [x] ADDI
+- [x] EORI
+- [x] CMPI
+- [x] NEGX
+- [x] CLR
+- [x] NEG
+- [x] NOT
+- [x] TST
+- [x] ADD
+- [x] SUB
+- [x] AND
+- [x] OR
+- [x] MOVE
+- [x] BTST
+- [x] RESET
+- [x] NOP
+- [x] STOP
+- [x] RTE
+- [x] RTS
+- [x] TRAPV
+- [x] RTR
+- [x] ILLEGAL
+- [] ORI to CCR
+- [] ORI to SR
+- [] ANDI to CCR
+- [] ANDI to SR
+- [] EORI to CCR
+- [] EORI to SR
+- [] BCHG
+- [] BCLR
+- [] BSET
+- [] BTST
+- [] BSET
+- [] MOVEP
+- [] MOVEA
+- [] MOVE from SR
+- [] MOVE to CCR
+- [] MOVE to SR
+- [] EXT
+- [] NBCD
+- [] SWAP
+- [] PEA
+- [] TAS
+- [] TRAP
+- [] LINK
+- [] UNLK
+- [] MOVE USP
+- [] JSR
+- [] JMP
+- [] MOVEM
+- [] LEA
+- [] CHK
+- [] ADDQ
+- [] SUBQ
+- [] Scc
+- [] DBcc
+- [] BRA
+- [] BSR
+- [] Bcc
+- [] MOVEQ
+- [] DIVU
+- [] DIVS
+- [] SBCD
+- [] SUBX
+- [] SUBA
+- [] EOR
+- [] CMPM
+- [] CMP
+- [] CMPA
+- [] MULU
+- [] MULS
+- [] ABCD
+- [] EXG
+- [] ADDX
+- [] ADDA
+- [] ASd
+- [] LSd
+- [] ROXd
+- [] ROd
 
 ### Future Development Roadmap
 
