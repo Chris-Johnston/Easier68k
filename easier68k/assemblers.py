@@ -244,7 +244,8 @@ def generate_assembler_list():
     # print("assemblers:", len(result))
     # for x in result:
     #     print(f"{x.get_opcode()} - {x}")
-    return result
+    result_dict = {x.get_opcode(): x for x in result}
+    return result_dict
 
 # assemblers = [
 #     OriAssembler(),

@@ -18,7 +18,9 @@ from easier68k.register import Register
 from easier68k.op_size import OpSize
 from easier68k.memory_value import MemoryValue
 
-assembler_tree = BinaryPrefixTree(assemblers)
+print(assemblers)
+
+assembler_tree = BinaryPrefixTree(assemblers.values())
 
 
 # tests disassembling ADD SUB AND OR
