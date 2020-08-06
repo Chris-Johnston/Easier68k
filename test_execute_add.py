@@ -29,8 +29,8 @@ def assemble(op):
     assert opcode_assembler is not None, f"Opcode assembler was none, not found for Op {op:b}"
     values = opcode_assembler.disassemble_values(op)
     opcode = opcode_assembler.get_opcode()
-    opcode.from_asm_values(values)
-    print(f'op {opcode} mode {opcode.ea_mode} register {opcode.register} dn {opcode.data_register} dir {opcode.direction} size {opcode.size}')
+    # opcode.from_asm_values(values)
+    print(f'op {opcode}')
 
 for op in [ADD, SUB, AND, OR]:
     assemble(op)
@@ -42,7 +42,7 @@ for op in [ADD, SUB, AND, OR]:
 op_asm = assembler_tree.get_assembler(ADD)
 values = op_asm.disassemble_values(ADD)
 add_op = op_asm.get_opcode()
-add_op.from_asm_values(values)
+# add_op.from_asm_values(values)
 
 # simulate it
 cpu = M68K()

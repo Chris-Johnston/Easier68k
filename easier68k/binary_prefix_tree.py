@@ -19,6 +19,7 @@ class BinaryPrefixTree():
 
         for a in assemblers:
             prefix, length = a.literal_prefix
+            # print(f"op {a.get_opcode()} prefix: {prefix:b} len: {length}")
             root = self.root_node
             for bit_index in range(length, 0, -1):
                 # mask the prefix for this bit
@@ -45,7 +46,6 @@ class BinaryPrefixTree():
     def get_assembler(self, word):
         root = self.root_node
         if root.left is None and root.right is None:
-            # print('end of the line')
             return root.value
 
         # gets the longest prefix match
@@ -55,7 +55,6 @@ class BinaryPrefixTree():
             prefix_bit_mask = (1 << (bit_index - 1))
             bit_value = (word & prefix_bit_mask) >> (bit_index - 1)
 
-            # print(bit_value)
             if bit_value == 0:
                 if root.left is None:
                     # print('end left')

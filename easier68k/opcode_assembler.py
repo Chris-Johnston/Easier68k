@@ -60,7 +60,7 @@ class OpCodeAssembler():
                 values.append(value)
         return values
     
-    # @abstractmethod
+    @abstractmethod
     def get_opcode(self): # -> str:
         return self._opcode
 

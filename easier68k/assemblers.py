@@ -60,7 +60,6 @@ class BytePrefixOpCodeAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
             ]
 
-    @abstractproperty
     def get_opcode(self):
         return self._opcode
 
@@ -239,10 +238,12 @@ def generate_assembler_list():
     byte_prefix = [BytePrefixOpCodeAssembler(opcode, byte) for opcode, byte in BYTE_OPCODE_ASSEMBLER_DATA]
 
     # 4 bit prefix ones
-    four_bit = [BytePrefixOpCodeAssembler(opcode, prefix) for opcode, prefix in FOUR_BIT_ASSEMBLER_BASE_DATA]
+    four_bit = [FourBitAssemblerBase(opcode, prefix) for opcode, prefix in FOUR_BIT_ASSEMBLER_BASE_DATA]
 
     result = words + byte_prefix + four_bit
-    print("assemblers:", len(result))
+    # print("assemblers:", len(result))
+    # for x in result:
+    #     print(f"{x.get_opcode()} - {x}")
     return result
 
 # assemblers = [
