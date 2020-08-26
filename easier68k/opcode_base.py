@@ -307,6 +307,7 @@ class OpCodeAnd(OpCodeAdd):
     def execute(self, cpu):
         print("implement AND dumbass")
 
+# add more types by adding to this dict
 OPCODE_LOOKUP = {
     "add": OpCodeAdd,
     "or": OpCodeOr,

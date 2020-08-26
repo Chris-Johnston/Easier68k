@@ -45,6 +45,8 @@ for op in [ADD, SUB, AND, OR]:
 op_asm = assembler_tree.get_assembler(ADD)
 values = op_asm.disassemble_values(ADD)
 add_op = op_asm.get_opcode()
+from easier68k.opcode_base import get_opcode
+add_op = get_opcode(op_asm.get_opcode(), values)
 # add_op.from_asm_values(values)
 
 # simulate it
@@ -59,7 +61,7 @@ cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, signed_int=0x
 # start at 0x1000
 cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
 
-# add_op.execute(cpu)
+add_op.execute(cpu)
 
 # get the value in D1
 d1_val = cpu.get_register(Register.D1)
@@ -83,8 +85,9 @@ cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, unsigned_int=
 cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
 
 opcode_name = op_asm.get_opcode()
-from easier68k.opcode_base import get_opcode
 o = get_opcode(opcode_name, values)
+
+o.execute(cpu)
 
 print(o)
 
