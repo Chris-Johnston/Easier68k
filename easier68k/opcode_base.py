@@ -19,6 +19,15 @@ class OpCodeBase():
         Initializes the opcode from the assembly values.
         """
         pass
+
+    @abstractmethod
+    def to_asm_values(self):
+        """
+        Gets the assembly values for the current state of the opcode,
+        so that it can be passed on to the corresponding "assembler/disassembler" type,
+        and so that the binary value can be created.
+        """
+        pass
     
     @abstractmethod
     def execute(self, cpu: M68K):
@@ -210,7 +219,6 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             location = cpu.memory.get(self.size, address).get_value_unsigned()
             return cpu.memory.get(self.size, location)
         
-
 class OpCodeAdd(DynamicAddressingModeOpCodeBase):
     """
     Add opcode. Also serves as the base for AND, OR, and SUB, since they all assemble
@@ -278,7 +286,6 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
 
         cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, result.get_msb() != final_val.get_msb(), carry)
 
-
 class OpCodeOr(OpCodeAdd):
     def __init__(self):
         super().__init__()
@@ -299,6 +306,20 @@ class OpCodeAnd(OpCodeAdd):
 
     def execute(self, cpu):
         print("implement AND dumbass")
+
+OPCODE_LOOKUP = {
+    "add": OpCodeAdd,
+    "or": OpCodeOr,
+    "sub": OpCodeSub,
+    "and": OpCodeAnd,
+}
+
+def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:
+    assert opcode_name in OPCODE_LOOKUP, "Not yet implemented"
+
+    op = OPCODE_LOOKUP[opcode_name]()
+    op.from_asm_values(asm_values)
+    return op
 
 # class OpCodeAdd(OpCodeBase): # a lot of opcodes use the M Xn format, so will make another class for that
 #     def __init__(self):

@@ -59,7 +59,7 @@ cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, signed_int=0x
 # start at 0x1000
 cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
 
-add_op.execute(cpu)
+# add_op.execute(cpu)
 
 # get the value in D1
 d1_val = cpu.get_register(Register.D1)
@@ -73,8 +73,8 @@ ADD = 0b1101_0011_0111_1000
 
 op_asm = assembler_tree.get_assembler(ADD)
 values = op_asm.disassemble_values(ADD)
-add_op = op_asm.get_opcode()
-add_op.from_asm_values(values)
+# add_op = op_asm.get_opcode()
+# add_op.from_asm_values(values)
 
 # was going to use beef but odd numbered memory, though not sure if that should be a concern
 cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, unsigned_int=0xbeee))
@@ -82,7 +82,11 @@ cpu.memory.set(OpSize.WORD, 0x1002, MemoryValue(len = OpSize.WORD, unsigned_int=
 # start at 0x1000
 cpu.set_register(Register.PC, MemoryValue(unsigned_int=0x1000)) # 0x1000
 
-add_op.execute(cpu)
+opcode_name = op_asm.get_opcode()
+from easier68k.opcode_base import get_opcode
+o = get_opcode(opcode_name, values)
+
+print(o)
 
 # check val in $beef
 # beef = MemoryValue(len = OpSize.WORD, unsigned_int=0xbeef)
