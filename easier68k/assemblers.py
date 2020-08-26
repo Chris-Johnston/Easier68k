@@ -20,12 +20,27 @@ WORD_OPCODE_ASSEMBLER_DATA = [
     ("nop", 0b0100_1110_0111_0000),
     ("stop", 0b0100_1110_0111_0010),
     ("rte", 0b0100_1110_0111_0011),
-    # todo, do the rest
+    ("rts", 0b0100_1110_0111_0101),
+    ("trapv", 0b0100_1110_0111_0110),
+    ("rtr", 0b0100_1110_0111_0111),
+    ("illegal", 0b0100_1010_1111_1100),
+    # todo, the rest of the word opcode assemblers (if any?)
 ]
 
 BYTE_OPCODE_ASSEMBLER_DATA = [
     # opcode, byte
     ("ori", 0b0000_0000),
+    ("andi", 0b0000_0010),
+    ("subi", 0b0000_0100),
+    ("addi", 0b0000_0110),
+    ("eori", 0b0000_1010),
+    ("cmpi", 0b0000_1100),
+    ("negx", 0b0100_0000),
+    ("clr", 0b0100_0010),
+    ("neg", 0b0100_0100),
+    ("not", 0b0100_0110),
+    ("tst", 0b0100_1010),
+    # todo, the rest of the byte opcode assemblers
 ]
 
 FOUR_BIT_ASSEMBLER_BASE_DATA = [
@@ -80,81 +95,6 @@ class WordOpCodeAssembler(OpCodeAssembler):
     def format(self):
         return [(16, 0, self.word_opcode)]
 
-class RtsAssembler(WordOpCodeAssembler):
-    @property
-    def word_opcode(self):
-        return 0b0100_1110_0111_0101
-
-class TrapvAssembler(WordOpCodeAssembler):
-    @property
-    def word_opcode(self):
-        return 0b0100_1110_0111_0110
-
-class RtrAssembler(WordOpCodeAssembler):
-    @property
-    def word_opcode(self):
-        return 0b0100_1110_0111_0111
-
-class IllegalAssembler(WordOpCodeAssembler):
-    @property
-    def word_opcode(self):
-        return 0b0100_1010_1111_1100
-
-class OriAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_0000
-
-class AndiAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_0010
-
-class SubiAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_0100
-
-class AddiAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_0110
-
-class EoriAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_1010
-
-class CmpiAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0000_1100
-
-class NegxAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0100_0000
-
-class ClrAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0100_0010
-
-class NegAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0100_0100
-
-class NotAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0100_0110
-
-class TstAssembler(BytePrefixOpCodeAssembler):
-    @property
-    def prefix(self):
-        return 0b0100_1010
-
 class FourBitAssemblerBase(OpCodeAssembler):
     def __init__(self, opcode, prefix):
         super().__init__(opcode)
@@ -179,26 +119,10 @@ class FourBitAssemblerBase(OpCodeAssembler):
             (3, 0, None), # Xn
         ]
 
-class AndAssembler(FourBitAssemblerBase):
-    @property
-    def prefix(self):
-        return 0b1100
-
-    def get_opcode(self):
-        return OpCodeAnd()
-
-class OrAssembler(FourBitAssemblerBase):
-    @property
-    def prefix(self):
-        return 0b1000
-
-    def get_opcode(self):
-        return OpCodeOr()
-
-# TODO: should probably be consistent with prefixes or suffixes with "OpCode" and "Assembler"
-# since <op>Assembler is here, but elsewhere it's OpCode<op>
-
 class MoveAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("move")
+
     @property
     def literal_prefix(self):
         return 0b00, 2
@@ -215,6 +139,9 @@ class MoveAssembler(OpCodeAssembler):
         ]
 
 class BtstAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("btst")
+
     @property
     def literal_prefix(self):
         return 0b0000100000, 10
@@ -226,6 +153,12 @@ class BtstAssembler(OpCodeAssembler):
             (3, 3, None), # M
             (3, 0, None), # Xn
         ]
+
+NON_PATTERN_ASSEMBLERS = [
+    # the assemblers which do not conform to a specific pattern, like the word/byte/4 bit prefixes
+    MoveAssembler(),
+    BtstAssembler(),
+]
 
 def generate_assembler_list():
     """
@@ -240,69 +173,9 @@ def generate_assembler_list():
     # 4 bit prefix ones
     four_bit = [FourBitAssemblerBase(opcode, prefix) for opcode, prefix in FOUR_BIT_ASSEMBLER_BASE_DATA]
 
-    result = words + byte_prefix + four_bit
-    # print("assemblers:", len(result))
-    # for x in result:
-    #     print(f"{x.get_opcode()} - {x}")
+    result = words + byte_prefix + four_bit + NON_PATTERN_ASSEMBLERS
     result_dict = {x.get_opcode(): x for x in result}
     return result_dict
 
-# assemblers = [
-#     OriAssembler(),
-#     AndiAssembler(),
-#     SubiAssembler(),
-#     AddiAssembler(),
-#     EoriAssembler(),
-#     CmpiAssembler(),
-#     NegxAssembler(),
-#     ClrAssembler(),
-#     NegAssembler(),
-#     NotAssembler(),
-#     TstAssembler(),
-#     AddAssembler(),
-#     SubAssembler(),
-#     AndAssembler(),
-#     OrAssembler(),
-#     MoveAssembler(),
-#     BtstAssembler(),
-#     ResetAssembler(),
-#     NopAssembler(),
-#     StopAssembler(),
-#     RteAssembler(),
-#     RtsAssembler(),
-#     TrapvAssembler(),
-#     RtrAssembler(),
-#     IllegalAssembler(),
-#     ]
 
 assemblers = generate_assembler_list()
-
-# if __name__ == "__main__":
-
-#     tree = BinaryPrefixTree(assemblers)
-
-#     add = tree.get_assembler(0b1101_0000_0000_0000)
-#     print('this should be add:', add)
-
-#     print('this should be BTST:', tree.get_assembler(0b0000_1000_0000_0000))
-#     print('this should be None:', tree.get_assembler(0b1111_0000_0000_0000))
-#     print('this should be None:', tree.get_assembler(0b0111_0000_0000_0000))
-
-#     for x in range(0, 0b1111_1111):
-#         asm = tree.get_assembler(x << 8)
-#         if asm is not None:
-#             print('found', asm, 'at', bin(x))
-#     exit(0)
-
-#     add = AddAssembler()
-#     example_word = 0b1101_1110_1100_0111
-#     assert add.is_match(example_word)
-
-#     values = add.disassemble_values(example_word)
-#     print(values)
-
-#     out_word = add.assemble(values)
-#     print(bin(out_word))
-
-#     assert example_word == out_word
-    
