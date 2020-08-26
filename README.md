@@ -20,7 +20,7 @@ Types reimplemented in dev branch:
 
 ## rewrite progress
 
-- [] Need to establish dict mapping between opcode literal strs and the opcode object types used for simulation
+- [x] Need to establish dict mapping between opcode literal strs and the opcode object types used for simulation
      this was a change made to make it easier to add more opcodes when disassembling/assembling (also, need a way to go back to original values using those same classes, currently it's only doing disassembly)
 
 Assemblers: (not in priority order)

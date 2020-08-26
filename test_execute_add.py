@@ -18,7 +18,8 @@ from easier68k.register import Register
 from easier68k.op_size import OpSize
 from easier68k.memory_value import MemoryValue
 
-print(assemblers)
+import pprint
+pprint.pprint(assemblers)
 
 assembler_tree = BinaryPrefixTree(assemblers.values())
 

@@ -63,9 +63,3 @@ class OpCodeAssembler():
     @abstractmethod
     def get_opcode(self): # -> str:
         return self._opcode
-
-    # def disassemble_opcode(self, word): # -> OpCodeBase:
-    #     values = self.disassemble_values(word)
-    #     op = self.get_opcode()
-    #     op.from_asm_values(values)
-    #     return op
