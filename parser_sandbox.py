@@ -101,6 +101,28 @@ opcode_params: opcode_param ( "," opcode_param )*
 %ignore WS
 '''
 
+hello_world = '''
+; Constants
+CR  EQU     $0D
+LF  EQU     $0A
+
+start   ORG    $1000
+        ; Output the prompt message
+        LEA     MSG, A1 
+        MOVE.B  #14, D0 
+        TRAP    #15     
+
+        ; halt
+        MOVE.B  #9, D0
+        TRAP    #15
+
+MSG     DC.B    'This is some text', CR, LF, 0
+
+        SIMHALT             ; halt simulator
+
+        END start
+'''
+
 input = '''
 *-----------------------------------------------------------
 * Title      : looping
@@ -156,7 +178,9 @@ instOPList3 DC.W a,b,c,d
 *~Tab size~4~
 '''
 
+input = hello_world
+
 
 l = Lark(language)
-# print(l.parse(input).pretty())
-print(l.parse(input))
+print(l.parse(input).pretty())
+# print(l.parse(input))
