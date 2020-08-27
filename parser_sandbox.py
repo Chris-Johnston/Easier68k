@@ -5,57 +5,94 @@ language = '''
 ANY_TEXT: /.+/
 OP_PARAM_TEXT: /[a-zA-Z]*[a-zA-Z0-9]+/
 OPCODE_TEXT: /[a-zA-Z]+/
-LABEL: OPCODE_TEXT // equivalent
+LABEL: /[a-zA-Z0-9\\_\\-]+/
+LITERAL_SYMBOL: LABEL // equivalent
+    | "%" LABEL
+    | "$" LABEL
+
+literal_char: "#" literal_escaped_string
+
+D_REGISTER: /[dD][0-7]/
+A_REGISTER: /[aA][0-6]/
+
+// todo add lowercase sp and pc
+REGISTER: "SP" | D_REGISTER | A_REGISTER | "PC"
 
 LITERAL_HEX: /\\$[a-fA-F0-9]+/
 LITERAL_BIN: /%[01]+/
-LITERAL_DEC: /#?[0-9]+/
+LITERAL_DEC: /-?[0-9]+/
 
 // LITERAL: /[#$%]?[a-fA-F0-9]+/
-literal: LITERAL_BIN | LITERAL_HEX | LITERAL_DEC
+literal: LITERAL_BIN
+    | LITERAL_HEX
+    | LITERAL_DEC
+    | LITERAL_SYMBOL
+    | literal_char
+    | literal_escaped_string
 
-literal_list: literal ("," literal_list)?
+immediate: "#" literal
+
+//literal_list: literal
+//   | literal "," literal_list
 
 // hopefully shouldn't interfere with 's?
 // update: it do
 // needs to be updated to be more robust
-_LITERAL_ESCAPED_STRING_INNER: /[a-zA-Z0-9!?\\., ]+/
+_LITERAL_ESCAPED_STRING_INNER: /[a-zA-Z0-9\\/#$!?\\\\\\(\\):.," \\-\\+]+/
 literal_escaped_string: "'" _LITERAL_ESCAPED_STRING_INNER "'"
 
 // MESSAGE DC.B 'Hello world', 0 ; c str
-string_literal: literal_escaped_string
-    | literal_escaped_string literal_list
+// string_literal: literal_escaped_string
 
 start: line*
 
 // line: [special_op | regular_op]? comment? NEWLINE
 line: line_content NEWLINE
-line_content: comment
-    | special_op comment?
-    | regular_op comment?
-    | label comment?
 
-special_opcode: opcode // START, MESSAGE
-regular_op: special_opcode? opcode opcode_params?
+// i think equ might be a problem, treat it as an op?
+line_inner : regular_op
+
+line_content: label? line_inner? comment? WS_INLINE*
+    // | literal_assignment comment?
+
+// special_opcode: opcode // START, MESSAGE
+regular_op: opcode opcode_params?
 opcode_sizes: "B" | "W" | "L"
 opcode: OPCODE_TEXT
     | OPCODE_TEXT "." opcode_sizes
 
-special_op: "START" "ORG" "$" INT
+// special_op: "START" "ORG" "$" INT
 
 // ?start_opcode : "START" "ORG" string
 
 comment_start : "*" | ";"
 comment : comment_start ANY_TEXT?
 
-label: LABEL ":"
+label: LABEL ":"?
+// literal_assignment: LABEL "EQU" literal
 
-opcode_param : [OP_PARAM_TEXT | literal | string_literal | literal_list ]
-opcode_params : opcode_param "," opcode_param
-    | opcode_param
+addressing_mode: "-(" REGISTER ")"
+    | "(" REGISTER ")+"
+    | "(" REGISTER ")"
+register_list: REGISTER ("/" REGISTER)+
+    | REGISTER "-" REGISTER
+
+opcode_param : OP_PARAM_TEXT
+    | immediate
+    | literal
+    // | literal_list
+//    | string_literal
+    | addressing_mode
+    | register_list
+
+//opcode_params: opcode_param 
+//    | opcode_param "," opcode_params
+
+opcode_params: opcode_param ( "," opcode_param )*
 
 %import common.WORD
 %import common.WS
+%import common.WS_INLINE
 %import common.INT
 %import common.SIGNED_NUMBER
 %import common.ESCAPED_STRING
@@ -81,7 +118,7 @@ START:                  ; first instruction of program
     ; set initial value of the value to be used for counting
     MOVE #1, D1 ; set D1 to 1
     MOVE #1024, D4 ; set max val to D4
-
+CRLF
 LOOP:
 
     CMP D4, D1 ; compare the two
@@ -109,6 +146,8 @@ DONE:
 
 * Put variables and constants here
 
+instOPList3 DC.W a,b,c,d      
+
     END    START        ; last line of source
 
 *~Font name~Courier New~
@@ -117,5 +156,7 @@ DONE:
 *~Tab size~4~
 '''
 
+
 l = Lark(language)
-print(l.parse(input).pretty())
+# print(l.parse(input).pretty())
+print(l.parse(input))
