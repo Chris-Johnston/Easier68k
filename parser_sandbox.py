@@ -184,3 +184,158 @@ input = hello_world
 l = Lark(language)
 print(l.parse(input).pretty())
 # print(l.parse(input))
+
+
+# expected output for hello world
+"""
+start
+  line
+    line_content
+      comment
+        comment_start
+         Constants
+    
+
+  line
+    line_content
+      label     CR
+      line_inner
+        regular_op
+          opcode        EQU
+          opcode_params
+            opcode_param
+              literal   $0D
+    
+
+  line
+    line_content
+      label     LF
+      line_inner
+        regular_op
+          opcode        EQU
+          opcode_params
+            opcode_param
+              literal   $0A
+    
+
+
+  line
+    line_content
+      label     start
+      line_inner
+        regular_op
+          opcode        ORG
+          opcode_params
+            opcode_param
+              literal   $1000
+      comment
+        comment_start
+         Output the prompt message
+    
+
+  line
+    line_content
+      line_inner
+        regular_op
+          opcode        LEA
+          opcode_params
+            opcode_param        MSG
+            opcode_param        A1
+       
+    
+
+  line
+    line_content
+      line_inner
+        regular_op
+          opcode
+            MOVE
+            opcode_sizes
+          opcode_params
+            opcode_param
+              immediate
+                literal 14
+            opcode_param        D0
+       
+    
+
+  line
+    line_content
+      line_inner
+        regular_op
+          opcode        TRAP
+          opcode_params
+            opcode_param
+              immediate
+                literal 15
+           
+    
+
+
+  line
+    line_content
+      comment
+        comment_start
+         halt
+    
+
+  line
+    line_content
+      line_inner
+        regular_op
+          opcode
+            MOVE
+            opcode_sizes
+          opcode_params
+            opcode_param
+              immediate
+                literal 9
+            opcode_param        D0
+    
+
+  line
+    line_content
+      line_inner
+        regular_op
+          opcode        TRAP
+          opcode_params
+            opcode_param
+              immediate
+                literal 15
+    
+
+
+  line
+    line_content
+      label     MSG
+      line_inner
+        regular_op
+          opcode
+            DC
+            opcode_sizes
+          opcode_params
+            opcode_param
+              literal
+                literal_escaped_string
+            opcode_param        CR
+            opcode_param        LF
+            opcode_param        0
+    
+
+
+  line
+    line_content
+      label     SIMHALT
+      comment
+        comment_start
+         halt simulator
+    
+
+
+  line
+    line_content
+      label     END
+      line_inner
+        regular_op
+          opcode        start
+    """
