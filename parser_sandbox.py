@@ -1,34 +1,48 @@
-from lark import Lark
+from lark import Lark, Transformer
 
 language = '''
 
 ANY_TEXT: /.+/
 OP_PARAM_TEXT: /[a-zA-Z]*[a-zA-Z0-9]+/
 OPCODE_TEXT: /[a-zA-Z]+/
-LABEL: /[a-zA-Z0-9\\_\\-]+/
-LITERAL_SYMBOL: LABEL // equivalent
-    | "%" LABEL
-    | "$" LABEL
+LABEL: /[a-zA-Z_][a-zA-Z0-9\\_\\-]*/
+literal_symbol: LABEL // equivalent
+//    | "%" LABEL // not correct?
+//    | "$" LABEL
 
-literal_char: "#" literal_escaped_string
+literal_char: "'" LITERAL_ESCAPED_CHAR_INNER "'"
 
-D_REGISTER: /[dD][0-7]/
-A_REGISTER: /[aA][0-6]/
+
+d_reg: ("d"|"D")("0".."7")
+a_reg: ("a"|"A")("0".."6")
 
 // todo add lowercase sp and pc
-REGISTER: "SP" | D_REGISTER | A_REGISTER | "PC"
+register: "SP" | d_reg | a_reg | "PC"
 
-LITERAL_HEX: /\\$[a-fA-F0-9]+/
-LITERAL_BIN: /%[01]+/
-LITERAL_DEC: /-?[0-9]+/
+// LITERAL_HEX: /\\$[a-fA-F0-9]+/
+// LITERAL_BIN: /%[01]+/
+// LITERAL_DEC: /-?[0-9]+/
+
+BINDIGIT: "0" | "1"
+HEXNUM: HEXDIGIT+
+BINNUM: BINDIGIT+
+literal_hex: "$" HEXNUM
+literal_bin: "%" BINNUM
+literal_dec: SIGNED_INT
+
+
+//literal_hex: "$" /\\$[a-fA-F0-9]+/
+//literal_bin: /%[01]+/
+//literal_dec: /-?[0-9]+/
+
 
 // LITERAL: /[#$%]?[a-fA-F0-9]+/
-literal: LITERAL_BIN
-    | LITERAL_HEX
-    | LITERAL_DEC
-    | LITERAL_SYMBOL
+literal: literal_bin
+    | literal_hex
+    | literal_dec
+    | literal_symbol
     | literal_char
-    | literal_escaped_string
+    | literal_str
 
 immediate: "#" literal
 
@@ -38,28 +52,26 @@ immediate: "#" literal
 // hopefully shouldn't interfere with 's?
 // update: it do
 // needs to be updated to be more robust
-_LITERAL_ESCAPED_STRING_INNER: /[a-zA-Z0-9\\/#$!?\\\\\\(\\):.," \\-\\+]+/
-literal_escaped_string: "'" _LITERAL_ESCAPED_STRING_INNER "'"
+LITERAL_ESCAPED_CHAR_INNER: /[a-zA-Z0-9\\/\\(\\):.," \\-+]/
+// _LITERAL_ESCAPED_STRING_INNER: /[a-zA-Z0-9\\/\\(\\):.," \\-+]+/
+STR_INNER: /[a-zA-Z0-9\\/\\(\\):.," \\-+]+/
+literal_str: "'" STR_INNER "'"
 
 // MESSAGE DC.B 'Hello world', 0 ; c str
-// string_literal: literal_escaped_string
+// string_literal: LITERAL_ESCAPED_STRING
 
-start: line*
+start: (line_content WS_INLINE* NEWLINE)*
 
 // line: [special_op | regular_op]? comment? NEWLINE
-line: line_content NEWLINE
 
-// i think equ might be a problem, treat it as an op?
-line_inner : regular_op
-
-line_content: label? line_inner? comment? WS_INLINE*
+line_content: label? regular_op? comment?
     // | literal_assignment comment?
 
 // special_opcode: opcode // START, MESSAGE
 regular_op: opcode opcode_params?
-opcode_sizes: "B" | "W" | "L"
+OPCODE_SIZES: "B" | "W" | "L"
 opcode: OPCODE_TEXT
-    | OPCODE_TEXT "." opcode_sizes
+    | OPCODE_TEXT "." OPCODE_SIZES
 
 // special_op: "START" "ORG" "$" INT
 
@@ -71,19 +83,19 @@ comment : comment_start ANY_TEXT?
 label: LABEL ":"?
 // literal_assignment: LABEL "EQU" literal
 
-addressing_mode: "-(" REGISTER ")"
-    | "(" REGISTER ")+"
-    | "(" REGISTER ")"
-register_list: REGISTER ("/" REGISTER)+
-    | REGISTER "-" REGISTER
+addressing_mode: "-(" register ")"
+    | "(" register ")+"
+    | "(" register ")"
+    | register
+// register_list: register ("/" register)+
+//     | register "-" register
 
-opcode_param : OP_PARAM_TEXT
+opcode_param : addressing_mode
+//    | register_list
     | immediate
     | literal
     // | literal_list
 //    | string_literal
-    | addressing_mode
-    | register_list
 
 //opcode_params: opcode_param 
 //    | opcode_param "," opcode_params
@@ -91,10 +103,13 @@ opcode_param : OP_PARAM_TEXT
 opcode_params: opcode_param ( "," opcode_param )*
 
 %import common.WORD
+%import common.DIGIT
+%import common.HEXDIGIT
 %import common.WS
 %import common.WS_INLINE
 %import common.INT
 %import common.SIGNED_NUMBER
+%import common.SIGNED_INT
 %import common.ESCAPED_STRING
 %import common._STRING_ESC_INNER
 %import common.NEWLINE
@@ -105,6 +120,10 @@ hello_world = '''
 ; Constants
 CR  EQU     $0D
 LF  EQU     $0A
+BB EQU %111
+AA EQU +1
+AB EQU -1
+AC EQU 1234
 
 start   ORG    $1000
         ; Output the prompt message
@@ -117,6 +136,7 @@ start   ORG    $1000
         TRAP    #15
 
 MSG     DC.B    'This is some text', CR, LF, 0
+MSDFG     DC.B    #'A', #'B', CR, LF, 0
 
         SIMHALT             ; halt simulator
 
@@ -182,9 +202,114 @@ input = hello_world
 
 
 l = Lark(language)
-print(l.parse(input).pretty())
+
+tree = l.parse(input)
+
+print(tree.pretty())
+# print(l.parse(input).pretty())
 # print(l.parse(input))
 
+from typing import Optional
+
+class Opcode():
+  def __init__(self, name, size: Optional[str] = None):
+    self.name = name
+    self.size = size
+  
+  def __str__(self):
+    return f"[Op {self.name}.{self.size or ''}]"
+
+class AssemblyTransformer(Transformer):
+  def regular_op(self, items):
+    if len(items) == 1:
+      op, op_list = items[0], None
+    else:
+      op, op_list = items
+    print("op", op, "list", op_list)
+    return (str(op), op_list)
+  
+  def start(self, items):
+    for x in items:
+      if len(x) == 1:
+        print(f"..\t\t{x[0]}")
+      else:
+        print(f".\t{type(x)}\t{x}")
+
+  def label(self, items):
+    label_text = items[0]
+    return "LBL-" + label_text
+
+  def line_content(self, items):
+    return items
+
+  def opcode_params(self, items):
+    # return list(items)
+    return items
+
+  # this feels wrong
+  def opcode_param(self, item):
+    return item[0]
+
+  def literal(self, item):
+    return item[0]
+  
+  def opcode(self, items):
+    if len(items) == 1:
+      return Opcode(items[0])
+    opcode_text, opcode_size = items
+    return Opcode(opcode_text, opcode_size)
+
+  def literal_hex(self, items):
+    return int(items[0], 16)
+
+  def literal_bin(self, items):
+    return int(items[0], 2)
+
+  def literal_dec(self, items):
+    return int(items[0])
+
+  def literal_str(self, items):
+    return items[0]
+  
+  def literal_char(self, items):
+    return ord(items[0])
+
+  def literal_symbol(self, item):
+    return "symb " + str(item[0])
+
+  def immediate(self, item):
+    return item[0]
+
+  def d_reg(self, items):
+    return "D reg " + items[0]
+
+  def a_reg(self, items):
+    return "A reg " + items[0]
+
+  def register(self, items):
+    # this is where we would map to an enum
+    return items[0]
+
+  def line_inner(self, items):
+    # print("line inner", items)
+    return items[0]
+
+  def addressing_mode(self, items):
+    # this needs to break out into different addressing modes
+    return items[0]
+
+  # should this be a rule and not a terminal?
+  def OPCODE_TEXT(self, item):
+    return item
+
+  # does this work?
+  LABEL = lambda self, x: str(x)
+  STR_INNER = lambda self, x: str(x)
+  # line_inner = lambda self, x: x[0]
+  
+
+result = AssemblyTransformer().transform(tree)
+print(result.pretty())
 
 # expected output for hello world
 """
