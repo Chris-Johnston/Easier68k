@@ -211,47 +211,137 @@ print(tree.pretty())
 
 from typing import Optional
 
+class Register():
+  def __init__(self, register_name: str):
+    self.register_name = register_name
+
+class Literal():
+  def __init__(self, value:  int): # 
+    self.value = value
+
+  def __str__(self):
+    return f"<Literal {self.value}>"
+
+class LabelMap():
+  def __init__(self):
+    self.map = {}
+
+  def add(self, name: str, value: Optional[Literal] = None):
+    # adds a new item to the symbol map if not already defined.
+    # if value is None, indicates that the symbol was referenced
+    # but without a definition
+    if name in self.map:
+      match_value = self.map[name]
+
+      # only update if not None
+      if match_value is not None and value is None:
+        self.map[name] = value
+    else:
+      self.map[name] = value
+  
+  def get_value(self, name: str) -> Optional[Literal]:
+    # gets an literal value for a symbol if it has been assigned
+    if name in self.map:
+      return self.map[name]
+    return None
+
+class Symbol():
+  # either as referenced by a definition
+  # or when assigned
+  def __init__(self, symbol_name: str):
+    self.symbol_name = symbol_name
+
+class ParamList():
+  def __init__(self, values: list):
+    self.values = values
+
 class Opcode():
   def __init__(self, name, size: Optional[str] = None):
     self.name = name
     self.size = size
+    self.arg_list = None # ParamList
   
   def __str__(self):
     return f"[Op {self.name}.{self.size or ''}]"
 
+  def __repr__(self):
+    return str(self)
+
+class Label():
+  def __init__(self, name):
+    self.name = name
+  
+  def __str__(self):
+    return f"[lable {self.name}]"
+
+  def __repr__(self):
+    return str(self)
+
+# discard comments for now
+
 class AssemblyTransformer(Transformer):
+  
   def regular_op(self, items):
     if len(items) == 1:
       op, op_list = items[0], None
     else:
       op, op_list = items
     print("op", op, "list", op_list)
-    return (str(op), op_list)
+    op.arg_list = op_list
+    # return (op, op_list)
+    return op
   
   def start(self, items):
+    content = []
+
     for x in items:
-      if len(x) == 1:
-        print(f"..\t\t{x[0]}")
-      else:
-        print(f".\t{type(x)}\t{x}")
+      print(f"{type(x)} - {x}")
+      if isinstance(x, dict):
+        label = x.get("label")
+        opcode = x.get("opcode")
+
+        content.append((label, opcode))
+        # need to associate the next opcode
+        # with this label
+        # also need to make a special case for "EQU"
+        # which really only makes sense when assembling
+        # need to let the EQU opcode know about the parameter list
+        # following it
+        # but, all opcode will have to know that already
+        # so, maybe this doesn't require a special case after all
+    return content
 
   def label(self, items):
     label_text = items[0]
-    return "LBL-" + label_text
+    # return "LBL-" + label_text
+    return Label(label_text)
 
   def line_content(self, items):
-    return items
+    # pull out the label, opcode
+    label = None
+    opcode = None
+
+    for x in items:
+      print(f".{type(x)} - {x}")
+      if isinstance(x, Label):
+        label = x
+      elif isinstance(x, Opcode):
+        opcode = x
+
+    if label is not None and opcode is not None:
+      return { "label": label, "opcode": opcode }
+    return None
 
   def opcode_params(self, items):
     # return list(items)
     return items
 
-  # this feels wrong
+  # this feels wrong, having so many methods that do the same thing
   def opcode_param(self, item):
     return item[0]
 
   def literal(self, item):
-    return item[0]
+    return Literal(item[0])
   
   def opcode(self, items):
     if len(items) == 1:
@@ -275,20 +365,23 @@ class AssemblyTransformer(Transformer):
     return ord(items[0])
 
   def literal_symbol(self, item):
-    return "symb " + str(item[0])
+    # Labels are where they are defined, Symbols are where they are used
+    return Symbol(item[0])
 
   def immediate(self, item):
     return item[0]
 
   def d_reg(self, items):
-    return "D reg " + items[0]
+    # return "D reg " + items[0]
+    return Register(f"D{items[0]}")
 
   def a_reg(self, items):
-    return "A reg " + items[0]
+    # return "A reg " + items[0]
+    return Register(f"A{items[0]}")
 
   def register(self, items):
     # this is where we would map to an enum
-    return items[0]
+    return Register(items[0])
 
   def line_inner(self, items):
     # print("line inner", items)
@@ -309,7 +402,9 @@ class AssemblyTransformer(Transformer):
   
 
 result = AssemblyTransformer().transform(tree)
-print(result.pretty())
+# print(type(result)) # , result.pretty())
+import pprint
+pprint.pprint(result)
 
 # expected output for hello world
 """
