@@ -1,0 +1,72 @@
+ANY_TEXT: /.+/
+OP_PARAM_TEXT: /[a-zA-Z]*[a-zA-Z0-9]+/
+OPCODE_TEXT: /[a-zA-Z]+/
+LABEL: /[a-zA-Z_][a-zA-Z0-9\_\-]*/
+literal_symbol: LABEL 
+
+literal_char: "'" LITERAL_ESCAPED_CHAR_INNER "'"
+
+
+d_reg: ("d"|"D")("0".."7")
+a_reg: ("a"|"A")("0".."6")
+
+// todo handle case sensitivity better
+register: "SP" | "sp" | d_reg | a_reg | "PC" | "pc"
+
+BINDIGIT: "0" | "1"
+HEXNUM: HEXDIGIT+
+BINNUM: BINDIGIT+
+literal_hex: "$" HEXNUM
+literal_bin: "%" BINNUM
+literal_dec: SIGNED_INT
+
+literal: literal_bin
+    | literal_hex
+    | literal_dec
+    | literal_symbol
+    | literal_char
+    | literal_str
+
+immediate: "#" literal
+
+// hopefully shouldn't interfere with 's?
+// update: it do
+// needs to be updated to be more robust
+LITERAL_ESCAPED_CHAR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]/
+STR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]+/
+literal_str: "'" STR_INNER "'"
+start: (line_content WS_INLINE* NEWLINE)*
+line_content: label? regular_op? comment?
+regular_op: opcode opcode_params?
+OPCODE_SIZES: "B" | "W" | "L"
+opcode: OPCODE_TEXT
+    | OPCODE_TEXT "." OPCODE_SIZES
+
+comment_start : "*" | ";"
+comment : comment_start ANY_TEXT?
+
+label: LABEL ":"?
+
+addressing_mode: "-(" register ")"
+    | "(" register ")+"
+    | "(" register ")"
+    | register
+
+opcode_param : addressing_mode
+    | immediate
+    | literal
+
+opcode_params: opcode_param ( "," opcode_param )*
+
+%import common.WORD
+%import common.DIGIT
+%import common.HEXDIGIT
+%import common.WS
+%import common.WS_INLINE
+%import common.INT
+%import common.SIGNED_NUMBER
+%import common.SIGNED_INT
+%import common.ESCAPED_STRING
+%import common._STRING_ESC_INNER
+%import common.NEWLINE
+%ignore WS

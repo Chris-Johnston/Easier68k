@@ -13,6 +13,13 @@ from .memory_value import MemoryValue
 
 class OpCodeBase():
 
+    # @abstractmethod
+    def from_param_list(self, size: OpSize, values: list):
+        """
+        Initializes the opcode from the parameters provided.
+        """
+        self.size = size
+
     @abstractmethod
     def from_asm_values(self, values: list):
         """
@@ -58,10 +65,6 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             0b001: EAMode.AbsoluteLongAddress,
             0b100: EAMode.Immediate,
         }
-
-    @abstractmethod
-    def execute(self, cpu: M68K):
-        pass
 
     @abstractmethod
     def from_asm_values(self, values: list):
@@ -158,7 +161,6 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             addr = cpu.memory.get(OpSize.WORD, addr).get_value_unsigned()
             cpu.memory.set(imm_size, addr, value)
 
-
     def _get_ea_mode_value(self, size: OpSize, cpu: M68K) -> MemoryValue:
         """
         Uses the ea_mode and register to get the value specified.
@@ -229,6 +231,87 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         self.data_register = None
         self.direction = None
         self.size = None
+
+    def from_param_list(self, size: OpSize, param_list: list):
+        super().from_param_list(size, param_list)
+
+        # param list expected to be of len 2
+        assert len(param_list) == 2, "wrong param list size"
+
+        src, dst = param_list
+
+        # from .assembly_transformer import Register
+
+        ea = None
+
+        if isinstance(dst, Register):
+            # ea + Dn -> Dn
+            # if register is ADDA, technically we have to do some different behavior
+            print("ea + Dn -> Dn (dir 0)")
+            self.direction = 0
+
+            # set the data register num
+            # map back into an int
+            self.data_register = { # this should be part of add, oops
+                0: Register.D0,
+                1: Register.D1,
+                2: Register.D2,
+                3: Register.D3,
+                4: Register.D4,
+                5: Register.D5,
+                6: Register.D6,
+                7: Register.D7,
+            }[dst]
+
+            ea = src
+        else:
+            # Dn + <ea> -> <ea>
+            print("Dn + ea -> ea")
+            self.direction = 1
+            ea = dst
+
+            # with confidence I can say that 90% of this code has
+            # written between the hours of 8 PM and 2 AM
+            self.data_reg = { # this should be part of add, oops
+                0: Register.D0,
+                1: Register.D1,
+                2: Register.D2,
+                3: Register.D3,
+                4: Register.D4,
+                5: Register.D5,
+                6: Register.D6,
+                7: Register.D7,
+            }[src]
+        
+        # handle the ea
+        # currently the parser doesn't do address register indirect or direct
+        # self.ea_mode = EAMode.DataRegisterDirect
+        from .assembly_transformer import Literal
+
+        print("ea: ", type(ea))
+
+        if isinstance(ea, Literal):
+            self.ea_mode = 0b100
+            # todo handle the case of absolute long and abs word addresses
+            print("ea is imm")
+            self.register = None
+        elif isinstance(ea, Register):
+            if Register.D0 <= ea <= Register.D7:
+                self.ea_mode = EAMode.DataRegisterDirect
+            elif Register.A0 <= ea <= Register.A7:
+                self.ea_mode = EAMode.AddressRegisterDirect
+            self.register = ea
+            # handle indirect, currently the parser doesn't make distinctions
+            print("ea is reg")
+
+        print("Add got src", src, "dst", dst)
+        print("ea_mode", self.ea_mode, "register", self.register)
+
+        # ea + Dn -> Dn
+        # or
+        # Dn + <ea> -> <ea>
+
+        print(self.direction, self.register)
     
     def from_asm_values(self, values: list):
         super().from_asm_values(values)
@@ -320,6 +403,14 @@ def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:
 
     op = OPCODE_LOOKUP[opcode_name]()
     op.from_asm_values(asm_values)
+    return op
+
+def get_opcode_parsed(opcode_name: str, size: OpSize, param_list: list) -> OpCodeBase:
+    assert opcode_name in OPCODE_LOOKUP, "Not yet implemented"
+
+    op = OPCODE_LOOKUP[opcode_name]()
+    op.from_param_list(size, param_list)
+
     return op
 
 # class OpCodeAdd(OpCodeBase): # a lot of opcodes use the M Xn format, so will make another class for that
