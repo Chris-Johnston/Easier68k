@@ -7,6 +7,7 @@ from .op_size import Size, OpSize
 from .m68k import M68K
 from .register import Register
 from .memory_value import MemoryValue
+from .assembly_transformer import Literal
 
 # bytes -> assembler tree find match -> add assembler
 # add assembler -> add opcode -> execute
@@ -52,19 +53,38 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
 
         # used for fast lookup
         self._ea_mode_lookup = {
-            EAModeBinary.MODE_DRD: EAMode.DataRegisterDirect,
-            EAModeBinary.MODE_ARD: EAMode.AddressRegisterDirect,
-            EAModeBinary.MODE_ARI: EAMode.AddressRegisterIndirect,
-            EAModeBinary.MODE_ARIPI: EAMode.AddressRegisterIndirectPostIncrement,
-            EAModeBinary.MODE_ARIPD: EAMode.AddressRegisterIndirectPreDecrement,
+            EAModeBinary.MODE_DRD: EAMode.DRD,
+            EAModeBinary.MODE_ARD: EAMode.ARD,
+            EAModeBinary.MODE_ARI: EAMode.ARI,
+            EAModeBinary.MODE_ARIPI: EAMode.ARIPI,
+            EAModeBinary.MODE_ARIPD: EAMode.ARIPD,
             # not worring about Address with Displacement or Address with Index for now
         }
 
         self._ea_imm_lookup = {
-            0b000: EAMode.AbsoluteWordAddress,
-            0b001: EAMode.AbsoluteLongAddress,
-            0b100: EAMode.Immediate,
+            0b000: EAMode.AWA,
+            0b001: EAMode.ALA,
+            0b100: EAMode.IMM,
         }
+
+    @abstractmethod
+    def to_asm_values(self) -> list:
+        # we can return the last two values from this list
+        print(self.ea_mode)
+        print(EAMode(self.ea_mode))
+
+        mode = {
+            EAMode.AWA: 0b000,
+            EAMode.ALA: 0b001,
+            EAMode.IMM: 0b100,
+            EAMode.DRD: EAModeBinary.MODE_DRD,
+            EAMode.ARD: EAModeBinary.MODE_ARD,
+            EAMode.ARI: EAModeBinary.MODE_ARI,
+            EAMode.ARIPI: EAModeBinary.MODE_ARIPI,
+            EAMode.ARIPD: EAModeBinary.MODE_ARIPD,
+        }[self.ea_mode]
+        register = self.register or 0
+        return [mode, register]
 
     @abstractmethod
     def from_asm_values(self, values: list):
@@ -88,9 +108,9 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
         ARI, ARIPI, ARIPD
         """
         if self.ea_mode in [
-            EAMode.AddressRegisterIndirect,
-            EAMode.AddressRegisterIndirectPostIncrement,
-            EAMode.AddressRegisterIndirectPreDecrement,
+            EAMode.ARI,
+            EAMode.ARIPI,
+            EAMode.ARIPD,
         ]:
             # handle ARI
             address_register = {
@@ -105,14 +125,14 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             }[self.register]
 
             # lint: see if I can re-use this code
-            if self.ea_mode == EAMode.AddressRegisterIndirect:
+            if self.ea_mode == EAMode.ARI:
                 address = cpu.get_register(address_register)
-            elif self.ea_mode == EAMode.AddressRegisterIndirectPostIncrement:
+            elif self.ea_mode == EAMode.ARIPI:
                 address = cpu.get_register(address_register)
                 # increment the register
                 new_address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + address.get_value_unsigned())
                 cpu.set_register(address_register, new_address)
-            elif self.ea_mode == EAMode.AddressRegisterIndirectPreDecrement:
+            elif self.ea_mode == EAMode.ARIPD:
                 old_address = cpu.get_register(address_register)
                 # increment the reigster
                 address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + old_address.get_value_unsigned())
@@ -121,9 +141,9 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
         else:
             return None
 
-    def _get_immediate_address(self, size: Size, cpu: M68K) -> MemoryValue:
+    def _get_IMM_address(self, size: Size, cpu: M68K) -> MemoryValue:
         """
-        gets the memory value of the address of the immediate data. makes it easier to get IMM data/address
+        gets the memory value of the address of the IMM data. makes it easier to get IMM data/address
         """
         address = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
         return MemoryValue(size, unsigned_int=address)
@@ -137,25 +157,25 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
         # only memory alterable ea_modes are used here
         # cannot use drd
 
-        assert self.ea_mode != EAMode.Immediate, "This doesn't make sense?"
+        assert self.ea_mode != EAMode.IMM, "This doesn't make sense?"
         assert self.ea_mode not in [
-            EAMode.DRD, EAMode.AddressRegisterDirect
+            EAMode.DRD, EAMode.ARD
         ], "These are not valid modes for setting the value"
 
         if self.ea_mode in [
-            EAMode.AddressRegisterIndirect,
-            EAMode.AddressRegisterIndirectPostIncrement,
-            EAMode.AddressRegisterIndirectPreDecrement,
+            EAMode.ARI,
+            EAMode.ARIPI,
+            EAMode.ARIPD,
         ]:
             # get the address
             adr = self.__get_address(size, cpu)
             cpu.memory.set(self.size, adr.get_value_unsigned(), value)
 
-        if self.ea_mode == EAMode.AbsoluteLongAddress or self.ea_mode == EAMode.AbsoluteWordAddress:
+        if self.ea_mode == EAMode.ALA or self.ea_mode == EAMode.AWA:
             # get the address following the PC
             # set the value at that address
-            imm_size = OpSize.WORD if self.ea_mode == EAMode.AbsoluteWordAddress else OpSize.LONG
-            addr = self._get_immediate_address(OpSize.WORD, cpu).get_value_unsigned()
+            imm_size = OpSize.WORD if self.ea_mode == EAMode.AWA else OpSize.LONG
+            addr = self._get_IMM_address(OpSize.WORD, cpu).get_value_unsigned()
             print(f"addr {addr:x} value {value}")
             # cpu.memory.set(self.size, addr, value)
             addr = cpu.memory.get(OpSize.WORD, addr).get_value_unsigned()
@@ -166,12 +186,12 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
         Uses the ea_mode and register to get the value specified.
         TODO should also create one to set the value
         """
-        if self.ea_mode == EAMode.Immediate:
+        if self.ea_mode == EAMode.IMM:
             # get value at PC + 2 (word)
             imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
             return cpu.memory.get(self.size, imm_location)
 
-        if self.ea_mode == EAMode.DataRegisterDirect:
+        if self.ea_mode == EAMode.DRD:
             # Direct, so look up the location from the register
             # then return the value at that location            
             # TODO move this to the class so this doesn't have to be instantiated each time
@@ -187,7 +207,7 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             }[self.register]
             return cpu.get_register(data_register)
 
-        if self.ea_mode in [EAMode.AddressRegisterIndirectPostIncrement, EAMode.AddressRegisterIndirectPreDecrement, EAMode.AddressRegisterIndirect]:
+        if self.ea_mode in [EAMode.ARIPI, EAMode.ARIPD, EAMode.ARI]:
             address_register = {
                 0: Register.A0,
                 1: Register.A1,
@@ -199,14 +219,14 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
                 7: Register.A7,
             }[self.register]
 
-            if self.ea_mode == EAMode.AddressRegisterIndirect:
+            if self.ea_mode == EAMode.ARI:
                 address = cpu.get_register(address_register)
-            elif self.ea_mode == EAMode.AddressRegisterIndirectPostIncrement:
+            elif self.ea_mode == EAMode.ARIPI:
                 address = cpu.get_register(address_register)
                 # increment the register
                 new_address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + address.get_value_unsigned())
                 cpu.set_register(address_register, new_address)
-            elif self.ea_mode == EAMode.AddressRegisterIndirectPreDecrement:
+            elif self.ea_mode == EAMode.ARIPD:
                 old_address = cpu.get_register(address_register)
                 # increment the reigster
                 address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + old_address.get_value_unsigned())
@@ -214,7 +234,7 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
 
             return cpu.memory.get(self.size, address.get_value_unsigned())
         
-        if self.ea_mode in [EAMode.AbsoluteLongAddress, EAMode.AbsoluteWordAddress]:
+        if self.ea_mode in [EAMode.ALA, EAMode.AWA]:
             # TODO handle distinction between long and word here
             imm_location = cpu.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
             address = MemoryValue(self.size, unsigned_int=imm_location)
@@ -239,9 +259,6 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         assert len(param_list) == 2, "wrong param list size"
 
         src, dst = param_list
-
-        # from .assembly_transformer import Register
-
         ea = None
 
         if isinstance(dst, Register):
@@ -285,24 +302,24 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         
         # handle the ea
         # currently the parser doesn't do address register indirect or direct
-        # self.ea_mode = EAMode.DataRegisterDirect
-        from .assembly_transformer import Literal
-
-        print("ea: ", type(ea))
-
         if isinstance(ea, Literal):
-            self.ea_mode = 0b100
+            self.ea_mode = EAMode.IMM
             # todo handle the case of absolute long and abs word addresses
             print("ea is imm")
             self.register = None
         elif isinstance(ea, Register):
             if Register.D0 <= ea <= Register.D7:
-                self.ea_mode = EAMode.DataRegisterDirect
+                self.ea_mode = EAMode.DRD
             elif Register.A0 <= ea <= Register.A7:
-                self.ea_mode = EAMode.AddressRegisterDirect
+                self.ea_mode = EAMode.ARD
+            else:
+                print("unsupported register")
+                assert False
             self.register = ea
             # handle indirect, currently the parser doesn't make distinctions
             print("ea is reg")
+        else:
+            print(f"unsupported ea type {type(ea)}")
 
         print("Add got src", src, "dst", dst)
         print("ea_mode", self.ea_mode, "register", self.register)
@@ -336,6 +353,29 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
                 6: Register.D6,
                 7: Register.D7,
             }[data_register_num]
+
+    def to_asm_values(self):
+        super_result = super().to_asm_values()
+
+        size = {
+            OpSize.BYTE.value: 0b00,
+            OpSize.WORD.value: 0b01,
+            OpSize.LONG.value: 0b10,
+        }[self.size.value]
+
+        data_register_num = {
+            Register.D0: 0,
+            Register.D1: 1,
+            Register.D2: 2,
+            Register.D3: 3,
+            Register.D4: 4,
+            Register.D5: 5,
+            Register.D6: 6,
+            Register.D7: 7,
+        }[self.data_register]
+
+        result = [data_register_num, self.direction, size]
+        return result + super_result
 
     def execute(self, cpu: M68K):
         print("ADD")
@@ -444,9 +484,9 @@ def get_opcode_parsed(opcode_name: str, size: OpSize, param_list: list) -> OpCod
 #         elif addressing_mode == EAModeBinary.MODE_IMM:
 #             # determine this from the ea_register
 #             addressing_mode = {
-#                 0b000: EAMode.AbsoluteWordAddress,
-#                 0b001: EAMode.AbsoluteLongAddress,
-#                 0b100: EAMode.Immediate,
+#                 0b000: EAMode.AWA,
+#                 0b001: EAMode.ALA,
+#                 0b100: EAMode.IMM,
 #             }[ea_register]
 
 #         self.data_operand = AssemblyParameter(EAMode.DRD, data_register)

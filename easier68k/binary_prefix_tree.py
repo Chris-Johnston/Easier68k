@@ -17,7 +17,7 @@ class BinaryPrefixTree():
         # add each assembler to the tree
         self.root_node = BinaryTreeNode()
 
-        for a in assemblers:
+        for a in assemblers.values():
             prefix, length = a.literal_prefix
             # print(f"op {a.get_opcode()} prefix: {prefix:b} len: {length}")
             root = self.root_node

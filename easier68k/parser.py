@@ -31,7 +31,36 @@ def assemble(result: list):
 
         else:
             print(f"op - {op.name.lower()}")
-            op = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
+            opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
+
+            print(f"got op {type(opcode)} op.name {op.name}")
+            asm_values = opcode.to_asm_values()
+
+            if op.name.lower() == "add":
+                from .assemblers import assemblers
+                assembler = assemblers["add"]
+
+                values = opcode.to_asm_values()
+                print(f"got values {values}")
+                result = assembler.assemble(values)
+
+                print(f"assembled into {result:b}")
+
+                from .binary_prefix_tree import BinaryPrefixTree
+                asm_tree = BinaryPrefixTree(assemblers)
+                new_assembler = asm_tree.get_assembler(result)
+
+                print(f"got matching assembler {type(new_assembler)}")
+
+                dis_values = new_assembler.disassemble_values(result)
+                print(f"got {dis_values} back out")
+
+                from .opcode_base import OpCodeAdd
+
+                new_op = OpCodeAdd()
+                new_op.from_asm_values(dis_values)
+
+                print(f"new op {new_op}")
         # any normal op
         # get the opcode for it
         # then have that opcode spit out the asm values for it

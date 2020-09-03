@@ -11,32 +11,32 @@ class EAMode(Enum):
 
     # Data register direct
     DRD = 0
-    DataRegisterDirect = DRD
+    #DataRegisterDirect = DRD
 
     # Address register direct
     ARD = 1
-    AddressRegisterDirect = ARD
+    # AddressRegisterDirect = ARD
 
     # Address register indirect
     ARI = 2
-    AddressRegisterIndirect = ARI
+    # AddressRegisterIndirect = ARI
 
     # Address register indirect + post increment
     ARIPI = 3
-    AddressRegisterIndirectPostIncrement = ARIPI
+    #AddressRegisterIndirectPostIncrement = ARIPI
 
     # Address register indirect + pre decrement
     ARIPD = 4
-    AddressRegisterIndirectPreDecrement = ARIPD
+    #AddressRegisterIndirectPreDecrement = ARIPD
 
     # Immediate
     IMM = 5
-    Immediate = IMM
+    #Immediate = IMM
 
     # Absolute long address
     ALA = 6
-    AbsoluteLongAddress = ALA
+    #AbsoluteLongAddress = ALA
 
     # Absolute word address
     AWA = 7
-    AbsoluteWordAddress = AWA
+    #AbsoluteWordAddress = AWA
