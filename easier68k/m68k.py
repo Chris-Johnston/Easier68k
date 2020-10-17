@@ -177,6 +177,7 @@ class M68K:
         Starts the automatic execution
         :return:
         """
+        # needs to be totally reworked
         if not self.halted:
             if not self.clock_auto_cycle:
                 # run a single instruction

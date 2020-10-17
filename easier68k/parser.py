@@ -22,7 +22,9 @@ def assemble(result: list):
     from .op_size import OpSize
     cpu.set_register(Register.D2, MemoryValue(OpSize.WORD, unsigned_int=0xbeef))
 
-    address = 0
+    address = 1000
+    list_file = {
+    }
     for label, op in result:
         op_name = op.name.lower()
         if op.name.lower() == "org": # special case
@@ -42,12 +44,26 @@ def assemble(result: list):
         else:
             print(f"op - {op.name.lower()}")
             opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
+            # list_file[address] = opcode.
+
+            from .assemblers import assemblers
+            a = assemblers[op_name.lower()]
+            list_file[address] = a.assemble(opcode.to_asm_values())
+            address += 2 # this is not correct
+
+            from .assembly_transformer import Literal
+
+            # insert arg list
+            for arg in op.arg_list:
+                if isinstance(arg, Literal):
+                    list_file[address] = arg.value
+                    address += 2 # this is not correct
 
             print(f"got op {type(opcode)} op.name {op.name}")
             asm_values = opcode.to_asm_values()
 
             if op.name.lower() == "add":
-                from .assemblers import assemblers
+                
                 assembler = assemblers["add"]
 
                 values = opcode.to_asm_values()
@@ -82,4 +98,4 @@ def assemble(result: list):
         # then send those into the assembler
         # then shove the assmebled op and the arg list (if immediate data)
 
-    return None
+    return list_file

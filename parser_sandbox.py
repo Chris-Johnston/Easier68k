@@ -104,4 +104,18 @@ import pprint
 print('----------------------')
 pprint.pprint(result)
 
-assemble(result)
+list_file = assemble(result)
+pprint.pprint(list_file)
+
+from easier68k.m68k import M68K
+cpu = M68K()
+
+# load the list file
+for address in list_file.keys():
+    from easier68k.op_size import OpSize
+    from easier68k.memory_value import MemoryValue
+    print("address", address, list_file[address])
+    cpu.memory.set(OpSize.WORD, address, MemoryValue(OpSize.WORD, unsigned_int=list_file[address]))
+
+print("running ---")
+cpu.run()
