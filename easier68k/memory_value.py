@@ -233,7 +233,6 @@ class MemoryValue:
 
     def add_unsigned(self, other):
         total = self.get_value_unsigned() + other.get_value_unsigned()
-        overflow = False
         # 1/21 TODO
         # set when the register cannot properly represent the result as a signed value (you overflowed into the sign bit). 
         carry = False
@@ -243,6 +242,12 @@ class MemoryValue:
             carry = total > 0xFFFF
         elif self.length == OpSize.LONG:
             carry = total > 0xFFFF_FFFF
+        return MemoryValue(self.length, unsigned_int=total), carry
+
+    def sub_unsigned(self, other):
+        total = self.get_value_unsigned() - other.get_value_unsigned()
+        overflow = False
+        carry = total < 0
         return MemoryValue(self.length, unsigned_int=total), carry
 
     def __add__(self, other):
@@ -482,13 +487,13 @@ class MemoryValue:
         :reeturn:
         """
         if isinstance(other, MemoryValue):
-            # need to xor the bytes, and not with the signed value
+            # need to or the bytes, and not with the signed value
             val = self.unsigned_value | other.unsigned_value
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(other, int):
-            # can do a lazy xor by using a signed value
+            # can do a lazy or by using a signed value
             val = self.get_value_signed() | other
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
@@ -502,13 +507,13 @@ class MemoryValue:
         :return:
         """
         if isinstance(other, MemoryValue):
-            # need to xor the bytes, and not with the signed value
+            # need to and the bytes, and not with the signed value
             val = self.unsigned_value & other.unsigned_value
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(other, int):
-            # can do a lazy xor by using a signed value
+            # can do a lazy and by using a signed value
             val = self.get_value_signed() & other
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
@@ -522,13 +527,11 @@ class MemoryValue:
         :return:
         """
         if isinstance(other, MemoryValue):
-            # need to xor the bytes, and not with the signed value
             val = self.get_value_signed() // other.get_value_signed()
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(other, int):
-            # can do a lazy xor by using a signed value
             val = self.get_value_signed() // other
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
@@ -542,13 +545,11 @@ class MemoryValue:
         :return:
         """
         if isinstance(other, MemoryValue):
-            # need to xor the bytes, and not with the signed value
             val = self.get_value_signed() * other.get_value_signed()
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(other, int):
-            # can do a lazy xor by using a signed value
             val = self.get_value_signed() * other
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
@@ -562,13 +563,11 @@ class MemoryValue:
         :return:
         """
         if isinstance(other, MemoryValue):
-            # need to xor the bytes, and not with the signed value
             val = self.get_value_signed() % other.get_value_signed()
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(other, int):
-            # can do a lazy xor by using a signed value
             val = self.get_value_signed() % other
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
@@ -583,13 +582,11 @@ class MemoryValue:
         :return:
         """
         if isinstance(power, MemoryValue):
-            # need to xor the bytes, and not with the signed value
             val = pow(self.get_value_signed(), power.get_value_signed())
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)
             return n
         elif isinstance(power, int):
-            # can do a lazy xor by using a signed value
             val = pow(self.get_value_signed(), power)
             n = MemoryValue(self.length)
             n.set_value_unsigned_int(val)

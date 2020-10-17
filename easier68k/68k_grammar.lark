@@ -38,6 +38,7 @@ literal_str: "'" STR_INNER "'"
 start: (line_content WS_INLINE* NEWLINE)*
 line_content: label? regular_op? comment?
 regular_op: opcode opcode_params?
+//    | opcode opcode_params //  opcode_params?
 OPCODE_SIZES: "B" | "W" | "L"
 opcode: OPCODE_TEXT
     | OPCODE_TEXT "." OPCODE_SIZES
@@ -45,7 +46,7 @@ opcode: OPCODE_TEXT
 comment_start : "*" | ";"
 comment : comment_start ANY_TEXT?
 
-label: LABEL ":"?
+label: LABEL ":"
 
 addressing_mode: "-(" register ")"
     | "(" register ")+"

@@ -58,6 +58,11 @@ class M68K:
         :param register:
         :return:
         """
+        # from pprint import pprint
+        # pprint(self.registers)
+
+        # for keys in self.registers.keys():
+        #     print(keys, self.registers[keys])
         return self.registers[register]
 
     def set_register(self, register: Register, val: MemoryValue):
@@ -67,6 +72,7 @@ class M68K:
         :param val:
         :return:
         """
+        assert isinstance(register, Register)
         # if the register is the CCR, use that method to handle setting it
         # because of its different size
         if register == Register.ConditionCodeRegister:

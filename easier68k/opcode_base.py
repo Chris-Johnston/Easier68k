@@ -261,6 +261,10 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         src, dst = param_list
         ea = None
 
+        print("params", src, dst)
+
+        assert not isinstance(dst, Literal), "DST may not be a literal"
+
         if isinstance(dst, Register):
             # ea + Dn -> Dn
             # if register is ADDA, technically we have to do some different behavior
@@ -363,6 +367,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
             OpSize.LONG.value: 0b10,
         }[self.size.value]
 
+        print("data reg", self.data_register)
         data_register_num = {
             Register.D0: 0,
             Register.D1: 1,
@@ -378,7 +383,9 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
         return result + super_result
 
     def execute(self, cpu: M68K):
-        print("ADD")
+
+        assert isinstance(self.data_register, Register), "data reg is not Register"
+        print("ADD", self.data_register)
 
         print(f"data register {self.data_register} dir {self.direction} size {self.size}")
         print(f"ea mode {self.ea_mode} register {self.register}")
@@ -404,7 +411,9 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
             # store in dn
             # final_val = reg + result
             final_val, carry = reg.add_unsigned(result)
-            print(f"0 storing {final_val} in dx")
+            print(f"0 storing {final_val} in dx {self.data_register}", self.data_register)
+            
+            # map data_register back to the type
             cpu.set_register(self.data_register, final_val)
 
         cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, result.get_msb() != final_val.get_msb(), carry)
@@ -413,22 +422,75 @@ class OpCodeOr(OpCodeAdd):
     def __init__(self):
         super().__init__()
 
-    def execute(self, cpu):
-        print("implement OR dumbass")
+    def execute(self, cpu: M68K):
+        print("OR")
+        ea_mode_value = self._get_ea_mode_value(self.size, cpu)
+        reg = cpu.get_register(self.data_register)
+
+        # direction = 1
+        # ea V Dn -> Dn
+        # direction = 0
+        # Dn v ea -> ea
+        if self.direction == 1:
+            # ea V Dn -> Dn
+            final_val = reg | ea_mode_value
+            print(f"reg {reg} | result {ea_mode_value} ")
+            cpu.set_register(self.data_register, final_value)
+        else:
+            # Dn v ea -> ea
+            final_val = ea_mode_value | reg
+            print(f"reg {reg} | result {ea_mode_value} ")
+            self._set_ea_mode_value(self.size, cpu, final_val)
+
+        cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, 0, 0)
 
 class OpCodeSub(OpCodeAdd):
     def __init__(self):
         super().__init__()
 
-    def execute(self, cpu):
-        print("implement sub dumbass")
+    def execute(self, cpu: M68K):
+        print("SUB")
+        ea_val = self._get_ea_mode_value(self.size, cpu)
+        # get the register value
+        dn_val = cpu.get_register(self.data_register)
+        carry = 0 # TODO implement carry bit for subtraction
+        
+        if self.direction == 1:
+            # ea - Dn -> ea
+            final_val = ea_val.sub_unsigned(dn_val)
+            print(f"1 storing {final_val} in ea")
+            self._set_ea_mode_value(self.size, cpu, final_val)
+        else:
+            # Dn - ea -> Dn
+            final_val = dn_val.sub_unsigned(ea_val)
+            print(f"0 storing {final_val} in dx")
+            cpu.set_register(self.data_register, final_val)
+
+        cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, ea_val.get_msb() != final_val.get_msb(), carry)
 
 class OpCodeAnd(OpCodeAdd):
     def __init__(self):
         super().__init__()
 
     def execute(self, cpu):
-        print("implement AND dumbass")
+        print("AND")
+        ea_val = self._get_ea_mode_value(self.size, cpu)
+        # get the register value
+        dn_val = cpu.get_register(self.data_register)
+        carry = 0 # TODO
+        
+        if self.direction == 1:
+            # ea - Dn -> ea
+            final_val = ea_val & dn_val
+            print(f"1 storing {final_val} in ea")
+            self._set_ea_mode_value(self.size, cpu, final_val)
+        else:
+            # Dn - ea -> Dn
+            final_val = dn_val & ea_val
+            print(f"0 storing {final_val} in dx")
+            cpu.set_register(self.data_register, final_val)
+
+        cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, 0, 0)
 
 # add more types by adding to this dict
 OPCODE_LOOKUP = {
@@ -446,103 +508,10 @@ def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:
     return op
 
 def get_opcode_parsed(opcode_name: str, size: OpSize, param_list: list) -> OpCodeBase:
-    assert opcode_name in OPCODE_LOOKUP, "Not yet implemented"
+    assert opcode_name in OPCODE_LOOKUP, f"{opcode_name} is not yet implemented"
 
     op = OPCODE_LOOKUP[opcode_name]()
+    print("param list", param_list)
     op.from_param_list(size, param_list)
 
     return op
-
-# class OpCodeAdd(OpCodeBase): # a lot of opcodes use the M Xn format, so will make another class for that
-#     def __init__(self):
-#         self.data_operand = None
-#         self.ea_operand = None
-#         self.op_size = None
-#         self.direction = None
-
-#     def from_asm_values(self, values: list):
-#         data_register, \
-#         self.direction, \
-#         op_size, \
-#         addressing_mode, ea_register = values
-
-#         # convert the addressing mode to the EAMode enum
-#         # TODO make EAMode and EAModeBinary the same thing
-#         modes = {
-#             EAModeBinary.MODE_DRD: EAMode.DRD,
-#             EAModeBinary.MODE_ARD: EAMode.ARD,
-#             EAModeBinary.MODE_ARI: EAMode.ARI,
-#             EAModeBinary.MODE_ARIPI: EAMode.ARIPI,
-#             EAModeBinary.MODE_ARIPD: EAMode.ARIPD,
-#             # these are all the same value, will not work
-#             # EAModeBinary.MODE_IMM: EAMode.IMM,
-#             # EAModeBinary.MODE_ALA: EAMode.ALA,
-#             # EAModeBinary.MODE_AWA: EAMode.AWA,
-#         }
-#         if addressing_mode in modes:
-#             addressing_mode = modes[addressing_mode]
-#         elif addressing_mode == EAModeBinary.MODE_IMM:
-#             # determine this from the ea_register
-#             addressing_mode = {
-#                 0b000: EAMode.AWA,
-#                 0b001: EAMode.ALA,
-#                 0b100: EAMode.IMM,
-#             }[ea_register]
-
-#         self.data_operand = AssemblyParameter(EAMode.DRD, data_register)
-#         self.ea_operand = AssemblyParameter(addressing_mode, ea_register)
-#         # self.op_size = Size(op_size)
-#         # convert the op_size from assembly
-#         # into the opsize used everywhere else
-#         self.op_size = {
-#             0b00: OpSize.BYTE,
-#             0b01: OpSize.WORD,
-#             0b10: OpSize.LONG,
-#         }[op_size]
-        
-    
-#     def execute(self, cpu: M68K):
-#         """
-#         Adds the source operand to to the destination operand using
-#         binary addition and stores the result in the destination location.
-
-#         The size of the operation may be specified as byte, word, or long.
-#         The mode of the instruction indicates which operand is the source
-#         and which is the dest, as well as operand size.
-#         """
-
-#         # get the values
-
-#         if self.direction:
-#             # <ea> + Dn -> <ea>
-#             self.left_value = self.ea_operand.get_value(cpu, self.op_size)
-#             self.right_value = self.data_operand.get_value(cpu, self.op_size)
-#             print(f'ea value is {self.left_value}')
-#             print(f'right value is {self.right_value}')
-#         else:
-#             # Dn + <ea> -> Dn
-#             self.right_value = self.ea_operand.get_value(cpu, self.op_size)
-#             self.left_value = self.data_operand.get_value(cpu, self.op_size)
-#             print(f'ea value is {self.left_value}')
-#             print(f'right value is {self.right_value}')
-
-#         # https://stackoverflow.com/a/6265950
-
-#         # Overflow flags get set when the register cannot properly represent the result as a signed value (you overflowed into the sign bit).
-#         # Carry flags are set when the register cannot properly represent the result as an unsigned value (no sign bit required).
-
-#         # TODO 1/27 working on the ccr
-#         # TODO 1/27 work on the overflow
-#         result, carry = self.left_value.add_unsigned(self.right_value)
-#         print(f'result of addition {result}')
-
-#         # set the value
-#         if self.direction:
-#             # <ea> + Dn -> <ea>
-#             self.ea_operand.set_value(cpu, result)
-#         else:
-#             # Dn + <ea> -> Dn
-#             self.data_operand.set_value(cpu, result)
-
-#         # executing Add
-#         cpu.set_ccr_reg(carry, result.get_negative(), result.get_value_unsigned() == 0, None, carry)

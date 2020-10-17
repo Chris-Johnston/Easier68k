@@ -14,8 +14,17 @@ def parse(text: str):
     return result
 
 def assemble(result: list):
+    # this is a hack
+    from .m68k import M68K
+    from .register import Register
+    cpu = M68K()
+    from .memory_value import MemoryValue
+    from .op_size import OpSize
+    cpu.set_register(Register.D2, MemoryValue(OpSize.WORD, unsigned_int=0xbeef))
+
     address = 0
     for label, op in result:
+        op_name = op.name.lower()
         if op.name.lower() == "org": # special case
             # use the value of the first imm as the starting address
             address = op.arg_list[0].value
@@ -28,7 +37,8 @@ def assemble(result: list):
         elif op.name.lower() == "equ":
             # just insert all of the immediate data as-is
             print("EQU")
-
+        elif op_name == "start":
+            print("START")
         else:
             print(f"op - {op.name.lower()}")
             opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
@@ -61,6 +71,11 @@ def assemble(result: list):
                 new_op.from_asm_values(dis_values)
 
                 print(f"new op {new_op}")
+            
+            # this will not actually work because the immediate value has to be in memory
+            print("EXECUTING --- ")
+            opcode.execute(cpu)
+            print(f"D1 = {cpu.get_register(Register.D1)}")
         # any normal op
         # get the opcode for it
         # then have that opcode spit out the asm values for it

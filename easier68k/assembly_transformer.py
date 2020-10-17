@@ -114,6 +114,7 @@ class AssemblyTransformer(Transformer):
     return content
 
   def label(self, items):
+    print(f"LBL {items}")
     label_text = items[0]
     # return "LBL-" + label_text
     return Label(label_text)

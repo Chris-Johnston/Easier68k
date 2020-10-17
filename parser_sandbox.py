@@ -86,7 +86,11 @@ just_add = '''
 
 START:
 
-  ADD #1, D1 ; simple stuff
+  ADD #12, D1 ; simple stuff
+  ADD D2, D1; set up d2 with a value first
+  ; dont have imm values in memory working quite yet, need to set up parser to actually populate memory
+  
+  ;ADD D1, #1
 
   END START
 
