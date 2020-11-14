@@ -241,7 +241,7 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             location = cpu.memory.get(self.size, address).get_value_unsigned()
             return cpu.memory.get(self.size, location)
         
-class OpCodeAdd(DynamicAddressingModeOpCodeBase):
+class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single dynamic addr
     """
     Add opcode. Also serves as the base for AND, OR, and SUB, since they all assemble
     in a similar way.
@@ -418,6 +418,21 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase):
 
         cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, result.get_msb() != final_val.get_msb(), carry)
 
+class OpCodeMove(OpCodeBase):
+    def __init__(self):
+        super().__init__()
+
+    def to_asm_values(self) -> list:
+        pass
+
+    def from_asm_values(self, values):
+        # size, dest reg, dest mod, src mode, src reg
+        pass
+    
+    def execute(self, cpu: M68K):
+        print("MOVE")
+        
+
 class OpCodeOr(OpCodeAdd):
     def __init__(self):
         super().__init__()
@@ -498,10 +513,11 @@ OPCODE_LOOKUP = {
     "or": OpCodeOr,
     "sub": OpCodeSub,
     "and": OpCodeAnd,
+    "move": OpCodeMove
 }
 
 def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:
-    assert opcode_name in OPCODE_LOOKUP, "Not yet implemented"
+    assert opcode_name in OPCODE_LOOKUP, f"{opcode_name} is not yet implemented"
 
     op = OPCODE_LOOKUP[opcode_name]()
     op.from_asm_values(asm_values)

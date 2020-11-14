@@ -191,8 +191,26 @@ class M68K:
         Halts the auto simulation execution
         :return:
         """
+        print("HALT")
+        self.print_debug()
         self.clock_auto_cycle = False
         self.halted = True
+
+    def print_debug(self):
+        """
+        Prints out debug information.
+        """
+        print("----- debug info -----")
+        c = 0
+        for r in self.registers.keys():
+            val = self.registers[r].get_value_unsigned()
+            val = f"0x{val:x}" if r != Register.CCR else f"0b{val:8b}"
+            if c % 2 == 0:
+                print(f"{str(r)}:\t{val}\t", end='')
+            else:
+                print(f"{str(r)}:\t{val}")
+            c += 1
+        print()
 
     def step_instruction(self):
         """
@@ -201,27 +219,67 @@ class M68K:
         :return:
         """
         if not self.halted:
-            # must be here or we get circular dependency issues
-            from .find_module import find_opcode_cls, valid_opcodes
+            # get the PC location
+            pc_val = self.get_program_counter_value()
+            
+            from .assemblers import assemblers
+            from .binary_prefix_tree import BinaryPrefixTree
+            assembler_tree = BinaryPrefixTree(assemblers)
 
-            for op_str in valid_opcodes:
-                op_class = find_opcode_cls(op_str)
+            # get the value where the PC points to
+            pc_op_val = self.memory.get(OpSize.WORD, pc_val)
 
-                # We don't know this opcode, there's no module for it
-                if op_class is None:
-                    print('Opcode {} is not known: skipping and continuing'.format(op_str))
-                    assert False
-                    continue
+            # workaround for null data
+            if pc_op_val == 0:
+                self.set_program_counter_value(pc_val + 2)
+                self.halt()
+                return
 
-                # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
-                # note: this currently has the edge case that it will fail unintelligibly
-                # if encountered at the end of memory
-                pc_val = self.get_program_counter_value()
-                op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
-                if op is not None:
-                    op.execute(self)
-                    # done exeucting after doing an operation
-                    return
+            # get the opcode for that value
+            opcode_assembler = assembler_tree.get_assembler(pc_op_val)
+            opcode_name = opcode_assembler.get_opcode()
+            asm_values = opcode_assembler.disassemble_values(pc_op_val)
+
+            from .opcode_base import get_opcode
+
+            try:
+                op = get_opcode(opcode_name, asm_values)
+                print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name}")
+                op.execute(self)
+                pc_val += 2
+                self.set_program_counter_value(pc_val)
+            except AssertionError:
+                print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name} NOT IMPLEMENTED")
+                # in this case we are unable to determine the size of any immediates
+                # if any, so increment the pc by a word for now
+                pc_val += 2
+                self.set_program_counter_value(pc_val)
+
+            # todo, need to increment the pc
+            # this will depend on the size of immediates
+        else:
+            print("Tried to exec while halted")
+            # # must be here or we get circular dependency issues
+            # from .find_module import find_opcode_cls, valid_opcodes
+
+            # for op_str in valid_opcodes:
+            #     op_class = find_opcode_cls(op_str)
+
+            #     # We don't know this opcode, there's no module for it
+            #     if op_class is None:
+            #         print('Opcode {} is not known: skipping and continuing'.format(op_str))
+            #         assert False
+            #         continue
+
+            #     # 10 comes from 2 bytes for the op and max 2 longs which are each 4 bytes
+            #     # note: this currently has the edge case that it will fail unintelligibly
+            #     # if encountered at the end of memory
+            #     pc_val = self.get_program_counter_value()
+            #     op = op_class.disassemble_instruction(self.memory.memory[pc_val:pc_val+10])
+            #     if op is not None:
+            #         op.execute(self)
+            #         # done exeucting after doing an operation
+            #         return
 
     def reload_execution(self):
         """

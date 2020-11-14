@@ -46,7 +46,11 @@ class OpCodeAssembler():
     def disassemble_values(self, word) -> list:
         # gets the values in the order of the instruction
         # this should be used to build the actual instruction after
-        assert self.is_match(word)
+        from .memory_value import MemoryValue
+        if isinstance(word, MemoryValue):
+            word = word.get_value_unsigned()
+
+        assert self.is_match(word), f"The word {word} did not match with the opcode {self._opcode}"
         values = []
 
         for size, offset, literal in self.format:

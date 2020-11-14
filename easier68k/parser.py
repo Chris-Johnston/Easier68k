@@ -39,6 +39,27 @@ def assemble(result: list):
         elif op.name.lower() == "equ":
             # just insert all of the immediate data as-is
             print("EQU")
+        elif op.name.lower() == "dc":
+            print("DC")
+            print(op.arg_list)
+            for arg in op.arg_list:
+                print(arg)
+                print(arg.__dict__)
+                
+                # this will have an issue for how the values are inserted into the bytearray
+                # also this does not handle other immediates that are not byte values
+                # like strings
+                list_file[address] = arg.value
+
+                if op.size == OpSize.BYTE:
+                    address += 1
+                elif op.size == OpSize.WORD:
+                    address += 2
+                else:
+                    address += 4
+                
+            # insert the rest as literal data
+            print(op)
         elif op_name == "start":
             print("START")
         else:
@@ -98,4 +119,4 @@ def assemble(result: list):
         # then send those into the assembler
         # then shove the assmebled op and the arg list (if immediate data)
 
-    return list_file
+    return address, list_file

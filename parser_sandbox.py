@@ -96,7 +96,7 @@ START:
 
 '''
 
-input = just_add
+#input = just_add
 
 result = parse(input)
 import pprint
@@ -104,7 +104,7 @@ import pprint
 print('----------------------')
 pprint.pprint(result)
 
-list_file = assemble(result)
+start_address, list_file = assemble(result)
 pprint.pprint(list_file)
 
 from easier68k.m68k import M68K
@@ -116,6 +116,8 @@ for address in list_file.keys():
     from easier68k.memory_value import MemoryValue
     print("address", address, list_file[address])
     cpu.memory.set(OpSize.WORD, address, MemoryValue(OpSize.WORD, unsigned_int=list_file[address]))
+
+cpu.set_program_counter_value(start_address)
 
 print("running ---")
 cpu.run()
