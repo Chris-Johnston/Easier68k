@@ -46,7 +46,7 @@ opcode: OPCODE_TEXT
 comment_start : "*" | ";"
 comment : comment_start ANY_TEXT?
 
-label: LABEL ":"
+label: LABEL ":"?
 
 addressing_mode: "-(" register ")"
     | "(" register ")+"
