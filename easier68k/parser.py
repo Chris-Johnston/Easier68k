@@ -1,7 +1,7 @@
 from lark import Lark
 import os.path
 from .assembly_transformer import AssemblyTransformer
-from .opcode_base import get_opcode_parsed
+from .opcodes import get_opcode_parsed
 
 def parse(text: str):
     grammar_dir = os.path.dirname(__file__)
@@ -102,7 +102,7 @@ def assemble(result: list):
                 dis_values = new_assembler.disassemble_values(result)
                 print(f"got {dis_values} back out")
 
-                from .opcode_base import OpCodeAdd
+                from .op_add import OpCodeAdd
 
                 new_op = OpCodeAdd()
                 new_op.from_asm_values(dis_values)

@@ -1,13 +1,13 @@
 from abc import abstractproperty
 from .opcode_assembler import OpCodeAssembler
 from .binary_prefix_tree import BinaryPrefixTree
-from .opcode_base import (
-    OpCodeBase,
-    OpCodeAdd,
-    OpCodeSub,
-    OpCodeOr,
-    OpCodeAnd,
-)
+# from .opcode_base import (
+#     OpCodeBase,
+#     OpCodeAdd,
+#     OpCodeSub,
+#     OpCodeOr,
+#     OpCodeAnd,
+# )
 # problem: having to import all of the opcode classes will add up quickly
 # instead, maybe I could insteaad have get_opcode return a string literal which corresponds to the opcode
 # also, instead of having one class for each type of assembler, we could have lists of classifications

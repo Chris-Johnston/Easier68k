@@ -240,7 +240,7 @@ class M68K:
             opcode_name = opcode_assembler.get_opcode()
             asm_values = opcode_assembler.disassemble_values(pc_op_val)
 
-            from .opcode_base import get_opcode
+            from .opcodes import get_opcode
 
             try:
                 op = get_opcode(opcode_name, asm_values)
