@@ -50,8 +50,9 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
         # need to assert the types of src and dest to prevent invalid states
         size, dest_reg, dest_mod, src_mod, src_reg = values
         self.size = self._asm_get_size(size)
-        self.dest_ea_mode, self.dest_size = self._asm_get_size(dest_reg, dest_mod)
-        self.src_ea_mode, self.src_size = self._asm_get_size(src_reg, src_mod)
+
+        self.dest_ea_mode = EAMode.from_bin_mode(dest_mod, dest_reg)
+        self.src_ea_mode = EAMode.from_bin_mode(src_mod, src_reg)
     
     def from_param_list(self, size: OpSize, values: list):
         pass

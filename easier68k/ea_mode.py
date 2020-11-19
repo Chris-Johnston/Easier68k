@@ -63,7 +63,7 @@ class EAModeImmediateRegister(Enum):
     # Absolute word address
     REGISTER_AWA = 0b000
 
-    def get_register_for_mode(mode: EAMode) -> Optional[EAMode]:
+    def get_register_for_mode(mode: EAMode):
         if mode == EAMode.IMM:
             return REGISTER_IMM
         if mode == EAMode.ALA:
