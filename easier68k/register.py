@@ -33,26 +33,26 @@ class Register(IntEnum):
     CCR = 17
     ConditionCodeRegister = 17
 
-    def get_data_register(register_num: int) -> Register:
-        if register_num == D0: return Register.D0
-        if register_num == D1: return Register.D1
-        if register_num == D2: return Register.D2
-        if register_num == D3: return Register.D3
-        if register_num == D4: return Register.D4
-        if register_num == D5: return Register.D5
-        if register_num == D6: return Register.D6
-        if register_num == D7: return Register.D7
+    def get_data_register(register_num: int):# -> Register:
+        if register_num == 0: return D0
+        if register_num == 1: return D1
+        if register_num == 2: return D2
+        if register_num == 3: return D3
+        if register_num == 4: return D4
+        if register_num == 5: return D5
+        if register_num == 6: return D6
+        if register_num == 7: return D7
         return None
 
-    def get_addr_register(register_num: int) -> Register:
-        if register_num == A0: return Register.A0
-        if register_num == A1: return Register.A1
-        if register_num == A2: return Register.A2
-        if register_num == A3: return Register.A3
-        if register_num == A4: return Register.A4
-        if register_num == A5: return Register.A5
-        if register_num == A6: return Register.A6
-        if register_num == A7: return Register.A7
+    def get_addr_register(register_num: int): # -> Register:
+        if register_num == 0: return A0
+        if register_num == 1: return A1
+        if register_num == 2: return A2
+        if register_num == 3: return A3
+        if register_num == 4: return A4
+        if register_num == 5: return A5
+        if register_num == 6: return A6
+        if register_num == 7: return A7
         return None
 
 # constants that group together the registers

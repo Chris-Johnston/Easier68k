@@ -52,56 +52,20 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
         self.ea_mode = None
         self.register = None
 
-        # used for fast lookup
-        self._ea_mode_lookup = {
-            EAModeBinary.MODE_DRD: EAMode.DRD,
-            EAModeBinary.MODE_ARD: EAMode.ARD,
-            EAModeBinary.MODE_ARI: EAMode.ARI,
-            EAModeBinary.MODE_ARIPI: EAMode.ARIPI,
-            EAModeBinary.MODE_ARIPD: EAMode.ARIPD,
-            # not worring about Address with Displacement or Address with Index for now
-        }
-
-        self._ea_imm_lookup = {
-            0b000: EAMode.AWA,
-            0b001: EAMode.ALA,
-            0b100: EAMode.IMM,
-        }
-
     @abstractmethod
     def to_asm_values(self) -> list:
         # we can return the last two values from this list
-        print(self.ea_mode)
-        print(EAMode(self.ea_mode))
-
-        mode = {
-            EAMode.AWA: 0b000,
-            EAMode.ALA: 0b001,
-            EAMode.IMM: 0b100,
-            EAMode.DRD: EAModeBinary.MODE_DRD,
-            EAMode.ARD: EAModeBinary.MODE_ARD,
-            EAMode.ARI: EAModeBinary.MODE_ARI,
-            EAMode.ARIPI: EAModeBinary.MODE_ARIPI,
-            EAMode.ARIPD: EAModeBinary.MODE_ARIPD,
-        }[self.ea_mode]
-        register = self.register or 0
-        return [mode, register]
+        mode, register = self.ea_mode.get_bin_values()
+        return [mode, register or self.register]
 
     @abstractmethod
     def from_asm_values(self, values: list):
         # subclasses of this should implement handling the rest of the values
         # this class will assume that the only relvant ones here are the last two
         mode, register = values[-2:]
-        
-        if mode == EAModeBinary.MODE_IMM:
-            # could be IMM, AWA, ALA, based on register (which isn't a register)
-            self.ea_mode = self._ea_imm_lookup[register]
-            # do NOT use a register
-            self.register = None
-        else:
-            # register is a register, and just use a look-up
-            self.ea_mode = self._ea_mode_lookup[mode]
-            self.register = register
+
+        self.ea_mode = EAMode.from_bin_mode(mode, register)
+        self.register = register
 
     def __get_address(self, size: Size, cpu: M68K) -> MemoryValue:
         """
@@ -114,16 +78,7 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             EAMode.ARIPD,
         ]:
             # handle ARI
-            address_register = {
-                0: Register.A0,
-                1: Register.A1,
-                2: Register.A2,
-                3: Register.A3,
-                4: Register.A4,
-                5: Register.A5,
-                6: Register.A6,
-                7: Register.A7,
-            }[self.register]
+            address_register = Register.get_addr_register(self.register)
 
             # lint: see if I can re-use this code
             if self.ea_mode == EAMode.ARI:
@@ -196,29 +151,11 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
             # Direct, so look up the location from the register
             # then return the value at that location            
             # TODO move this to the class so this doesn't have to be instantiated each time
-            data_register = {
-                0: Register.D0,
-                1: Register.D1,
-                2: Register.D2,
-                3: Register.D3,
-                4: Register.D4,
-                5: Register.D5,
-                6: Register.D6,
-                7: Register.D7,
-            }[self.register]
+            data_register = Register.get_data_register(self.register)
             return cpu.get_register(data_register)
 
         if self.ea_mode in [EAMode.ARIPI, EAMode.ARIPD, EAMode.ARI]:
-            address_register = {
-                0: Register.A0,
-                1: Register.A1,
-                2: Register.A2,
-                3: Register.A3,
-                4: Register.A4,
-                5: Register.A5,
-                6: Register.A6,
-                7: Register.A7,
-            }[self.register]
+            address_register = Register.get_addr_register(self.register)
 
             if self.ea_mode == EAMode.ARI:
                 address = cpu.get_register(address_register)
@@ -274,16 +211,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
 
             # set the data register num
             # map back into an int
-            self.data_register = { # this should be part of add, oops
-                0: Register.D0,
-                1: Register.D1,
-                2: Register.D2,
-                3: Register.D3,
-                4: Register.D4,
-                5: Register.D5,
-                6: Register.D6,
-                7: Register.D7,
-            }[dst]
+            self.data_register = Register.get_data_register(dst)
 
             ea = src
         else:
@@ -294,16 +222,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
 
             # with confidence I can say that 90% of this code has
             # written between the hours of 8 PM and 2 AM
-            self.data_reg = { # this should be part of add, oops
-                0: Register.D0,
-                1: Register.D1,
-                2: Register.D2,
-                3: Register.D3,
-                4: Register.D4,
-                5: Register.D5,
-                6: Register.D6,
-                7: Register.D7,
-            }[src]
+            self.data_register = Register.get_data_register(src)
         
         # handle the ea
         # currently the parser doesn't do address register indirect or direct
@@ -348,16 +267,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
             0b10: OpSize.LONG,
         }[size]
         print(f"self size {self.size} size {size}")
-        self.data_register = {
-                0: Register.D0,
-                1: Register.D1,
-                2: Register.D2,
-                3: Register.D3,
-                4: Register.D4,
-                5: Register.D5,
-                6: Register.D6,
-                7: Register.D7,
-            }[data_register_num]
+        self.data_register = self.data_register(data_register_num)
 
     def to_asm_values(self):
         super_result = super().to_asm_values()
@@ -369,16 +279,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
         }[self.size.value]
 
         print("data reg", self.data_register)
-        data_register_num = {
-            Register.D0: 0,
-            Register.D1: 1,
-            Register.D2: 2,
-            Register.D3: 3,
-            Register.D4: 4,
-            Register.D5: 5,
-            Register.D6: 6,
-            Register.D7: 7,
-        }[self.data_register]
+        data_register_num = Register.get_data_register(self.data_register)
 
         result = [data_register_num, self.direction, size]
         return result + super_result
@@ -433,7 +334,7 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
         elif size == 0b11: return OpSize.WORD
         elif size == 0b10: return OpSize.LONG
 
-    def _asm_get_ea(self, reg: int, mode: int) -> EAMode, Optional[OpSize]:
+    def _asm_get_ea(self, reg: int, mode: int): # -> EAMode, Optional[OpSize]:
         if mode == 0b000:
             return EAMode.DRD, Register.get_data_register(reg)
         if mode == 0b001:
@@ -460,7 +361,7 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
         self.dest_ea_mode, self.dest_size = self._asm_get_size(dest_reg, dest_mod)
         self.src_ea_mode, self.src_size = self._asm_get_size(src_reg, src_mod)
     
-    def from_param_list(self, values):
+    def from_param_list(self, size: OpSize, values: list):
         pass
 
     def to_asm_values(self):
