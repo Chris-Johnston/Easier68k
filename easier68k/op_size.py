@@ -222,3 +222,13 @@ class OpSize(Enum):
             return OpSize.WORD
         if code == 'L':
             return OpSize.LONG
+
+    def from_asm_value(value: int):
+        if value == 0b01: return BYTE
+        if value == 0b11: return WORD
+        if value == 0b10: return LONG
+
+    def get_asm_value(self) -> int:
+        if self == BYTE: return 0b01
+        if self == WORD: return 0b11
+        if self == LONG: return 0b10
