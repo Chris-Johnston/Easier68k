@@ -75,7 +75,7 @@ class Opcode():
 
 class Label():
   def __init__(self, name):
-    self.name = name
+    self.name = name.strip(':')
   
   def __str__(self):
     return f"[label {self.name}]"
