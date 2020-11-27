@@ -1,7 +1,7 @@
 ANY_TEXT: /.+/
 OP_PARAM_TEXT: /[a-zA-Z]*[a-zA-Z0-9]+/
 OPCODE_TEXT: /[a-zA-Z]+/
-LABEL: /[a-zA-Z_][a-zA-Z0-9\_\-]*/
+LABEL: /[a-zA-Z_][a-zA-Z0-9\_\-]*:?/
 literal_symbol: LABEL 
 
 literal_char: "'" LITERAL_ESCAPED_CHAR_INNER "'"
@@ -46,12 +46,13 @@ opcode: OPCODE_TEXT
 comment_start : "*" | ";"
 comment : comment_start ANY_TEXT?
 
-label: LABEL ":"?
+label: LABEL
 
-addressing_mode: "-(" register ")"
-    | "(" register ")+"
-    | "(" register ")"
-    | register
+addressing_mode: aripd | aripi | ari | register
+
+aripd: "-(" register ")"
+aripi: "(" register ")+"
+ari: "(" register ")"
 
 opcode_param : addressing_mode
     | immediate

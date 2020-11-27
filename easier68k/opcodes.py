@@ -23,7 +23,8 @@ OPCODE_LOOKUP = {
     "or": OpCodeOr,
     "sub": OpCodeSub,
     "and": OpCodeAnd,
-    "move": OpCodeMove
+    "move": OpCodeMove,
+    "movea": OpCodeMove,
 }
 
 def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:

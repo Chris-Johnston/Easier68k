@@ -33,14 +33,18 @@ class OpCodeAssembler():
         values_index = 0
         word = 0
         assert values, "Values must not be empty"
+        print("values:", values)
 
+        print(self.format)
         for size, offset, literal in self.format:
-            if literal:
+            print("size", size, "offset", offset, "literal", literal)
+            if literal is not None:
                 word |= literal << offset
             else:
                 value = values[values_index] & self._get_bitmask(size)
                 word |= value << offset
                 values_index += 1
+            print(f"word: {word:8b}")
         return word
 
     def disassemble_values(self, word) -> list:

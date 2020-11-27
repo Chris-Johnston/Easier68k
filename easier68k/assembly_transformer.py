@@ -1,6 +1,8 @@
 from lark import Transformer
 from typing import Optional
 from .op_size import OpSize
+from .ea_mode import EAMode
+from .register import Register
 
 # class Register():
 #   def __init__(self, register_name: str):
@@ -228,11 +230,29 @@ class AssemblyTransformer(Transformer):
 
   def addressing_mode(self, items):
     # this needs to break out into different addressing modes
-    return items[0]
+    if len(items) == 1:
+      reg = items[0]
+      if Register.D0 <= reg <= Register.D7:
+        return reg, EAMode.DRD
+      else:
+        return reg, EAMode.ARD
+    return items
 
   # should this be a rule and not a terminal?
   def OPCODE_TEXT(self, item):
     return item
+
+  # def ard(self, item):
+  #   return (item, EAMode.ARD)
+  
+  def ari(self, item):
+    return (item, EAMode.ARI)
+
+  def aripd(self, item):
+    return (item, EAMode.ARIPD)
+  
+  def aripi(self, item):
+    return (item, EAMode.ARIPI)
 
   # does this work?
   LABEL = lambda self, x: str(x)

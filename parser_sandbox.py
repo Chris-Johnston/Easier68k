@@ -44,7 +44,7 @@ START:                  ; first instruction of program
     ; set initial value of the value to be used for counting
     MOVE #1, D1 ; set D1 to 1
     MOVE #1024, D4 ; set max val to D4
-CRLF
+
 LOOP:
 
     CMP D4, D1 ; compare the two
@@ -91,6 +91,8 @@ START:
   ; dont have imm values in memory working quite yet, need to set up parser to actually populate memory
   
   ;ADD D1, #1
+
+  MOVE D2, D3 ; copy D2 into D3
 
   END START
 

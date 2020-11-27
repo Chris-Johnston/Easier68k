@@ -15,8 +15,43 @@ from .opcode_base import OpCodeBase
 class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and will be very annoying to maintain
     def __init__(self):
         super().__init__()
+        self.src_reg = None
+        self.src_ea_mode = None
+        self.dest_reg = None
+        self.dest_ea_mode = None
 
-    def from_asm_values(self, values):
+    def from_param_list(self, size: OpSize, param_list: list):
+        super().from_param_list(size, param_list)
+
+        assert len(param_list) == 2, "wrong param list size"
+
+        # TODO: this param list to ea mode logic will get repetitive quick, 
+        # need to have a standardized way to do this
+        src, dest = param_list
+
+        if isinstance(src, Literal):
+            self.src_ea_mode = EAMode.IMM
+            self.src_reg = None
+        elif isinstance(src, tuple): # TODO I'm treating all of the Registers the same
+            self.src_reg, self.src_ea_mode = src
+            # self.src_reg = src
+            # self.src_ea_mode = EAMode.DRD # TODO: hardcoded src to DRD on register
+        else:
+            print("src from param list", src)
+
+        if isinstance(dest, Literal):
+            self.dest_ea_mode = EAMode.IMM
+            self.dest_reg = None
+        elif isinstance(dest, tuple): # TODO I'm treating all of the Registers the same
+            self.dest_reg, self.dest_ea_mode = dest
+            # self.dest_reg = src
+            # self.dest_ea_mode = EAMode.DRD # TODO: hardcoded src to DRD on register
+        else:
+            print("dest from param list", dest)
+
+        print("alkjdsf", src, dest, self.src_reg, self.src_ea_mode)
+
+    def from_asm_values(self, values: list):
         # size, dest reg, dest mod, src mode, src reg
         # need to assert the types of src and dest to prevent invalid states
         size, dest_reg, dest_mod, src_mod, src_reg = values
@@ -27,9 +62,6 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
 
         self.src_reg = src_reg
         self.dest_reg = dest_reg
-    
-    def from_param_list(self, size: OpSize, values: list):
-        pass
 
     def to_asm_values(self) -> list:
         # size, dest reg, dest mod, src mode, src reg
@@ -38,11 +70,13 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
         dest_mode, dest_register = self.dest_ea_mode.get_bin_values()
         src_mode, src_register = self.src_ea_mode.get_bin_values()
 
-        return [ret_size,
+        x = [ret_size,
             dest_register or self.dest_reg,
             dest_mode,
             src_mode,
             src_register or self.src_reg]
+        print("to asm values", x)
+        return x
 
 
     def execute(self, cpu: M68K):
