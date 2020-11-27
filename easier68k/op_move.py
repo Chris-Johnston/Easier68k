@@ -19,37 +19,11 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
     def to_asm_values(self) -> list:
         pass
 
-    # todo: should find all of these that are similar and make them standard utils
-    # that I'm actually aware of
-    def _asm_get_size(size: int) -> OpSize:
-        if size == 0b01: return OpSize.BYTE
-        elif size == 0b11: return OpSize.WORD
-        elif size == 0b10: return OpSize.LONG
-
-    def _asm_get_ea(self, reg: int, mode: int): # -> EAMode, Optional[OpSize]:
-        if mode == 0b000:
-            return EAMode.DRD, Register.get_data_register(reg)
-        if mode == 0b001:
-            return EAMode.ARD, Register.get_addr_register(reg)
-        if mode == 0b010:
-            return EAMode.ARI, Register.get_addr_register(reg)
-        if mode == 0b011:
-            return EAMode.ARIPI, Register.get_addr_register(reg)
-        if mode == 0b100:
-            return EAMode.ARIPD, Register.get_addr_register(reg)
-        if mode == 0b111:
-            if register == 0b000:
-                return EAMode.AWA, None
-            if register == 0b001:
-                return EAMode.ALA, None
-            if register == 0b100:
-                return EAMode.IMM, None
-        
     def from_asm_values(self, values):
         # size, dest reg, dest mod, src mode, src reg
         # need to assert the types of src and dest to prevent invalid states
         size, dest_reg, dest_mod, src_mod, src_reg = values
-        self.size = OpSize.from_asm_value(size) # self._asm_get_size(size)
+        self.size = OpSize.from_asm_value(size)
 
         self.dest_ea_mode = EAMode.from_bin_mode(dest_mod, dest_reg)
         self.src_ea_mode = EAMode.from_bin_mode(src_mod, src_reg)
@@ -75,5 +49,5 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
 
 
     def execute(self, cpu: M68K):
-        print("MOVE")
+        # move data from source to destination
         

@@ -10,6 +10,7 @@ import typing
 import binascii
 from .memory_value import MemoryValue
 from .op_size import OpSize
+from .ea_mode import EAMode
 
 MAX_MEMORY_LOCATION = 16777216  # 2^24
 
@@ -370,3 +371,61 @@ class M68K:
             carry = bool(carry)
             self.set_condition_status_code(ConditionStatusCode.C, carry)
     
+    def get_ea_value(self, ea: EAMode, location: int, size: OpSize = OpSize.WORD) -> MemoryValue:
+        # location is either the referenced address or the register number
+        if ea == EAMode.DRD:
+            reg = Register.get_data_register(location)
+            return self.get_register(reg)
+        if ea == EAMode.IMM:
+            imm_location = self.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+            return self.memory.get(size, imm_location)
+        if ea in [EAMode.ARIPI, EAMode.ARIPD, EAMode.ARI]:
+            reg = Register.get_addr_register(location)
+            address = self.get_register(reg)
+
+            # handle post increment, pre decrement
+            if ea == EAMode.ARIPI:
+                new_address = MemoryValue(len=OpSize.WORD, unsigned_int=OpSize.WORD.value + address.get_value_unsigned())
+                self.set_register(reg, new_address)
+            elif ea == EAMode.ARIPD:
+                new_address = MemoryValue(len=OpSize.WORD, unsigned_int=address.get_value_unsigned() - OpSize.WORD.value)
+                self.set_register(reg, new_address)
+                address = new_address
+            return self.memory.get(self.size, address.get_value_unsigned())
+        if ea == EAMode.ALA or ea == EAMode.AWA:
+            if ea == EAMode.AWA:
+                imm_location = self.get_register(Register.PC) + OpSize.WORD.value
+            else:
+                imm_location = self.get_register(Register.PC) + OpSize.LONG.value
+            addr = MemoryValue(OpSize.WORD, unsigned_int=imm_location)
+            location = self.memory.get(OpSize.WORD, addr).get_value_unsigned()
+            return self.memory.get(size, locaiton)
+
+    def set_ea_value(self, ea: EAMode, val: MemoryValue, size: OpSize = OpSize.WORD):
+        if ea == EAMode.DRD:
+            reg = Register.get_data_register(location)
+            self.set_register(reg, val)
+        elif ea == EAMode.IMM:
+            imm_location = self.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+            self.memory.set(size, imm_location, val)
+        elif ea in [EAMode.ARIPI, EAMode.ARIPD, EAMode.ARI]:
+            reg = Register.get_addr_register(location)
+            address = self.set_register(reg, val)
+
+            # handle post increment, pre decrement
+            if ea == EAMode.ARIPI:
+                new_address = MemoryValue(len=OpSize.WORD, unsigned_int=OpSize.WORD.value + address.get_value_unsigned())
+                self.set_register(reg, new_address)
+            elif ea == EAMode.ARIPD:
+                new_address = MemoryValue(len=OpSize.WORD, unsigned_int=address.get_value_unsigned() - OpSize.WORD.value)
+                self.set_register(reg, new_address)
+                address = new_address
+            self.memory.set(self.size, address.get_value_unsigned(), val)
+        elif ea == EAMode.ALA or ea == EAMode.AWA:
+            if ea == EAMode.AWA:
+                imm_location = self.get_register(Register.PC) + OpSize.WORD.value
+            else:
+                imm_location = self.get_register(Register.PC) + OpSize.LONG.value
+            addr = MemoryValue(OpSize.WORD, unsigned_int=imm_location)
+            location = self.memory.set(OpSize.WORD, addr).get_value_unsigned()
+            self.memory.set(size, location, val)

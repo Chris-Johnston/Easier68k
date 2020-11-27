@@ -135,8 +135,8 @@ class DynamicAddressingModeOpCodeBase(OpCodeBase):
                 cpu.set_register(address_register, new_address)
             elif self.ea_mode == EAMode.ARIPD:
                 old_address = cpu.get_register(address_register)
-                # increment the reigster
-                address = MemoryValue(len= OpSize.WORD, unsigned_int= OpSize.WORD.value + old_address.get_value_unsigned())
+                # decrement the reigster
+                address = MemoryValue(len= OpSize.WORD, unsigned_int=old_address.get_value_unsigned() - OpSize.WORD.value)
                 cpu.set_register(address_register, address)
 
             return cpu.memory.get(self.size, address.get_value_unsigned())
