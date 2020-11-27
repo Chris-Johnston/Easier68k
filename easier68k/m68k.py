@@ -401,7 +401,7 @@ class M68K:
             location = self.memory.get(OpSize.WORD, addr).get_value_unsigned()
             return self.memory.get(size, locaiton)
 
-    def set_ea_value(self, ea: EAMode, val: MemoryValue, size: OpSize = OpSize.WORD):
+    def set_ea_value(self, ea: EAMode, location: int, val: MemoryValue, size: OpSize = OpSize.WORD):
         if ea == EAMode.DRD:
             reg = Register.get_data_register(location)
             self.set_register(reg, val)

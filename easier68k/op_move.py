@@ -16,9 +16,6 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
     def __init__(self):
         super().__init__()
 
-    def to_asm_values(self) -> list:
-        pass
-
     def from_asm_values(self, values):
         # size, dest reg, dest mod, src mode, src reg
         # need to assert the types of src and dest to prevent invalid states
@@ -50,4 +47,11 @@ class OpCodeMove(OpCodeBase): # todo: this file is getting very long quick and w
 
     def execute(self, cpu: M68K):
         # move data from source to destination
-        
+        src_val = cpu.get_ea_value(self.src_ea_mode, self.src_reg, self.size)
+        cpu.set_ea_value(self.dest_ea_mode, self.dest_reg, src_val, self.size)
+        # X - not affected
+        # N - set if result is negative, cleared otherwise
+        # Z - result zero, cleared otherwise
+        # V - cleared
+        # C - cleared
+        cpu.set_ccr_reg(None, src_val.get_negative(), src_val.get_zero(), False, False)

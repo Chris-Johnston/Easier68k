@@ -183,6 +183,12 @@ class MemoryValue:
         :return:
         """
         return self.get_msb()
+    
+    def get_zero(self):
+        """
+        Gets a value indicating if the value is equal to zero.
+        """
+        return self.get_value_unsigned() == 0
 
     def get_value_bytes(self) -> bytes:
         """

@@ -64,6 +64,7 @@ def assemble(result: list):
             print("START")
         else:
             print(f"op - {op.name.lower()}")
+            print("op arg list", op.arg_list)
             opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
             # list_file[address] = opcode.
 
