@@ -208,6 +208,40 @@ class LeaAssembler(OpCodeAssembler):
         ]
 
 
+# the trie I use for the assemblers might fall down here...
+# need to make sure it tries all of the possible matches that it hass
+class AslAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("asl")
+    
+    @property
+    def format(self):
+        return [
+            (4, 12, 0b1110),
+            (3, 9, None), # count/register
+            (1, 8, 1), # direction 0 = right, 1 left
+            (2, 6, None), # size
+            (1, 5, None), # i/r, 0 = imm shift, 1 = register shift
+            (2, 3, 0b00),
+            (3, 0, None), # register
+        ]
+
+class AsrAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("asr")
+    
+    @property
+    def format(self):
+        return [
+            (4, 12, 0b1110),
+            (3, 9, None), # count/register
+            (1, 8, 0), # direction 0 = right, 1 left
+            (2, 6, None), # size
+            (1, 5, None), # i/r, 0 = imm shift, 1 = register shift
+            (2, 3, 0b00),
+            (3, 0, None), # register
+        ]
+
 class BranchAssembler(OpCodeAssembler):
     opcodes = [
         "bhi", "bls", "bcc", "bcs", "bne", "beq", "bvc", "bvs", "bpl", "bmi", "blt", "bgt", "ble"
@@ -240,6 +274,8 @@ NON_PATTERN_ASSEMBLERS = [
     CmpAssembler(),
     TrapAssembler(),
     LeaAssembler(),
+    AslAssembler(),
+    AsrAssembler(),
 ]
 
 for _, value in vars(Condition).items():

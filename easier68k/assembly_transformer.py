@@ -14,6 +14,9 @@ class Literal():
 
   def __str__(self):
     return f"<Literal {self.value}>"
+  
+  def __repr__(self):
+    return f"<Literal {self.value}>"
 
 class LabelMap():
   def __init__(self):
@@ -44,6 +47,9 @@ class Symbol():
   def __init__(self, symbol_name: str):
     self.symbol_name = symbol_name
     self.location = None
+  
+  def __repr__(self):
+    return f"<Symbol {self.symbol_name} {self.location}>"
 
 class ParamList():
   def __init__(self, values: list):
