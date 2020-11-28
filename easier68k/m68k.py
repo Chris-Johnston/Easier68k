@@ -161,8 +161,7 @@ class M68K:
         """
         Gets all of the CCR flags.
         """
-        return 
-        [
+        return [
             self.get_condition_status_code(ConditionStatusCode.X),
             self.get_condition_status_code(ConditionStatusCode.N),
             self.get_condition_status_code(ConditionStatusCode.Z),

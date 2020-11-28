@@ -41,19 +41,10 @@ def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
 
     assert False, f"Unsupported condition: {condition}"
 
-
-# TODO: yeah just copy paste a bunch
-class OpCodeBhi(OpcodeBranch):
-    def __init__(self):
-        super().__init__()
-        self.condition = Condition.HI
-    
-
-
 class OpCodeBranch(OpCodeBase):
     def __init__(self):
         super().__init__()
-        # self.condition = None
+        self.condition = None
         # make this the base class
         self.byte_displacement = None
         self.displacement = None
@@ -75,7 +66,6 @@ class OpCodeBranch(OpCodeBase):
 
         # might need to have a special case for this, or just subclass each of the branch conditions
         # since this is where the pattern breaks down, unable to determine the condition here
-        self.condition = Condition.GE # todo: temporary value
 
         # this is assuming that this value is unsigned
         if displacement > 0xFFFF:
@@ -116,3 +106,74 @@ class OpCodeBranch(OpCodeBase):
                 new_pc_val = cpu.get_program_counter_value + self.byte_displacement + 2
                 v = MemoryValue(OpSize.WORD, unsigned_int = new_pc_val)
                 cpu.set_register(Register.PC, v)
+
+
+class OpCodeBhi(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.HI
+
+class OpCodeBls(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.LS
+
+class OpCodeBcc(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.CC
+
+class OpCodeBcs(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.CS
+
+class OpCodeBne(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.NE
+
+class OpCodeBeq(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.EQ
+
+class OpCodeBvc(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.VC
+
+class OpCodeBvs(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.VS
+
+class OpCodeBpl(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.PL
+
+class OpCodeBmi(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.MI
+
+class OpCodeBlt(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.LT
+
+class OpCodeBgt(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.GT
+
+class OpCodeBge(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.GE
+
+class OpCodeBle(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.LE
