@@ -9,7 +9,7 @@ from .register import Register
 #     self.register_name = register_name
 
 class Literal():
-  def __init__(self, value:  int): # 
+  def __init__(self, value: int): # 
     self.value = value
 
   def __str__(self):
@@ -43,6 +43,7 @@ class Symbol():
   # or when assigned
   def __init__(self, symbol_name: str):
     self.symbol_name = symbol_name
+    self.location = None
 
 class ParamList():
   def __init__(self, values: list):
@@ -171,7 +172,9 @@ class AssemblyTransformer(Transformer):
 
   def literal_symbol(self, item):
     # Labels are where they are defined, Symbols are where they are used
-    return Symbol(item[0])
+    s = Symbol(item[0])
+    s.location = 1337 # TODO: look up symbol locations
+    return s
 
   def immediate(self, item):
     return item[0]

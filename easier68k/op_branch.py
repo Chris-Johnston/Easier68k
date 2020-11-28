@@ -1,0 +1,118 @@
+from abc import ABC, abstractmethod, abstractproperty
+from typing import Optional
+from .opcode_assembler import OpCodeAssembler
+from .assembly_parameter import AssemblyParameter
+from .ea_mode import EAMode
+from .ea_mode_bin import EAModeBinary
+from .op_size import Size, OpSize
+from .m68k import M68K
+from .register import Register
+from .memory_value import MemoryValue
+from .assembly_transformer import Literal, Symbol
+from .condition import Condition
+from .condition_status_code import ConditionStatusCode
+
+from .opcode_base import OpCodeBase
+
+def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
+    extend, negative, zero, overflow, carry = cpu.get_condition_status_code_flags()
+
+    # T and F are not avail for the Bcc instruction
+    if condition == Condition.T: return True
+    if condition == Condition.F: return False
+    if condition == Condition.HI: return not carry and not zero
+    if condition == Condition.LS: return carry or zero
+    if condition == Condition.CC: return not carry
+    if condition == Condition.CS: return carry
+    if condition == Condition.NE: return not zero
+    if condition == Condition.EQ: return zero
+    if condition == Condition.VC: return not overflow
+    if condition == Condition.VS: return overflow
+    if condition == Condition.PL: return not negative
+    if condition == Condition.MI: return negative
+    if condition == Condition.GE:
+        return negative and overflow or not negative and not overflow
+    if condition == Condition.LT:
+        return negative and not overflow or not negative and overflow
+    if condition == Condition.GT:
+        return negative and oveflow and not zero or not zero and not overflow and not zero
+    if condition == Condition.LE:
+        return zero or negative and not overflow or not negative and overflow    
+
+    assert False, f"Unsupported condition: {condition}"
+
+
+# TODO: yeah just copy paste a bunch
+class OpCodeBhi(OpcodeBranch):
+    def __init__(self):
+        super().__init__()
+        self.condition = Condition.HI
+    
+
+
+class OpCodeBranch(OpCodeBase):
+    def __init__(self):
+        super().__init__()
+        # self.condition = None
+        # make this the base class
+        self.byte_displacement = None
+        self.displacement = None
+
+    def from_param_list(self, size: OpSize, param_list: list):
+        super().from_param_list(size, param_list)
+
+        assert len(param_list) == 1, f"wrong param list size {param_list}"
+
+        if isinstance(param_list[0], Literal):
+            displacement = param_list[0].value
+            
+            if isinstance(displacement, Symbol):
+                # need to resolve where this symbol goes
+                # here is where we need to do the math that determines distance from PC to the symbol
+                displacement = displacement.location
+        else:
+            assert False, "cant handle this param type yet"
+
+        # might need to have a special case for this, or just subclass each of the branch conditions
+        # since this is where the pattern breaks down, unable to determine the condition here
+        self.condition = Condition.GE # todo: temporary value
+
+        # this is assuming that this value is unsigned
+        if displacement > 0xFFFF:
+            # 32 bit
+            self.byte_displacement = 0xFF
+            self.displacement = displacement
+        elif displacement > 0xFF:
+            # 16 bit
+            self.byte_displacement = 0x00
+            self.displacement = displacement
+        else:
+            self.byte_displacement = displacement
+
+
+    def from_asm_values(self, values: list):
+        # size, dest reg, dest mod, src mode, src reg
+        # need to assert the types of src and dest to prevent invalid states
+        # register, size, ea mode, ea reg
+        self.condition, self.byte_displacement = values
+
+    def to_asm_values(self) -> list:
+        # how do I manage the immediate values?
+        return [self.condition.value, self.byte_displacement]
+
+    def execute(self, cpu: M68K):
+        c = Condition(self.condition)
+        result = evaluate_condition(cpu, c)
+        print("branch for condition", c, " = ", result)
+
+        if result:
+            if self.byte_displacement == 0x00:
+                # 16 bit displacement using next word
+                pass
+            elif self.byte_displacement == 0xff:
+                # 32 bit displacement using next 2 words
+                pass
+            else:
+                new_pc_val = cpu.get_program_counter_value + self.byte_displacement + 2
+                v = MemoryValue(OpSize.WORD, unsigned_int = new_pc_val)
+                cpu.set_register(Register.PC, v)

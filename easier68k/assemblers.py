@@ -1,6 +1,7 @@
 from abc import abstractproperty
 from .opcode_assembler import OpCodeAssembler
 from .binary_prefix_tree import BinaryPrefixTree
+from .condition import Condition
 # from .opcode_base import (
 #     OpCodeBase,
 #     OpCodeAdd,
@@ -154,11 +155,59 @@ class BtstAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
         ]
 
+class CmpAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("cmp")
+
+    @property
+    def literal_prefix(self):
+        return 0b1011, 4
+    
+    @property
+    def format(self):
+        return [
+            (4, 12, 0b1011),
+            (3, 9, None), # Dn
+            (3, 6, None), # S
+            (3, 3, None), # M
+            (3, 0, None), # Xn
+        ]
+
+class BranchAssembler(OpCodeAssembler):
+    opcodes = [
+        "bhi", "bls", "bcc", "bcs", "bne", "beq", "bvc", "bvs", "bpl", "bmi", "blt", "bgt", "ble"
+    ]
+    def __init__(self, condition: Condition):
+        op_name = f"b{condition.name.lower()}"
+        self.condition = condition
+        self.prefix = 0b0110 << 4 | self.condition.value
+        print(f'condition {self.condition} prefix {self.prefix:8b}')
+        super().__init__(op_name)
+    
+    @property
+    def literal_prefix(self):
+        return self.prefix, 8
+    
+    @property
+    def format(self):
+        return [
+            (4, 12, 0b0110), # prefix for all branches
+            (4, 8, None), # condition
+            (8, 0, None), # 8-bit displacement
+            # TODO: will need to expand this to peek at the next two words
+            # for 16 bit and 32 bit displacements
+        ]
+
 NON_PATTERN_ASSEMBLERS = [
     # the assemblers which do not conform to a specific pattern, like the word/byte/4 bit prefixes
     MoveAssembler(),
     BtstAssembler(),
+    CmpAssembler(),
 ]
+
+for _, value in vars(Condition).items():
+    if not isinstance(value, Condition): continue
+    NON_PATTERN_ASSEMBLERS.append(BranchAssembler(value))
 
 def generate_assembler_list():
     """

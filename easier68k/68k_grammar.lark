@@ -36,7 +36,11 @@ LITERAL_ESCAPED_CHAR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]/
 STR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]+/
 literal_str: "'" STR_INNER "'"
 start: (line_content WS_INLINE* NEWLINE)*
-line_content: label? regular_op? comment?
+
+// line_content: label? regular_op? comment?
+line_content: regular_op? comment?
+    | label regular_op? comment?
+
 regular_op: opcode opcode_params?
 //    | opcode opcode_params //  opcode_params?
 OPCODE_SIZES: "B" | "W" | "L"

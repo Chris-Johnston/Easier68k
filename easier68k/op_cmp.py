@@ -12,7 +12,7 @@ from .assembly_transformer import Literal
 
 from .opcode_base import OpCodeBase
 
-class OpCodeMove(OpCodeBase):
+class OpCodeCmp(OpCodeBase):
     def __init__(self):
         super().__init__()
         self.src_reg = None
@@ -45,15 +45,15 @@ class OpCodeMove(OpCodeBase):
         else:
             print("dest from param list", dest)
 
-        print("alkjdsf", src, dest, self.src_reg, self.src_ea_mode)
 
     def from_asm_values(self, values: list):
         # size, dest reg, dest mod, src mode, src reg
         # need to assert the types of src and dest to prevent invalid states
-        size, dest_reg, dest_mod, src_mod, src_reg = values
+        # register, size, ea mode, ea reg
+
+        dest_reg, size, src_mod, src_reg = values
         self.size = OpSize.from_asm_value(size)
 
-        self.dest_ea_mode = EAMode.from_bin_mode(dest_mod, dest_reg)
         self.src_ea_mode = EAMode.from_bin_mode(src_mod, src_reg)
 
         self.src_reg = src_reg
@@ -66,22 +66,23 @@ class OpCodeMove(OpCodeBase):
         dest_mode, dest_register = self.dest_ea_mode.get_bin_values()
         src_mode, src_register = self.src_ea_mode.get_bin_values()
 
-        x = [ret_size,
-            dest_register or self.dest_reg,
-            dest_mode,
+        x = [self.dest_reg,
+            ret_size,
             src_mode,
             src_register or self.src_reg]
-        print("to asm values", x)
         return x
 
-
     def execute(self, cpu: M68K):
-        # move data from source to destination
+        # subtracts the source operand from the dest operand
+        # and sets the CCR based on the result
         src_val = cpu.get_ea_value(self.src_ea_mode, self.src_reg, self.size)
-        cpu.set_ea_value(self.dest_ea_mode, self.dest_reg, src_val, self.size)
+        dest_val = cpu.get_ea_value(self.dest_ea_mode, self.src_reg, self.size)
+
+        result, carry, overflow = src_val.sub_unsigned(dest_val)
+
         # X - not affected
         # N - set if result is negative, cleared otherwise
         # Z - result zero, cleared otherwise
-        # V - cleared
-        # C - cleared
-        cpu.set_ccr_reg(None, src_val.get_negative(), src_val.get_zero(), False, False)
+        # V - if overflow occurs
+        # C - if carry occurs
+        cpu.set_ccr_reg(None, result.get_negative(), result.get_zero(), overflow, carry)

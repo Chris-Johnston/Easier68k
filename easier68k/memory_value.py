@@ -240,6 +240,7 @@ class MemoryValue:
     def add_unsigned(self, other):
         total = self.get_value_unsigned() + other.get_value_unsigned()
         # 1/21 TODO
+        # tfw your todo messages need to start including a year
         # set when the register cannot properly represent the result as a signed value (you overflowed into the sign bit). 
         carry = False
         if self.length == OpSize.BYTE:
@@ -248,13 +249,16 @@ class MemoryValue:
             carry = total > 0xFFFF
         elif self.length == OpSize.LONG:
             carry = total > 0xFFFF_FFFF
-        return MemoryValue(self.length, unsigned_int=total), carry
+        overflow = False
+        return MemoryValue(self.length, unsigned_int=total), carry, overflow
 
     def sub_unsigned(self, other):
+        # TODO: need to sanity check the overflow condition
         total = self.get_value_unsigned() - other.get_value_unsigned()
-        overflow = False
         carry = total < 0
-        return MemoryValue(self.length, unsigned_int=total), carry
+        r = MemoryValue(self.length, unsigned_int=total)
+        overflow = False
+        return r, carry, overflow
 
     def __add__(self, other):
         """

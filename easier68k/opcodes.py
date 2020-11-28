@@ -16,6 +16,8 @@ from .op_or import OpCodeOr
 from .op_and import OpCodeAnd
 from .op_sub import OpCodeSub
 from .op_move import OpCodeMove
+from .op_cmp import OpCodeCmp
+from .op_branch import OpCodeBranch
 
 # add more types by adding to this dict
 OPCODE_LOOKUP = {
@@ -25,6 +27,20 @@ OPCODE_LOOKUP = {
     "and": OpCodeAnd,
     "move": OpCodeMove,
     "movea": OpCodeMove,
+    "cmp": OpCodeCmp,
+    "bhi": OpCodeBranch,
+    "bls": OpCodeBranch,
+    "bcc": OpCodeBranch,
+    "bcs": OpCodeBranch,
+    "bne": OpCodeBranch,
+    "beq": OpCodeBranch,
+    "bvc": OpCodeBranch,
+    "bvs": OpCodeBranch,
+    "bpl": OpCodeBranch,
+    "bmi": OpCodeBranch,
+    "bge": OpCodeBranch,
+    "bgt": OpCodeBranch,
+    "ble": OpCodeBranch,
 }
 
 def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:

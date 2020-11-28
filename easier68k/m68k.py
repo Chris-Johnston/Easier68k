@@ -157,6 +157,19 @@ class M68K:
         # ccr is only 1 byte, bit mask away the bit being looked for
         return (ccr & code) > 0
 
+    def get_condition_status_code_flags(self) -> list:
+        """
+        Gets all of the CCR flags.
+        """
+        return 
+        [
+            self.get_condition_status_code(ConditionStatusCode.X),
+            self.get_condition_status_code(ConditionStatusCode.N),
+            self.get_condition_status_code(ConditionStatusCode.Z),
+            self.get_condition_status_code(ConditionStatusCode.V),
+            self.get_condition_status_code(ConditionStatusCode.C)
+        ]
+
     def set_condition_status_code(self, code: ConditionStatusCode, value: bool):
         """
         Sets the status of a code from the Condition Code Register to value

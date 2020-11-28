@@ -139,13 +139,13 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
         if self.direction == 1:
             # store in ea
             # final_val = result + reg
-            final_val, carry = result.add_unsigned(reg)
+            final_val, carry, overflow = result.add_unsigned(reg)
             print(f"1 storing {final_val} in ea")
             self._set_ea_mode_value(self.size, cpu, final_val)
         else:
             # store in dn
             # final_val = reg + result
-            final_val, carry = reg.add_unsigned(result)
+            final_val, carry, overflow = reg.add_unsigned(result)
             print(f"0 storing {final_val} in dx {self.data_register}", self.data_register)
             
             # map data_register back to the type

@@ -3,8 +3,10 @@ Represents all of the different conditions
 and their corresponding bit values
 """
 
+from enum import Enum
 
-class Condition:
+
+class Condition(Enum):
     # True
     T = 0b0000
     # False
