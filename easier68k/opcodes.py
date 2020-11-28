@@ -18,6 +18,7 @@ from .op_sub import OpCodeSub
 from .op_move import OpCodeMove
 from .op_cmp import OpCodeCmp
 from .op_branch import OpCodeBhi, OpCodeBls, OpCodeBcc, OpCodeBcs, OpCodeBne, OpCodeBeq, OpCodeBvc, OpCodeBvs, OpCodeBpl, OpCodeBmi, OpCodeBge, OpCodeBgt, OpCodeBle
+from .op_trap import OpCodeTrap
 
 # add more types by adding to this dict
 OPCODE_LOOKUP = {
@@ -41,6 +42,7 @@ OPCODE_LOOKUP = {
     "bge": OpCodeBge,
     "bgt": OpCodeBgt,
     "ble": OpCodeBle,
+    "trap": OpCodeTrap,
 }
 
 def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:

@@ -173,6 +173,21 @@ class CmpAssembler(OpCodeAssembler):
             (3, 0, None), # Xn
         ]
 
+class TrapAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("trap")
+
+    @property
+    def literal_prefix(self):
+        return 0b010011100100, 12
+    
+    @property
+    def format(self):
+        return [
+            (4, 4, 0b010011100100),
+            (4, 0, None), # Vector
+        ]
+
 class BranchAssembler(OpCodeAssembler):
     opcodes = [
         "bhi", "bls", "bcc", "bcs", "bne", "beq", "bvc", "bvs", "bpl", "bmi", "blt", "bgt", "ble"
@@ -203,6 +218,7 @@ NON_PATTERN_ASSEMBLERS = [
     MoveAssembler(),
     BtstAssembler(),
     CmpAssembler(),
+    TrapAssembler(),
 ]
 
 for _, value in vars(Condition).items():
