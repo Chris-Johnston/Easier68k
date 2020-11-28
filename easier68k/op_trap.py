@@ -31,9 +31,10 @@ def trap_code_handler(code: int, cpu: M68K):
             while True:
                 x = cpu.memory.get(OpSize.BYTE, addr)
                 addr += 1
-                print(chr(x.get_value_unsigned()), end='')
+                import sys
+                print(chr(x.get_value_unsigned()), end='', file=sys.stderr)
                 if x.get_zero():
-                    print()
+                    print(file=sys.stderr)
                     print("DONE PRINTING THE STRING AAAAA")
                     break
 

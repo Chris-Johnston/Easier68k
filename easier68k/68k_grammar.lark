@@ -33,7 +33,7 @@ immediate: "#" literal
 // update: it do
 // needs to be updated to be more robust
 LITERAL_ESCAPED_CHAR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]/
-STR_INNER: /[a-zA-Z0-9\/\(\):.," \-+]+/
+STR_INNER: /[a-zA-Z0-9\/\(\):.," \!\?\-+]+/
 literal_str: "'" STR_INNER "'"
 start: (line_content WS_INLINE* NEWLINE)*
 

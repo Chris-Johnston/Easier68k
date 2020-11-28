@@ -10,7 +10,7 @@ AB EQU -1
 AC EQU 1234
 
 ; need to make this smart and do several passes
-MSG     DC.B    'fhqwhgads', CR, LF, 0
+MSG     DC.B    'trust me this is coming from 68k assembly', CR, LF, 0
 MSDFG     DC.B    #'A', #'B', CR, LF, 0
 
 start   ORG    #4000
