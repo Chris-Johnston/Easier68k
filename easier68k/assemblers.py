@@ -46,6 +46,7 @@ BYTE_OPCODE_ASSEMBLER_DATA = [
 
 FOUR_BIT_ASSEMBLER_BASE_DATA = [
     # OpCode, First 4 bits
+    # and assumes two operands
     ("add", 0b1101),
     ("sub", 0b1001),
     ("and", 0b1100),
@@ -188,6 +189,25 @@ class TrapAssembler(OpCodeAssembler):
             (4, 0, None), # Vector
         ]
 
+class LeaAssembler(OpCodeAssembler):
+    def __init__(self):
+        super().__init__("lea")
+
+    @property
+    def literal_prefix(self):
+        return 0b0100, 4
+    
+    @property
+    def format(self):
+        return [
+            (4, 12, 0b0100),
+            (3, 9, None), # Address Register Dest
+            (3, 6, 0b111),
+            (3, 3, None), # src ea mode
+            (3, 0, None), # src ea register
+        ]
+
+
 class BranchAssembler(OpCodeAssembler):
     opcodes = [
         "bhi", "bls", "bcc", "bcs", "bne", "beq", "bvc", "bvs", "bpl", "bmi", "blt", "bgt", "ble"
@@ -219,6 +239,7 @@ NON_PATTERN_ASSEMBLERS = [
     BtstAssembler(),
     CmpAssembler(),
     TrapAssembler(),
+    LeaAssembler(),
 ]
 
 for _, value in vars(Condition).items():

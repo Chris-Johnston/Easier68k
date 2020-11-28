@@ -53,26 +53,26 @@ class Register(IntEnum):
         if register_num == 5: return Register.A5
         if register_num == 6: return Register.A6
         if register_num == 7: return Register.A7
-        return None
+        assert False, f"register num out of bounds {register_num}"
 
     def get_register_num(self):
         # the smart and clean thing to do would be just to subtract the value
-        if self == A0: return 0
-        if self == D0: return 0
-        if self == A1: return 1
-        if self == D1: return 1
-        if self == A2: return 2
-        if self == D2: return 2
-        if self == A3: return 3
-        if self == D3: return 3
-        if self == A4: return 4
-        if self == D4: return 4
-        if self == A5: return 5
-        if self == D5: return 5
-        if self == A6: return 6
-        if self == D6: return 6
-        if self == A7: return 7
-        if self == D7: return 7
+        if self == Register.A0: return 0
+        if self == Register.D0: return 0
+        if self == Register.A1: return 1
+        if self == Register.D1: return 1
+        if self == Register.A2: return 2
+        if self == Register.D2: return 2
+        if self == Register.A3: return 3
+        if self == Register.D3: return 3
+        if self == Register.A4: return 4
+        if self == Register.D4: return 4
+        if self == Register.A5: return 5
+        if self == Register.D5: return 5
+        if self == Register.A6: return 6
+        if self == Register.D6: return 6
+        if self == Register.A7: return 7
+        if self == Register.D7: return 7
 
 # constants that group together the registers
 DATA_REGISTERS = [Register.D0, Register.D1, Register.D2, Register.D3,

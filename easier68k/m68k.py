@@ -73,7 +73,7 @@ class M68K:
         :param val:
         :return:
         """
-        assert isinstance(register, Register)
+        assert isinstance(register, Register), f"register is not Register, is {register} {type(register)}"
         # if the register is the CCR, use that method to handle setting it
         # because of its different size
         if register == Register.ConditionCodeRegister:
@@ -409,9 +409,9 @@ class M68K:
                 imm_location = self.get_register(Register.PC) + OpSize.WORD.value
             else:
                 imm_location = self.get_register(Register.PC) + OpSize.LONG.value
-            addr = MemoryValue(OpSize.WORD, unsigned_int=imm_location)
+            addr = imm_location
             location = self.memory.get(OpSize.WORD, addr).get_value_unsigned()
-            return self.memory.get(size, locaiton)
+            return self.memory.get(size, location)
 
     def set_ea_value(self, ea: EAMode, location: int, val: MemoryValue, size: OpSize = OpSize.WORD):
         if ea == EAMode.DRD:
