@@ -32,7 +32,7 @@ class OpCodeAssembler():
         # assemble using the list of values 
         values_index = 0
         word = 0
-        assert values, "Values must not be empty"
+        assert values is not None, "Values must not be None"
         print("values:", values)
 
         print(self.format)

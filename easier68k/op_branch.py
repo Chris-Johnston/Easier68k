@@ -107,6 +107,11 @@ class OpCodeBranch(OpCodeBase):
                 v = MemoryValue(OpSize.WORD, unsigned_int = new_pc_val)
                 cpu.set_register(Register.PC, v)
 
+class OpCodeBra(OpCodeBranch):
+    def __init__(self):
+        super().__init__()
+        # equivalent
+        self.condition = Condition.T
 
 class OpCodeBhi(OpCodeBranch):
     def __init__(self):

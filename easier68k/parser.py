@@ -76,10 +76,11 @@ def assemble(result: list):
             from .assembly_transformer import Literal
 
             # insert arg list
-            for arg in op.arg_list:
-                if isinstance(arg, Literal):
-                    list_file[address] = arg.value
-                    address += 2 # this is not correct
+            if op.arg_list:
+                for arg in op.arg_list:
+                    if isinstance(arg, Literal):
+                        list_file[address] = arg.value
+                        address += 2 # this is not correct
 
             print(f"got op {type(opcode)} op.name {op.name}")
             asm_values = opcode.to_asm_values()

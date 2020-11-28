@@ -25,6 +25,7 @@ WORD_OPCODE_ASSEMBLER_DATA = [
     ("trapv", 0b0100_1110_0111_0110),
     ("rtr", 0b0100_1110_0111_0111),
     ("illegal", 0b0100_1010_1111_1100),
+    ("simhalt", 0xffff)
     # todo, the rest of the word opcode assemblers (if any?)
 ]
 
@@ -297,6 +298,9 @@ def generate_assembler_list():
 
     result = words + byte_prefix + four_bit + NON_PATTERN_ASSEMBLERS
     result_dict = {x.get_opcode(): x for x in result}
+
+    # workaround
+    result_dict["bra"] = result_dict["bt"]
     return result_dict
 
 

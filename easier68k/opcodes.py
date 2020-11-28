@@ -17,10 +17,11 @@ from .op_and import OpCodeAnd
 from .op_sub import OpCodeSub
 from .op_move import OpCodeMove
 from .op_cmp import OpCodeCmp
-from .op_branch import OpCodeBhi, OpCodeBls, OpCodeBcc, OpCodeBcs, OpCodeBne, OpCodeBeq, OpCodeBvc, OpCodeBvs, OpCodeBpl, OpCodeBmi, OpCodeBge, OpCodeBgt, OpCodeBle
+from .op_branch import OpCodeBhi, OpCodeBls, OpCodeBcc, OpCodeBcs, OpCodeBne, OpCodeBeq, OpCodeBvc, OpCodeBvs, OpCodeBpl, OpCodeBmi, OpCodeBge, OpCodeBgt, OpCodeBle, OpCodeBra
 from .op_trap import OpCodeTrap
 from .op_lea import OpCodeLea
 from .op_arithmetic_shift import OpCodeAsr, OpCodeAsl
+from .op_simhalt import OpCodeSimHalt
 
 # add more types by adding to this dict
 OPCODE_LOOKUP = {
@@ -48,6 +49,10 @@ OPCODE_LOOKUP = {
     "lea": OpCodeLea,
     "asl": OpCodeAsl,
     "asr": OpCodeAsr,
+    "bt": OpCodeBra, # equivalent, will be interpreted as BT
+    "bra": OpCodeBra,
+    "simhalt": OpCodeSimHalt,
+    "halt": OpCodeSimHalt,
 }
 
 def get_opcode(opcode_name: str, asm_values: list) -> OpCodeBase:
