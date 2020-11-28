@@ -42,3 +42,9 @@ class OpCodeBase():
     def execute(self, cpu: M68K):
         pass
 
+    def get_additional_data_length(self):
+        """
+        If the opcode has immediate data, gets the additional number of
+        bytes to increment the PC by.
+        """
+        return 0

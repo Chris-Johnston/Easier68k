@@ -31,8 +31,9 @@ class Memory:
         """
         if not isinstance(size, OpSize):
             size = OpSize(size)
-        if(location % size.get_number_of_bytes() != 0):
-            raise UnalignedMemoryAccessError
+        assert isinstance(location, int), f"{type(location)} {location}"
+        # if(location % size.get_number_of_bytes() != 0):
+        #     raise UnalignedMemoryAccessError
         if(location < 0 or (location + size.get_number_of_bytes()) > len(self.memory)):
             raise OutOfBoundsMemoryError
 
@@ -106,6 +107,8 @@ class Memory:
         b = None
         try:
             b = self.memory[location:end]
+            # print('ooooooooooooo', location, end)
+            # print(self.memory[location:end])
         except TypeError as e:
             raise e
         ret.set_value_bytes(b)
@@ -131,3 +134,10 @@ class Memory:
         print(size)
         print(f"{self.memory[location:location+size.get_number_of_bytes()]}")
         print(f"{value.get_value_bytes()}")
+    
+    def set_byte(self, address, value):
+        self.memory[address] = value
+
+    def set_bytes(self, address, values):
+        for i, v in enumerate(values):
+            self.memory[address + i] = v

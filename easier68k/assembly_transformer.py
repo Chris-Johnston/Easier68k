@@ -179,7 +179,7 @@ class AssemblyTransformer(Transformer):
   def literal_symbol(self, item):
     # Labels are where they are defined, Symbols are where they are used
     s = Symbol(item[0])
-    s.location = 1337 # TODO: look up symbol locations
+    # s.location = 1337 # TODO: look up symbol locations
     return s
 
   def immediate(self, item):

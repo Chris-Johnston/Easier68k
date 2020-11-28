@@ -9,18 +9,20 @@ AA EQU +1
 AB EQU -1
 AC EQU 1234
 
-start   ORG    $1000
+; need to make this smart and do several passes
+MSG     DC.B    'fhqwhgads', CR, LF, 0
+MSDFG     DC.B    #'A', #'B', CR, LF, 0
+
+start   ORG    #4000
         ; Output the prompt message
         LEA     MSG, A1 
-        MOVE.B  #14, D0 
+        MOVE.W  #14, D0  ; TODO alignment is weird
         TRAP    #15     
 
         ; halt
         MOVE.B  #9, D0
         TRAP    #15
 
-MSG     DC.B    'This is some text', CR, LF, 0
-MSDFG     DC.B    #'A', #'B', CR, LF, 0
 
         SIMHALT             ; halt simulator
 
@@ -100,26 +102,34 @@ START:
 
 #input = just_add
 
+input = hello_world
 result = parse(input)
 import pprint
 
 print('----------------------')
 pprint.pprint(result)
 
-start_address, list_file = assemble(result)
-pprint.pprint(list_file)
+# start_address, list_file = assemble(result)
+lf = assemble(result)
+print("------------ LIST FILE --------")
+pprint.pprint(lf.starting_address)
+pprint.pprint(lf.memory_map)
+pprint.pprint(lf.symbols)
+pprint.pprint(lf.equates)
 
 from easier68k.m68k import M68K
 cpu = M68K()
 
-# load the list file
-for address in list_file.keys():
-    from easier68k.op_size import OpSize
-    from easier68k.memory_value import MemoryValue
-    print("address", address, list_file[address])
-    cpu.memory.set(OpSize.WORD, address, MemoryValue(OpSize.WORD, unsigned_int=list_file[address]))
+# # load the list file
+# for address in list_file.keys():
+#     if isinstance(address, str): continue
 
-cpu.set_program_counter_value(start_address)
+#     from easier68k.op_size import OpSize
+#     from easier68k.memory_value import MemoryValue
+#     print("address", address, list_file[address])
+#     cpu.memory.set(OpSize.WORD, address, MemoryValue(OpSize.WORD, unsigned_int=list_file[address]))
+cpu.load_new_list_file(lf)
+cpu.set_program_counter_value(lf.starting_address)
 
 print("running ---")
 cpu.run()

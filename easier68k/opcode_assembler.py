@@ -22,11 +22,21 @@ class OpCodeAssembler():
         # make a mask from all of the literal bits
         # and check that bitwise & with the mask is the same
         literal_mask = 0
-        for _, offset, literal in self.format:
-            if literal:
-                literal_mask |= literal << offset
+        literal_compare = 0
+        for length, offset, literal in self.format:
+            if literal is not None:
+                literal_compare |= literal << offset
+                mask = (1 << length) - 1
+                literal_mask |= mask << offset
 
-        return (word & literal_mask) == literal_mask
+        # print(self.format)
+        # print(f"word {word:016b}")
+        # print(f"lcmp {literal_compare:016b}")
+        # print(f"mask {literal_mask:016b} {self.get_opcode()}")
+        # print(f"     {word & literal_mask:016b}")
+        # print("---------\n")
+        return (word & literal_mask) == literal_compare
+        # return (word ^ literal_mask) == 0
     
     def assemble(self, values: list) -> int:
         # assemble using the list of values 

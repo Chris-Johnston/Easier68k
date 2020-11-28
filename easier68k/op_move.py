@@ -28,6 +28,7 @@ class OpCodeMove(OpCodeBase):
         # TODO: this param list to ea mode logic will get repetitive quick, 
         # need to have a standardized way to do this
         src, dest = param_list
+        print("move param list", param_list)
 
         if isinstance(src, Literal):
             self.src_ea_mode = EAMode.IMM
@@ -76,8 +77,12 @@ class OpCodeMove(OpCodeBase):
 
 
     def execute(self, cpu: M68K):
+        print('eeeeeeeeeeeeeeee')
+        print("moving", self.src_reg, self.src_ea_mode)
         # move data from source to destination
         src_val = cpu.get_ea_value(self.src_ea_mode, self.src_reg, self.size)
+        print("val", src_val)
+        print("into", self.dest_ea_mode, self.dest_reg)
         cpu.set_ea_value(self.dest_ea_mode, self.dest_reg, src_val, self.size)
         # X - not affected
         # N - set if result is negative, cleared otherwise
@@ -85,3 +90,12 @@ class OpCodeMove(OpCodeBase):
         # V - cleared
         # C - cleared
         cpu.set_ccr_reg(None, src_val.get_negative(), src_val.get_zero(), False, False)
+    
+    def get_additional_data_length(self):
+        v = 0
+        if self.src_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            v += 2
+        if self.dest_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            v += 2
+        # print("increment by", v)
+        return v

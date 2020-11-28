@@ -33,6 +33,7 @@ class EAMode(Enum):
         # the binary representation, except for IMM, ALA, AWA
         # since they all are represented the same as 0b111
         if self in [self.IMM, self.ALA, self.AWA]:
+            print('is imm ala or awa')
             return self.IMM
         return self
 
@@ -40,18 +41,18 @@ class EAMode(Enum):
         # gets the mode and register
         mode = self.get_bin_mode()
         if mode == self.IMM: # IMM
-            return mode.value, EAModeImmediateRegister.get_register_for_mode(mode).value
+            return 0b111, EAModeImmediateRegister.get_register_for_mode(mode).value
         return mode.value, None
 
     def from_bin_mode(mode: int, register: int): # -> EAMode:
         # converts the mode and register into the EAMode
         if mode == 0b111:
             if register == 0b000:
-                return AWA
+                return EAMode.AWA
             elif register == 0b001:
-                return ALA
+                return EAMode.ALA
             elif register == 0b100:
-                return IMM
+                return EAMode.IMM
         return EAMode(mode)
 
 class EAModeImmediateRegister(Enum):
@@ -64,6 +65,7 @@ class EAModeImmediateRegister(Enum):
     REGISTER_AWA = 0b000
 
     def get_register_for_mode(mode: EAMode):
+        print("get reg for mode", mode)
         if mode == EAMode.IMM:
             return EAModeImmediateRegister.REGISTER_IMM
         if mode == EAMode.ALA:

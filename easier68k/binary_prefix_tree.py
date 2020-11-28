@@ -16,6 +16,7 @@ class BinaryPrefixTree():
         # build the tree
         # add each assembler to the tree
         self.root_node = BinaryTreeNode()
+        self.assemblers = assemblers
 
         for a in assemblers.values():
             prefix, length = a.literal_prefix
@@ -55,6 +56,8 @@ class BinaryPrefixTree():
             prefix_bit_mask = (1 << (bit_index - 1))
             bit_value = (word & prefix_bit_mask) >> (bit_index - 1)
 
+            # print(f'{prefix_bit_mask:b} {bit_value}')
+
             if bit_value == 0:
                 if root.left is None:
                     # print('end left')
@@ -68,3 +71,12 @@ class BinaryPrefixTree():
                 else:
                     root = root.right
         return None
+    
+    def get_assembler_fallback(self, word):
+        print("using fallback")
+        word = word.get_value_unsigned()
+        print(word)
+        for k in self.assemblers:
+            a = self.assemblers[k]
+            # print(f"type {a.get_opcode()}")
+            if a.is_match(word): return a

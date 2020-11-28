@@ -84,19 +84,19 @@ class BytePrefixOpCodeAssembler(OpCodeAssembler):
 class WordOpCodeAssembler(OpCodeAssembler):
     def __init__(self, opcode, word):
         super().__init__(opcode)
-        self._word = word
+        self._prefix = word
 
     @abstractproperty
-    def word_opcode(self):
-        return self._word
+    def prefix(self):
+        return self._prefix
 
     @property
     def literal_prefix(self):
-        return self.word_opcode, 16
+        return self.prefix, 16
     
     @property
     def format(self):
-        return [(16, 0, self.word_opcode)]
+        return [(16, 0, self.prefix)]
 
 class FourBitAssemblerBase(OpCodeAssembler):
     def __init__(self, opcode, prefix):
@@ -186,7 +186,7 @@ class TrapAssembler(OpCodeAssembler):
     @property
     def format(self):
         return [
-            (4, 4, 0b010011100100),
+            (12, 4, 0b010011100100),
             (4, 0, None), # Vector
         ]
 
@@ -216,6 +216,10 @@ class AslAssembler(OpCodeAssembler):
         super().__init__("asl")
     
     @property
+    def literal_prefix(self):
+        return 0b1110, 4
+    
+    @property
     def format(self):
         return [
             (4, 12, 0b1110),
@@ -230,6 +234,10 @@ class AslAssembler(OpCodeAssembler):
 class AsrAssembler(OpCodeAssembler):
     def __init__(self):
         super().__init__("asr")
+    
+    @property
+    def literal_prefix(self):
+        return 0b1110, 4
     
     @property
     def format(self):

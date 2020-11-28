@@ -18,6 +18,25 @@ def trap_code_handler(code: int, cpu: M68K):
         print("TRAP -- 15")
         # todo print out whatever
 
+        # get the task
+        reg = Register.D0
+        v = cpu.get_register(reg)
+        print(v)
+        if v == 14:
+            # print out a string
+            print('print the string!!')
+            print("print: ", end='')
+            reg = Register.A1
+            addr = cpu.get_register(reg)
+            while True:
+                x = cpu.memory.get(OpSize.BYTE, addr)
+                addr += 1
+                print(chr(x.get_value_unsigned()), end='')
+                if x.get_zero():
+                    print()
+                    print("DONE PRINTING THE STRING AAAAA")
+                    break
+
 class OpCodeTrap(OpCodeBase):
     def __init__(self):
         super().__init__()
@@ -37,4 +56,5 @@ class OpCodeTrap(OpCodeBase):
 
     def execute(self, cpu: M68K):
         print("TRAP:", self.vector)
-        trap_code_handler(self.vector, cpu)
+        if self.vector == 15:
+            trap_code_handler(self.vector, cpu)

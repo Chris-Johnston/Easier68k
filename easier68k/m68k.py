@@ -244,12 +244,16 @@ class M68K:
 
             # workaround for null data
             if pc_op_val == 0:
+                print("data was null at pc val", pc_val)
                 self.set_program_counter_value(pc_val + 2)
                 self.halt()
                 return
 
             # get the opcode for that value
             opcode_assembler = assembler_tree.get_assembler(pc_op_val)
+            if opcode_assembler is None:
+                opcode_assembler = assembler_tree.get_assembler_fallback(pc_op_val)
+            assert opcode_assembler is not None, f"could not disassemble {pc_op_val} at {pc_val}"
             opcode_name = opcode_assembler.get_opcode()
             asm_values = opcode_assembler.disassemble_values(pc_op_val)
 
@@ -259,7 +263,7 @@ class M68K:
                 op = get_opcode(opcode_name, asm_values)
                 print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name}")
                 op.execute(self)
-                pc_val += 2
+                pc_val += 2 + op.get_additional_data_length()
                 self.set_program_counter_value(pc_val)
             except AssertionError:
                 print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name} NOT IMPLEMENTED")
@@ -336,6 +340,29 @@ class M68K:
         self.memory.load_list_file(list_file)
         self.set_program_counter_value(int(list_file.starting_execution_address))
 
+    def load_new_list_file(self, list_file):
+        """
+        Loads the new style list file.
+        """
+
+        self.labels = {}
+        for address in list_file.memory_map.keys():
+            if isinstance(address, str):
+                self.labels[address] = list_file.memory_map[address]
+            else:
+                v = list_file.memory_map[address]
+                if isinstance(v, int):
+                    # normal value
+                    mv = MemoryValue(OpSize.WORD, unsigned_int=v)
+                    self.memory.set(OpSize.WORD, address, mv)
+                elif isinstance(v, bytes):
+                    self.memory.set_bytes(address, v)
+                elif isinstance(v, str):
+                    str_bytes = v.encode('utf-8')
+                    self.memory.set_bytes(address, str_bytes)
+                else:
+                    assert False, f"unknown list file type {type(v)} {v}"
+
     def load_memory(self, file : typing.BinaryIO):
         """
         saves the raw memory into the designated file
@@ -390,6 +417,7 @@ class M68K:
             return self.get_register(reg)
         if ea == EAMode.IMM:
             imm_location = self.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value
+            print('getting imm at location', imm_location)
             return self.memory.get(size, imm_location)
         if ea in [EAMode.ARIPI, EAMode.ARIPD, EAMode.ARI]:
             reg = Register.get_addr_register(location)
@@ -416,6 +444,7 @@ class M68K:
     def set_ea_value(self, ea: EAMode, location: int, val: MemoryValue, size: OpSize = OpSize.WORD):
         if ea == EAMode.DRD:
             reg = Register.get_data_register(location)
+            print(f"setting data reg {location} {reg} with val {val}")
             self.set_register(reg, val)
         elif ea == EAMode.IMM:
             imm_location = self.get_register(Register.PC).get_value_unsigned() + OpSize.WORD.value

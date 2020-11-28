@@ -24,7 +24,7 @@ class OpCodeLea(OpCodeBase):
 
         assert len(param_list) == 2, "wrong param list size"
         src, dest_register = param_list
-        print("lea params", param_list)
+        print("!!lea params", param_list)
 
         if isinstance(dest_register, Literal):
             self.dest_register = dest_register.value
@@ -39,11 +39,11 @@ class OpCodeLea(OpCodeBase):
 
         # todo param list for this does not seem right
         if isinstance(src, Literal):
-            self.src_mode = EAMode.IMM
+            self.src_mode = EAMode.ALA
             self.src_register = src.value
             if isinstance(src.value, Symbol):
                 self.src_register = self.src_register.location   
-                self.src_mode = EAMode.AWA
+                self.src_mode = EAMode.ALA
         elif isinstance(src, tuple):
             self.src_register, self.src_mode = src
         else:
@@ -77,3 +77,10 @@ class OpCodeLea(OpCodeBase):
         print("Lea", val, "into", self.dest_register)
         cpu.set_register(self.dest_register, val)
 
+        pc = cpu.get_program_counter_value()
+        cpu.set_program_counter_value(pc + 2)
+
+    def get_additional_data_length(self):
+        if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            return 2
+        return 0

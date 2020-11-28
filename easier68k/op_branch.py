@@ -103,7 +103,7 @@ class OpCodeBranch(OpCodeBase):
                 # 32 bit displacement using next 2 words
                 pass
             else:
-                new_pc_val = cpu.get_program_counter_value + self.byte_displacement + 2
+                new_pc_val = cpu.get_program_counter_value() + self.byte_displacement + 2
                 v = MemoryValue(OpSize.WORD, unsigned_int = new_pc_val)
                 cpu.set_register(Register.PC, v)
 
