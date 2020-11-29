@@ -17,6 +17,7 @@ from .opcode_base import OpCodeBase
 def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
     extend, negative, zero, overflow, carry = cpu.get_condition_status_code_flags()
 
+    print("X N Z V C", extend, negative, zero, overflow, carry)
     # T and F are not avail for the Bcc instruction
     if condition == Condition.T: return True
     if condition == Condition.F: return False
@@ -31,13 +32,14 @@ def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
     if condition == Condition.PL: return not negative
     if condition == Condition.MI: return negative
     if condition == Condition.GE:
-        return negative and overflow or not negative and not overflow
+        return (negative and overflow) or (not negative and not overflow)
     if condition == Condition.LT:
-        return negative and not overflow or not negative and overflow
+        return (negative and not overflow) or (not negative and overflow)
     if condition == Condition.GT:
-        return negative and oveflow and not zero or not zero and not overflow and not zero
+        print("n and o and not zero", negative and overflow and not zero)
+        return (negative and overflow and not zero) or (not negative and not overflow and not zero)
     if condition == Condition.LE:
-        return zero or negative and not overflow or not negative and overflow    
+        return (zero or negative and not overflow) or (not negative and overflow)
 
     assert False, f"Unsupported condition: {condition}"
 
@@ -95,17 +97,32 @@ class OpCodeBranch(OpCodeBase):
         result = evaluate_condition(cpu, c)
         print("branch for condition", c, " = ", result)
 
+        if c == Condition.GT:
+            print("GT EXIT BRANCH")
+            self.byte_displacement = 256 - 4
+        if c == Condition.T:
+            print("true")
+            self.byte_displacement = 266 - 4
+
         if result:
             if self.byte_displacement == 0x00:
                 # 16 bit displacement using next word
+                print("word displacement todo")
                 pass
             elif self.byte_displacement == 0xff:
                 # 32 bit displacement using next 2 words
+                print("long displacement todo")
                 pass
             else:
                 new_pc_val = cpu.get_program_counter_value() + self.byte_displacement + 2
-                v = MemoryValue(OpSize.WORD, unsigned_int = new_pc_val)
-                cpu.set_register(Register.PC, v)
+                new_pc_val = self.byte_displacement
+                print(f"branching to {new_pc_val:x}")
+                #v = MemoryValue(OpSize.LONG, unsigned_int = new_pc_val)
+                #cpu.set_register(Register.PC, v)
+                cpu.set_program_counter_value(new_pc_val)
+    
+    def get_additional_data_length(self):
+        return 2
 
 class OpCodeBra(OpCodeBranch):
     def __init__(self):

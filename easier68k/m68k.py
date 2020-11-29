@@ -113,6 +113,7 @@ class M68K:
         """
         mv = self.get_register(Register.ProgramCounter)
         ret = mv.get_value_unsigned()
+        print(f"get    pc {ret:x}")
         return ret
 
     def set_address_register_value(self, reg: Register, new_value: MemoryValue):
@@ -136,6 +137,7 @@ class M68K:
         :param new_value:
         :return:
         """
+        print(f"set pc {new_value:x}")
         self.set_address_register_value(Register.ProgramCounter, MemoryValue(OpSize.LONG, unsigned_int=new_value))
 
     def increment_program_counter(self, inc: int):
@@ -175,6 +177,7 @@ class M68K:
         :param code:
         :return:
         """
+        # print("CCR IS SET", code, value)
         ccr = self.get_register(Register.CCR)
         v = ccr.get_value_unsigned()
 
@@ -184,6 +187,7 @@ class M68K:
             v &= ~code
 
         self._set_condition_code_register_value(MemoryValue(OpSize.BYTE, unsigned_int=v))
+        # print(self.get_condition_status_code_flags())
 
     def run(self):
         """
@@ -260,10 +264,16 @@ class M68K:
             from .opcodes import get_opcode
 
             try:
+                import sys
                 op = get_opcode(opcode_name, asm_values)
-                print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name}")
+                print(f"--- $0x{pc_val}: {pc_op_val.get_value_unsigned():04x} --- {opcode_name}", file=sys.stderr)
+                print(f"PC: {pc_val:04x}")
                 op.execute(self)
-                pc_val += 2 + op.get_additional_data_length()
+                pc_val = self.get_program_counter_value()
+                print(f"PC: {pc_val:04x}")
+                # pc_val += 2 + op.get_additional_data_length()
+                pc_val = 2 + op.get_additional_data_length() + self.get_program_counter_value()
+                print(f"PC: {pc_val:04x}")
                 self.set_program_counter_value(pc_val)
             except AssertionError:
                 print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name} NOT IMPLEMENTED")

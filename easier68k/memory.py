@@ -107,8 +107,6 @@ class Memory:
         b = None
         try:
             b = self.memory[location:end]
-            # print('ooooooooooooo', location, end)
-            # print(self.memory[location:end])
         except TypeError as e:
             raise e
         ret.set_value_bytes(b)

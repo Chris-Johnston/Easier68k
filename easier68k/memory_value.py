@@ -257,7 +257,7 @@ class MemoryValue:
         total = self.get_value_unsigned() - other.get_value_unsigned()
         carry = total < 0
         r = MemoryValue(self.length, unsigned_int=total)
-        overflow = False
+        overflow = True
         return r, carry, overflow
 
     def __add__(self, other):
@@ -362,7 +362,7 @@ class MemoryValue:
         to str, show the hex representation
         :return:
         """
-        return '{1} MemoryValue {0:16b}'.format(self.unsigned_value, self.length.name)
+        return '{1} MemoryValue {0:016b} {0:04x}'.format(self.unsigned_value, self.length.name)
 
     def __bytes__(self):
         """

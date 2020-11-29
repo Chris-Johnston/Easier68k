@@ -97,5 +97,5 @@ class OpCodeMove(OpCodeBase):
             v += 2
         if self.dest_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
             v += 2
-        # print("increment by", v)
+        print("MOV increment by", v)
         return v

@@ -283,8 +283,8 @@ NON_PATTERN_ASSEMBLERS = [
     CmpAssembler(),
     TrapAssembler(),
     LeaAssembler(),
-    AslAssembler(),
     AsrAssembler(),
+    AslAssembler(),
 ]
 
 for _, value in vars(Condition).items():

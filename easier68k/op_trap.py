@@ -12,31 +12,39 @@ from .assembly_transformer import Literal
 
 from .opcode_base import OpCodeBase
 
+import sys
+
 # need a way to add custom handlers for trap vectors
 def trap_code_handler(code: int, cpu: M68K):
     if code == 15:
-        print("TRAP -- 15")
+        # print("TRAP -- 15", file=sys.stderr)
         # todo print out whatever
 
         # get the task
         reg = Register.D0
-        v = cpu.get_register(reg)
-        print(v)
+        v = cpu.get_register(reg).get_value_unsigned()
+        # print(v, file=sys.stderr)
         if v == 14:
             # print out a string
             print('print the string!!')
-            print("print: ", end='')
+            print("print: ", end='', file=sys.stderr)
             reg = Register.A1
             addr = cpu.get_register(reg)
+            cpu.print_debug()
             while True:
-                x = cpu.memory.get(OpSize.BYTE, addr)
-                addr += 1
-                import sys
+                x = cpu.memory.get(OpSize.WORD, addr)
+                addr += 2
+
+                # print(f"{x.get_value_unsigned()} {addr}", file=sys.stderr)
                 print(chr(x.get_value_unsigned()), end='', file=sys.stderr)
                 if x.get_zero():
-                    print(file=sys.stderr)
                     print("DONE PRINTING THE STRING AAAAA")
                     break
+        elif v == 3:
+            # display content of D1
+            reg = Register.D1
+            v = cpu.get_register(reg)
+            print(f"TRAP 3: {v.get_value_unsigned()}", file=sys.stderr)
 
 class OpCodeTrap(OpCodeBase):
     def __init__(self):
@@ -59,3 +67,6 @@ class OpCodeTrap(OpCodeBase):
         print("TRAP:", self.vector)
         if self.vector == 15:
             trap_code_handler(self.vector, cpu)
+    
+    def get_additional_data_length(self):
+        return 2

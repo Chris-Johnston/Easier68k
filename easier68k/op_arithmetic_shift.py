@@ -11,6 +11,7 @@ from .memory_value import MemoryValue
 from .assembly_transformer import Literal, Symbol
 
 from .opcode_base import OpCodeBase
+debug = 0
 
 class OpCodeArithmeticShiftBase(OpCodeBase):
     def __init__(self, shift_right: bool):
@@ -54,7 +55,11 @@ class OpCodeArithmeticShiftBase(OpCodeBase):
         # register - the register to shift
         cr, size, ir, register = values
         self.count_register = cr
-        self.size = OpSize(size)
+        # there's another case for this, when size == 0b11
+        if size != 3:
+            self.size = OpSize(size)
+        else:
+            self.size = OpSize.WORD
         self.ir = ir
         self.register = Register.get_data_register(register)
 
@@ -69,7 +74,16 @@ class OpCodeArithmeticShiftBase(OpCodeBase):
     def execute(self, cpu: M68K):
         # load the effective address into the specified address register
         # all 32 bits of the address register are affected by this instruction
-        print("TODO ASL ASR exec")
+        print("TODO Arithmetic shift")
+
+        v = cpu.get_ea_value(EAMode.DRD, 1)
+        shift = v.get_value_unsigned() << 1
+        mv = MemoryValue(unsigned_int=shift)
+        # shift D1 by 1
+        cpu.set_ea_value(EAMode.DRD, 1, mv)
+    
+    def get_additional_data_length(self):
+        return 2
 
 class OpCodeAsl(OpCodeArithmeticShiftBase):
     def __init__(self):

@@ -38,7 +38,8 @@ def assemble(result: list):
             address = op.arg_list[0].value
             # todo, sanity check this to prevent it doesn't get out of bounds
             print(f"ORG -- {address}")
-            symbols[label.name.lower()] = address
+            if label is not None:
+                symbols[label.name.lower()] = address
 
         elif op.name.lower() == "end":
             # end
@@ -87,8 +88,26 @@ def assemble(result: list):
         else:
             print(f"op - {op.name.lower()}")
             print("op arg list", op.arg_list)
+
+            # need to have the symbols know their own locations
+            # this whole system is busted
+            # also need to support adding labels before lines
+            if op.arg_list is not None:
+                print('aaaaa')
+                for i in range(len(op.arg_list)):
+                    x = op.arg_list[i]
+                    print('bbbbb')
+                    if isinstance(x, Literal):
+                        literal = x.value
+                        if isinstance(literal, Symbol):
+                            sym_name = literal.symbol_name.lower()
+                            print("aaaa symbol", sym_name)
+
+                            # insert a awa
+                            v = symbols[sym_name]
+                            op.arg_list[i] = Literal(v)
+
             opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
-            # list_file[address] = opcode.
 
             from .assemblers import assemblers
             a = assemblers[op_name.lower()]

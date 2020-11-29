@@ -12,6 +12,8 @@ from .assembly_transformer import Literal
 
 from .opcode_base import OpCodeBase
 
+debug = 0
+
 class OpCodeCmp(OpCodeBase):
     def __init__(self):
         super().__init__()
@@ -19,6 +21,7 @@ class OpCodeCmp(OpCodeBase):
         self.src_ea_mode = None
         self.dest_reg = None
         self.dest_ea_mode = None
+
 
     def from_param_list(self, size: OpSize, param_list: list):
         super().from_param_list(size, param_list)
@@ -47,8 +50,6 @@ class OpCodeCmp(OpCodeBase):
 
 
     def from_asm_values(self, values: list):
-        # size, dest reg, dest mod, src mode, src reg
-        # need to assert the types of src and dest to prevent invalid states
         # register, size, ea mode, ea reg
 
         dest_reg, size, src_mod, src_reg = values
@@ -58,6 +59,8 @@ class OpCodeCmp(OpCodeBase):
 
         self.src_reg = src_reg
         self.dest_reg = dest_reg
+        self.dest_ea_mode = EAMode.DRD
+
 
     def to_asm_values(self) -> list:
         # size, dest reg, dest mod, src mode, src reg
@@ -76,8 +79,10 @@ class OpCodeCmp(OpCodeBase):
         # subtracts the source operand from the dest operand
         # and sets the CCR based on the result
         src_val = cpu.get_ea_value(self.src_ea_mode, self.src_reg, self.size)
-        dest_val = cpu.get_ea_value(self.dest_ea_mode, self.src_reg, self.size)
+        dest_val = cpu.get_ea_value(self.dest_ea_mode, self.dest_reg, self.size)
 
+        print("src", src_val, "dest", dest_val)
+        print("dest", self.dest_reg, self.dest_ea_mode)
         result, carry, overflow = src_val.sub_unsigned(dest_val)
 
         # X - not affected
@@ -85,4 +90,22 @@ class OpCodeCmp(OpCodeBase):
         # Z - result zero, cleared otherwise
         # V - if overflow occurs
         # C - if carry occurs
+        print("CMP", result)
         cpu.set_ccr_reg(None, result.get_negative(), result.get_zero(), overflow, carry)
+        cpu.print_debug()
+
+
+        global debug
+        debug += 1
+        print('buuuh')
+        if debug > 20:
+            print("hack", debug)
+            cpu.set_ccr_reg(None, True, False, True, None)
+            ccr_vals = cpu.get_condition_status_code_flags()
+            print(ccr_vals)
+        else:
+            print('buh', debug)
+            # cpu.set_ccr_reg(None, True, False, False, False)
+    
+    def get_additional_data_length(self):
+        return 0

@@ -82,5 +82,5 @@ class OpCodeLea(OpCodeBase):
 
     def get_additional_data_length(self):
         if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
-            return 2
+            return 0
         return 0
