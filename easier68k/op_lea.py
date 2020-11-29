@@ -24,7 +24,6 @@ class OpCodeLea(OpCodeBase):
 
         assert len(param_list) == 2, "wrong param list size"
         src, dest_register = param_list
-        print("!!lea params", param_list)
 
         if isinstance(dest_register, Literal):
             self.dest_register = dest_register.value
@@ -34,7 +33,6 @@ class OpCodeLea(OpCodeBase):
             reg, mode = dest_register
             self.dest_register = reg
         else:
-            print(type(dest_register))
             self.dest_register = dest_register
 
         # todo param list for this does not seem right
@@ -48,9 +46,6 @@ class OpCodeLea(OpCodeBase):
             self.src_register, self.src_mode = src
         else:
             print("src from param list", src)
-
-
-        print("dest reg", self.dest_register, "src mode", self.src_mode, "src reg", self.src_register)
 
     def from_asm_values(self, values: list):
         # An, src mode, src register
@@ -71,10 +66,8 @@ class OpCodeLea(OpCodeBase):
         # load the effective address into the specified address register
         # all 32 bits of the address register are affected by this instruction
 
-        print(self.dest_register, self.src_mode, self.src_register)
         val = cpu.get_ea_value(self.src_mode, self.src_register)
 
-        print("Lea", val, "into", self.dest_register)
         cpu.set_register(self.dest_register, val)
 
         pc = cpu.get_program_counter_value()

@@ -113,7 +113,6 @@ class M68K:
         """
         mv = self.get_register(Register.ProgramCounter)
         ret = mv.get_value_unsigned()
-        print(f"get    pc {ret:x}")
         return ret
 
     def set_address_register_value(self, reg: Register, new_value: MemoryValue):
@@ -137,7 +136,6 @@ class M68K:
         :param new_value:
         :return:
         """
-        print(f"set pc {new_value:x}")
         self.set_address_register_value(Register.ProgramCounter, MemoryValue(OpSize.LONG, unsigned_int=new_value))
 
     def increment_program_counter(self, inc: int):
@@ -267,16 +265,14 @@ class M68K:
                 import sys
                 op = get_opcode(opcode_name, asm_values)
                 print(f"--- $0x{pc_val}: {pc_op_val.get_value_unsigned():04x} --- {opcode_name}", file=sys.stderr)
-                print(f"PC: {pc_val:04x}")
                 op.execute(self)
                 pc_val = self.get_program_counter_value()
-                print(f"PC: {pc_val:04x}")
                 # pc_val += 2 + op.get_additional_data_length()
                 pc_val = 2 + op.get_additional_data_length() + self.get_program_counter_value()
-                print(f"PC: {pc_val:04x}")
                 self.set_program_counter_value(pc_val)
-            except AssertionError:
+            except AssertionError as e:
                 print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name} NOT IMPLEMENTED")
+                raise e
                 # in this case we are unable to determine the size of any immediates
                 # if any, so increment the pc by a word for now
                 pc_val += 2

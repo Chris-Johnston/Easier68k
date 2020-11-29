@@ -12,8 +12,6 @@ from .assembly_transformer import Literal
 
 from .opcode_base import OpCodeBase
 
-debug = 0
-
 class OpCodeCmp(OpCodeBase):
     def __init__(self):
         super().__init__()
@@ -81,8 +79,7 @@ class OpCodeCmp(OpCodeBase):
         src_val = cpu.get_ea_value(self.src_ea_mode, self.src_reg, self.size)
         dest_val = cpu.get_ea_value(self.dest_ea_mode, self.dest_reg, self.size)
 
-        print("src", src_val, "dest", dest_val)
-        print("dest", self.dest_reg, self.dest_ea_mode)
+        print('src', src_val, 'dst', dest_val)
         result, carry, overflow = src_val.sub_unsigned(dest_val)
 
         # X - not affected
@@ -90,22 +87,7 @@ class OpCodeCmp(OpCodeBase):
         # Z - result zero, cleared otherwise
         # V - if overflow occurs
         # C - if carry occurs
-        print("CMP", result)
         cpu.set_ccr_reg(None, result.get_negative(), result.get_zero(), overflow, carry)
-        cpu.print_debug()
 
-
-        global debug
-        debug += 1
-        print('buuuh')
-        if debug > 20:
-            print("hack", debug)
-            cpu.set_ccr_reg(None, True, False, True, None)
-            ccr_vals = cpu.get_condition_status_code_flags()
-            print(ccr_vals)
-        else:
-            print('buh', debug)
-            # cpu.set_ccr_reg(None, True, False, False, False)
-    
     def get_additional_data_length(self):
         return 0

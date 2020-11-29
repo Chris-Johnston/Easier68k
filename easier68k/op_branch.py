@@ -16,8 +16,6 @@ from .opcode_base import OpCodeBase
 
 def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
     extend, negative, zero, overflow, carry = cpu.get_condition_status_code_flags()
-
-    print("X N Z V C", extend, negative, zero, overflow, carry)
     # T and F are not avail for the Bcc instruction
     if condition == Condition.T: return True
     if condition == Condition.F: return False
@@ -36,7 +34,6 @@ def evaluate_condition(cpu: M68K, condition: Condition) -> bool:
     if condition == Condition.LT:
         return (negative and not overflow) or (not negative and overflow)
     if condition == Condition.GT:
-        print("n and o and not zero", negative and overflow and not zero)
         return (negative and overflow and not zero) or (not negative and not overflow and not zero)
     if condition == Condition.LE:
         return (zero or negative and not overflow) or (not negative and overflow)

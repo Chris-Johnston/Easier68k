@@ -224,6 +224,25 @@ class MemoryValue:
         # has some value set
         return self.unsigned_value & mask > 0
 
+    def set_msb(self, bit: bool, size: OpSize=None):
+        """
+        Sets the msb
+        """
+        if size is None:
+            size = self.length
+
+        # default mask is one byte
+        mask = 0x80
+        if size is OpSize.WORD:
+            mask = 0x8000
+        elif size is OpSize.LONG:
+            mask = 0x80000000
+
+        # determine if the unsigned value MSB is set to 1
+        # by masking only the MSB and checking that the result
+        # has some value set
+        self.unsigned_value |= mask
+
     def __eq__(self, other) -> bool:
         """
         Equals, compares to see that the value is the same
@@ -256,7 +275,7 @@ class MemoryValue:
         # TODO: need to sanity check the overflow condition
         total = self.get_value_unsigned() - other.get_value_unsigned()
         carry = total < 0
-        r = MemoryValue(self.length, unsigned_int=total)
+        r = MemoryValue(self.length, signed_int=total)
         overflow = True
         return r, carry, overflow
 

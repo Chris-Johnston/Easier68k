@@ -259,7 +259,6 @@ class BranchAssembler(OpCodeAssembler):
         op_name = f"b{condition.name.lower()}"
         self.condition = condition
         self.prefix = 0b0110 << 4 | self.condition.value
-        print(f'condition {self.condition} prefix {self.prefix:8b}')
         super().__init__(op_name)
     
     @property

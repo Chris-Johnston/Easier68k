@@ -73,10 +73,8 @@ class BinaryPrefixTree():
         return None
     
     def get_assembler_fallback(self, word):
-        print("using fallback")
+        print("Using fallback brute force to get the opcode")
         word = word.get_value_unsigned()
-        print(word)
         for k in self.assemblers:
             a = self.assemblers[k]
-            # print(f"type {a.get_opcode()}")
             if a.is_match(word): return a

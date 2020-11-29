@@ -93,16 +93,12 @@ def assemble(result: list):
             # this whole system is busted
             # also need to support adding labels before lines
             if op.arg_list is not None:
-                print('aaaaa')
                 for i in range(len(op.arg_list)):
                     x = op.arg_list[i]
-                    print('bbbbb')
                     if isinstance(x, Literal):
                         literal = x.value
                         if isinstance(literal, Symbol):
                             sym_name = literal.symbol_name.lower()
-                            print("aaaa symbol", sym_name)
-
                             # insert a awa
                             v = symbols[sym_name]
                             op.arg_list[i] = Literal(v)
@@ -135,7 +131,6 @@ def assemble(result: list):
                             #     v = equates[sym_name]
                             #     list_file[address] = v
                             else:
-                                print('missin', sym_name)
                                 list_file[address] = sym_name.lower()
                         else:
                             list_file[address] = arg.value

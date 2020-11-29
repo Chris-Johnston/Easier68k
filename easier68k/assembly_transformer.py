@@ -97,7 +97,6 @@ class AssemblyTransformer(Transformer):
       op, op_list = items[0], None
     else:
       op, op_list = items
-    print("op", op, "list", op_list)
     op.arg_list = op_list
     # return (op, op_list)
     return op

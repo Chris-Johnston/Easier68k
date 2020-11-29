@@ -232,3 +232,8 @@ class OpSize(Enum):
         if self == self.BYTE: return 0b01
         if self == self.WORD: return 0b11
         if self == self.LONG: return 0b10
+
+    def get_other_asm_value(self) -> int:
+        if self == self.BYTE: return 0b00
+        if self == self.WORD: return 0b01
+        if self == self.LONG: return 0b10

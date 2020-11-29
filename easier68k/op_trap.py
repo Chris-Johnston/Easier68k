@@ -30,7 +30,6 @@ def trap_code_handler(code: int, cpu: M68K):
             print("print: ", end='', file=sys.stderr)
             reg = Register.A1
             addr = cpu.get_register(reg)
-            cpu.print_debug()
             while True:
                 x = cpu.memory.get(OpSize.WORD, addr)
                 addr += 2

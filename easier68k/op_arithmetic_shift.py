@@ -55,18 +55,17 @@ class OpCodeArithmeticShiftBase(OpCodeBase):
         # register - the register to shift
         cr, size, ir, register = values
         self.count_register = cr
-        # there's another case for this, when size == 0b11
-        if size != 3:
-            self.size = OpSize(size)
-        else:
-            self.size = OpSize.WORD
+        # if size == 0b11 indicates that this is a memory shift
+        # which means we only care about the ea
+        assert size != 3, "Memory shift is not supported yet, support for multiple formats is not implemented"
+        self.size = OpSize(size)
         self.ir = ir
         self.register = Register.get_data_register(register)
 
     def to_asm_values(self) -> list:
         return [
             self.count_register,
-            self.size.get_asm_value(),
+            self.size.get_other_asm_value(),
             self.ir,
             self.register.get_register_num()
         ]
@@ -74,13 +73,52 @@ class OpCodeArithmeticShiftBase(OpCodeBase):
     def execute(self, cpu: M68K):
         # load the effective address into the specified address register
         # all 32 bits of the address register are affected by this instruction
-        print("TODO Arithmetic shift")
+        shift_amount = 0
+        if self.ir == 0:
+            shift_amount = self.count_register
+        else:
+            amount_reg = Register.get_data_register(self.count_register)
+            shift_amount = cpu.get_register(amount_reg).get_value_unsigned() % 64
 
-        v = cpu.get_ea_value(EAMode.DRD, 1)
-        shift = v.get_value_unsigned() << 1
-        mv = MemoryValue(unsigned_int=shift)
-        # shift D1 by 1
-        cpu.set_ea_value(EAMode.DRD, 1, mv)
+        dest_register = self.register
+        original_value = cpu.get_ea_value(EAMode.DRD, dest_register)
+        
+        if shift_amount == 0:
+            cpu.set_ccr_reg(None, False, False, False, False)
+
+        if self.shift_right:
+            # shift right
+            high_bit = original_value.get_msb()
+            v = original_value.get_value_unsigned()
+
+            shifted_out = 0
+            # there is probably a better way to do this
+            for _ in range(shift_amount):
+                shifted_out = v & 1
+                v = v >> 1
+                # set the high bit if originally set
+                if high_bit == 1:
+                    mask_bytes = original_value.get_size().get_number_of_bytes()
+                    v |= 1 << (mask_bytes * 8 - 1)
+            carry_extend = shifted_out != 0
+            mv = MemoryValue(self.size, unsigned_int=v)
+
+            cpu.set_register(dest_register, mv)
+            # overflow is always false since the high bit is preserved
+            cpu.set_ccr_reg(carry_extend, mv.get_negative(), mv.get_zero(), False, carry_extend)
+        else:
+            # shift left
+            high_bit = original_value.get_msb()
+            v = original_value.get_value_unsigned() 
+            v = v << shift_amount
+            mv = MemoryValue(self.size, unsigned_int=v)
+            new_high_bit = mv.get_msb()
+            overflow = new_high_bit != high_bit
+            carry_extend = high_bit != 0
+
+            assert v != 0
+            cpu.set_register(dest_register, mv)
+            cpu.set_ccr_reg(carry_extend, mv.get_negative(), mv.get_zero(), overflow, carry_extend)
     
     def get_additional_data_length(self):
         return 2

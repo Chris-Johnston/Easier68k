@@ -33,7 +33,6 @@ class EAMode(Enum):
         # the binary representation, except for IMM, ALA, AWA
         # since they all are represented the same as 0b111
         if self in [self.IMM, self.ALA, self.AWA]:
-            print('is imm ala or awa')
             return self.IMM
         return self
 
@@ -65,7 +64,6 @@ class EAModeImmediateRegister(Enum):
     REGISTER_AWA = 0b000
 
     def get_register_for_mode(mode: EAMode):
-        print("get reg for mode", mode)
         if mode == EAMode.IMM:
             return EAModeImmediateRegister.REGISTER_IMM
         if mode == EAMode.ALA:
