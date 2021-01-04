@@ -107,10 +107,12 @@ def assemble(result: list):
 
             from .assemblers import assemblers
             a = assemblers[op_name.lower()]
-            list_file[address] = a.assemble(opcode.to_asm_values())
-            address += 2 # this is not correct
 
-            # insert arg list
+            assembler_immediates = [] # I don't have any way to do look-aheads for symbols
+            # wonder if I'd have to do a lazy load type deal where I could
+            # check against a global table
+
+            # set the immediates which belong to the assembler
             if op.arg_list:
                 for arg in op.arg_list:
                     if isinstance(arg, Literal):
@@ -125,64 +127,35 @@ def assemble(result: list):
                             if sym_name in equates.keys():
                                 print('name was in equates', sym_name)
                                 v = equates[sym_name]
-                                list_file[address] = v
-                            # elif sym_name in symbols.keys():
-                            #     print('name was in symbols', sym_name)
-                            #     v = equates[sym_name]
-                            #     list_file[address] = v
+                                assembler_immediates = v
                             else:
-                                list_file[address] = sym_name.lower()
+                                assembler_immediates = sym_name.lower()
                         else:
-                            list_file[address] = arg.value
-                        address += 2 # this is not correct
-                        # need to have a way to determine size of immediates
+                            assembler_immediates = arg.value
 
-            # print(f"got op {type(opcode)} op.name {op.name}")
-            # asm_values = opcode.to_asm_values()
+            a.immediate = assembler_immediates
 
-            # if op.name.lower() == "add":
-                
-            #     assembler = assemblers["add"]
+            print("Assembler Immediates:", a.immediate)
 
-            #     values = opcode.to_asm_values()
-            #     print(f"got values {values}")
-            #     result = assembler.assemble(values)
-
-            #     print(f"assembled into {result:b}")
-
-            #     from .binary_prefix_tree import BinaryPrefixTree
-            #     asm_tree = BinaryPrefixTree(assemblers)
-            #     new_assembler = asm_tree.get_assembler(result)
-
-            #     print(f"got matching assembler {type(new_assembler)}")
-
-            #     dis_values = new_assembler.disassemble_values(result)
-            #     print(f"got {dis_values} back out")
-
-            #     from .op_add import OpCodeAdd
-
-            #     new_op = OpCodeAdd()
-            #     new_op.from_asm_values(dis_values)
-
-            #     print(f"new op {new_op}")
+            # there is a gap here
+            for word in a.assemble_immediate(opcode.to_asm_values()):
+                list_file[address] = word
+                address += 2
             
-            # # this will not actually work because the immediate value has to be in memory
-            # print("EXECUTING --- ")
-            # opcode.execute(cpu)
-            # print(f"D1 = {cpu.get_register(Register.D1)}")
-        # any normal op
-        # get the opcode for it
-        # then have that opcode spit out the asm values for it
-        # then send those into the assembler
-        # then shove the assmebled op and the arg list (if immediate data)
+            # list_file[address] = a.assemble(opcode.to_asm_values())
+            # address += 2 # this is not correct
 
-    # gone through a whole pass
-    for k in list_file.keys():
-        v = list_file[k]
-        if isinstance(v, str):
-            if v in symbols.keys():
-                print("inserted key", k, "for symbol", v)
-                list_file[k] = symbols[v]
+            # TODO 1/3: this is outdated, will be extended to opcode_assembler so that data doesn't have to be inserted
+            # manually
+
+    # might have to bring this back for symbol lookup
+    # # gone through a whole pass
+    # for k in list_file.keys():
+    #     v = list_file[k]
+    #     if isinstance(v, str):
+    #         if v in symbols.keys():
+    #             print("inserted key", k, "for symbol", v)
+    #             list_file[k] = symbols[v]
 
     from .new_list_file import ListFile
     lf = ListFile()

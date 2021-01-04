@@ -1,9 +1,15 @@
+from typing import Optional
 from abc import ABC, abstractmethod, abstractproperty
 # from .opcode_base import OpCodeBase
 
 class OpCodeAssembler():
-    def __init__(self, opcode):
+    def __init__(self, opcode, immediates: Optional[list] = None):
         self._opcode = opcode
+
+        # going to assume that these are word values, hopefully this doesn't come back to
+        # haunt me?
+        # if it does, could change this into MemoryValue
+        self.immediate = immediates or list()
 
     @abstractproperty
     def literal_prefix(self) -> int:
@@ -56,6 +62,14 @@ class OpCodeAssembler():
                 values_index += 1
             print(f"word: {word:8b}")
         return word
+    
+    def assemble_immediate(self, values: list) -> list:
+        # assembles all of the values including the immediates
+        op = self.assemble(values)
+        l = [op]
+        if self.immediate:
+            l.append(self.immediate)
+        return l
 
     def disassemble_values(self, word) -> list:
         # gets the values in the order of the instruction
