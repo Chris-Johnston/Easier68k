@@ -1,210 +1,80 @@
-# Easier68k [![Build Status](https://travis-ci.org/Chris-Johnston/Easier68k.svg?branch=master)](https://travis-ci.org/Chris-Johnston/Easier68k) [![Discord](https://discordapp.com/api/guilds/435529550756052992/widget.png)](https://discord.gg/MXeTCjY)
+# Easier68k (Development Branch)
 
 Easier68k is a python library that assembles and simulates the Motorola 68k CPU Architecture.
 
-NOTE: Easier68k is currently under heavy production and is not stable.
+## What's going on here?
+
+The `dev` branch of easier68k contains a _full rewrite_ of the tool. The initial version
+of the project lives in the `master` branch, and was the scope of the MVP for the project
+(after all, this was a school assignment whose scope has massively spiraled out of control).
+The MVP was built with non-scalable design patterns for each of the opcodes, this rewrite
+in the `dev` branch is an effort to re-do things in a way that massively improves the experience
+of extending Easier68k. (Adding opcodes used to take up many hundreds of LOC, some sections were copied a lot.)
+
+The interface for the rewrite will be radically different. I'm dropping the CLI 'shell' thingy
+since I didn't find it to be very useful. It will still be fully functional when called from the command
+line, and it can also be imported to be integrated with other things as well. (There is a part of me which wishes that I had done this in C++ so it could be ported to literally anything under the sun.)
+
+## Rewrite Status
+
+The rewrite is now about as feature-complete as the `master` branch is.
+There's still plenty to work on, though. There are already massive improvements
+to the MVP with regard to scaling.
+
+### Assembly and Disassembly
+Disassembly of nearly all opcodes work. The "Assemblers" handle the templates which
+slice data as necessary from the incoming memory, and are the same templates used
+to serialize opcodes into memory.
+
+There is an issue with multi-word opcodes and immediate data. The first option that
+comes to me is that the Assemblers will have to be expanded to manage reading of
+immediate data if it's specified by the opcode mode.
+This is most necessary for the branch opcodes, as they all could look at the next
+16 or 32 bits to determine their displacement.
+
+### Parsing
+
+This is one of the best changes from the initial version.
+
+Parsing is a difficult job. This has now been outsourced to the Lark library
+for which a grammar has been created. I didn't want to have to rewrite or salvage
+the parsing logic from before (which from what I recall was pretty closely integrated
+with everything else), and so it just made so much more sense to grab something off-the-shelf.
+
+The grammar could be recycled for use with an editor plugin, but I'm fairly certain that there already is one for vscode.
+
+### Namespaces
+
+Trying to import things in the original version wasn't very nice. Things were super-nested, which looked nice in the file explorer but was a hassle in the editor.
+This is one of the larger python projects I've worked on to date, but so far I'm going
+ahead with a more flattened structure.
+
+### Simulation
+
+Simulation is kinda working. Like the old version, it's able to simulate
+a very basic "Hello World" program with a small amount of branching. There are
+still some gaps in the implementation.
+
+One challenge I'm finding is that I need to determine a consistent way to determine the CCR bits. Python doesn't provide any fancy interface for doing more complex bit-wise operations more than the essentials as far as I know, so I still have
+some work around wrapping normal operations like shifting, rotating, basic math, etc. to check for overflows and carries. This is currently done as part of the MemoryValue type, which probably could be named better. (That's another thing I'm unsure about, if it would be better to keep juggling between types everywhere, or if I could directly manipulate streams of bytes instead. 99% of the time I convert things into an unsigned int and manipulate on that, don't think byte operations would make that any easier. Would also be nice to stop flipping between ints and MemoryValues...)
+
+As part of this, I also need some spring cleaning to remove all of my messy debug
+statements. There's a lot. Would be nice to use a proper logger at some point.
+
+### Tests
+
+Hahahahahahaha.
+
+The rewrite does not have unit tests, because the interface keeps changing.
+I've mostly been testing with a short script which parses a file, disassembles it,
+simulates it, etc.
+
+This is on the radar for things to re-add. The MVP had great code coverage, but it's
+just not viable to add tests when there are still fundamental changes that need to be
+made first.
 
 ### dev notes / reference material
 
 http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 
 https://www.nxp.com/files-static/archives/doc/ref_manual/M68000PRM.pdf
-
-Types reimplemented in dev branch:
-
--[x] OpCodeAdd
-  - CCR now gets set, still need to test that it actually works
--[] OpCodeOr
--[] OpCodeSub
--[] OpCodeAnd
-
-## rewrite progress
-
-- [x] Need to establish dict mapping between opcode literal strs and the opcode object types used for simulation
-     this was a change made to make it easier to add more opcodes when disassembling/assembling (also, need a way to go back to original values using those same classes, currently it's only doing disassembly)
-
-Assemblers: (not in priority order)
-- [x] ORI
-- [x] AND
-- [x] SUBI
-- [x] ADDI
-- [x] EORI
-- [x] CMPI
-- [x] NEGX
-- [x] CLR
-- [x] NEG
-- [x] NOT
-- [x] TST
-- [x] ADD
-- [x] SUB
-- [x] AND
-- [x] OR
-- [x] MOVE
-- [x] BTST
-- [x] RESET
-- [x] NOP
-- [x] STOP
-- [x] RTE
-- [x] RTS
-- [x] TRAPV
-- [x] RTR
-- [x] ILLEGAL
-- [] ORI to CCR
-- [] ORI to SR
-- [] ANDI to CCR
-- [] ANDI to SR
-- [] EORI to CCR
-- [] EORI to SR
-- [] BCHG
-- [] BCLR
-- [] BSET
-- [] BTST
-- [] BSET
-- [] MOVEP
-- [] MOVEA
-- [] MOVE from SR
-- [] MOVE to CCR
-- [] MOVE to SR
-- [] EXT
-- [] NBCD
-- [] SWAP
-- [] PEA
-- [] TAS
-- [] TRAP
-- [] LINK
-- [] UNLK
-- [] MOVE USP
-- [] JSR
-- [] JMP
-- [] MOVEM
-- [] LEA
-- [] CHK
-- [] ADDQ
-- [] SUBQ
-- [] Scc
-- [] DBcc
-- [] BRA
-- [] BSR
-- [] Bcc
-- [] MOVEQ
-- [] DIVU
-- [] DIVS
-- [] SBCD
-- [] SUBX
-- [] SUBA
-- [] EOR
-- [] CMPM
-- [] CMP
-- [] CMPA
-- [] MULU
-- [] MULS
-- [] ABCD
-- [] EXG
-- [] ADDX
-- [] ADDA
-- [] ASd
-- [] LSd
-- [] ROXd
-- [] ROd
-
-### Future Development Roadmap
-
-Currently Easier68k is incomplete and is lacking in some ways that prevent it from being considered
-"fully featured".
-
-Some goals for future development are:
-
- - Complete implementation of 68k opcodes.
-    - Complete implementation of everything floating point related.
-    - Further development of alternative TRAP interaction. (Including graphics and sounds.)
- - Implementation of accurate clock cycle measurement.
- - Interface development:
-    - Development of editor plugins for IDEs. Options considered were Atom and VSCode.
-    - Development of GUI and editor software that directly interacts with the core package.
-    - Further development of the interactive CLI shell.
-    - Development of non-interactive command line tools. (Ones that don't run in a shell.)
- - Simplification of the installation and packaging process, as well as any other quality of life
- enhancements for users wishing to install the software.
-
-Specific tasks for development are found on the Issues tab.
-
-### Motivation
-
-There are very few 68K simulators and assemblers and the ones that exist were all found to be lacking in some areas.
-We realized we could do better:
-* Easier68k is cross platform.
-* Easier68k is built as a modular library so anyone can build a front end for it or integrate a 68k simulation into their project.
-* Easier68k has a focus on correctness by using unit tests and integration tests for everything.
-* Easier68k is MIT licensed so you can use it however you would like.
-
-
-### How to Use the CLI
-
-The cli is in the folder "easier68k-cli" which comes in this Github repository.
-Go to the easier68k-cli folder in the terminal/command prompt and install the dependencies with
-```bash
-python -m pip install -r requirements.txt
-```
-
-Then run the application with
-```bash
-python ./cli.py
-```
-
-You can now assemble and simulate a file
-```
-(easier68k) assemble ./file.x68, ./assembled.json
-(easier68k) simulate ./assembled.json
-(easier68k.simulate) run
-(easier68k.simulate) exit
-(easier68k) exit
-```
-
-See the readme in the easier68k-cli for complete documentation.
-
-### Installation
-
-Easier68k currently targets only Python 3.5 and 3.6. 
-Other versions may work, but are not actively supported.
-
-See [Easier68k-SampleProject][sampleproject] as an example of incorporating this
-package into your code.
-
-1. Add to your `requirements.txt` and install:
-   
-   ```bash
-   # Add this repo to your project's requirements.txt (create one if it doesn't)
-   echo git+https://github.com/Chris-Johnston/Easier68k >> requirements.txt
-   
-   # (re-)install your project requirements (you may want to include the --upgrade flag)
-   python -m pip install -r requirements.txt
-   ```
-    
-2. Use the package in your code:
-    
-    ```python
-    import easier68k
-    sim = easier68k.simulator.m68k.M68K()
-    # you can now use the package!
-    ```
-    
-### Testing
-
-All of the tests can be run with the script `./.testingScript.sh`.
-This will install the development version of the package locally and run all of the tests.
-
-Doctests are implemented on most smaller methods and utility functions, and pytests are planned
-for the overall functionality.
-
-A list of all modules to test is defined in `tests/run_doctest.py`. Update this file when
-new doctest-able modules are added to the CI.
-
-This file can be run from the shell using `python tests/run_doctest.py`.
-
-
-### License
-
-Easier68k is under the MIT license.
-
-
-[sampleproject]: https://github.com/Chris-Johnston/Easier68k-SampleProject
