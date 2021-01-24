@@ -22,6 +22,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
         self.data_register = None
         self.direction = None
         self.size = None
+        self.dest_imm = None
 
     def from_param_list(self, size: OpSize, param_list: list):
         super().from_param_list(size, param_list)
@@ -59,6 +60,7 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
             self.ea_mode = EAMode.IMM
             # todo handle the case of absolute long and abs word addresses
             self.register = None
+            self.dest_imm = ea.value
         elif isinstance(ea, Register):
             if Register.D0 <= ea <= Register.D7:
                 self.ea_mode = EAMode.DRD
@@ -126,3 +128,10 @@ class OpCodeAdd(DynamicAddressingModeOpCodeBase): # should rename this to single
             cpu.set_register(self.data_register, final_val)
 
         cpu.set_ccr_reg(None, final_val.get_msb(), final_val == 0, result.get_msb() != final_val.get_msb(), carry)
+    
+    def get_immediates(self):
+        if self.dest_imm is not None:
+            yield self.dest_imm
+    
+    def set_immediates(self, immediates: list):
+        self.dest_imm = immediates[0]

@@ -112,14 +112,35 @@ class OpCodeBranch(OpCodeBase):
                 pass
             else:
                 new_pc_val = cpu.get_program_counter_value() + self.byte_displacement + 2
-                new_pc_val = self.byte_displacement
+                # new_pc_val = self.byte_displacement
                 print(f"branching to {new_pc_val:x}")
                 #v = MemoryValue(OpSize.LONG, unsigned_int = new_pc_val)
                 #cpu.set_register(Register.PC, v)
                 cpu.set_program_counter_value(new_pc_val)
     
-    def get_additional_data_length(self):
-        return 2
+    def get_immediates(self):
+        if self.byte_displacement == 0x00:
+            # 16 bit displacement
+
+            # need to confirm if this has to be words or bytes, I think words
+            # return [self.displacement >> 8 & 0xff, self.displacement & 0xff]
+            return [self.displacement]
+        elif self.byte_displacement == 0xff:
+            # 32 bit displacement
+            # return [self.displacement >> 24 & 0xff, self.displacement >> 16 & 0xff, 57921self.displacement >> 8 & 0xff, self.displacement & 0xff]
+            return [self.displacement >> 16 & 0xffff, self.displacement & 0xffff]
+        else:
+            # 8 bit displacement
+            return []
+    
+    def set_immediates(self, immediates: list):
+        if self.byte_displacement == 0x00:
+            # 16 bit displacement
+            self.displacement = immediates[1] << 8 | immediates[0]
+        elif self.byte_displacement == 0xff:
+            # 32 bit displacement
+            self.displacement = immediates[3] << 24 | immediates[2] << 16 | immediates[1] << 8 | immediates[0]
+
 
 class OpCodeBra(OpCodeBranch):
     def __init__(self):

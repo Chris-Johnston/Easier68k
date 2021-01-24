@@ -25,7 +25,10 @@ class OpCodeSimHalt(OpCodeBase):
     def to_asm_values(self) -> list:
         return []
 
+    def get_immediates(self):
+        return []
+
     def execute(self, cpu: M68K):
-        print("simahalt")
+        print("simhalt")
         cpu.halt()
 

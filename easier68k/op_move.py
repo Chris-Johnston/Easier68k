@@ -16,9 +16,11 @@ class OpCodeMove(OpCodeBase):
     def __init__(self):
         super().__init__()
         self.src_reg = None
+        self.src_imm_value = None
         self.src_ea_mode = None
         self.dest_reg = None
         self.dest_ea_mode = None
+        self.dest_imm_value = None
 
     def from_param_list(self, size: OpSize, param_list: list):
         super().from_param_list(size, param_list)
@@ -33,6 +35,7 @@ class OpCodeMove(OpCodeBase):
         if isinstance(src, Literal):
             self.src_ea_mode = EAMode.IMM
             self.src_reg = None
+            self.src_imm_value = src.value
         elif isinstance(src, tuple):
             self.src_reg, self.src_ea_mode = src
         else:
@@ -41,6 +44,7 @@ class OpCodeMove(OpCodeBase):
         if isinstance(dest, Literal):
             self.dest_ea_mode = EAMode.IMM
             self.dest_reg = None
+            self.dest_imm_value = dest.value
         elif isinstance(dest, tuple):
             self.dest_reg, self.dest_ea_mode = dest
         else:
@@ -91,11 +95,22 @@ class OpCodeMove(OpCodeBase):
         # C - cleared
         cpu.set_ccr_reg(None, src_val.get_negative(), src_val.get_zero(), False, False)
     
-    def get_additional_data_length(self):
+    def get_immediate_data_length(self):
         v = 0
         if self.src_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
             v += 2
         if self.dest_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
             v += 2
-        print("MOV increment by", v)
         return v
+
+    def set_immediates(self, immediates):
+        if self.src_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            self.src_imm_value = immediates.pop(0)
+        if self.dest_ea_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            self.dest_imm_value = immediates.pop(0)
+
+    def get_immediates(self):
+        if self.src_ea_mode == EAMode.IMM:
+            yield self.src_imm_value
+        if self.dest_ea_mode == EAMode.IMM:
+            yield self.dest_imm_value

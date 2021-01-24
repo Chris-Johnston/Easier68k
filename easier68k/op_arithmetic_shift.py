@@ -120,8 +120,12 @@ class OpCodeArithmeticShiftBase(OpCodeBase):
             cpu.set_register(dest_register, mv)
             cpu.set_ccr_reg(carry_extend, mv.get_negative(), mv.get_zero(), overflow, carry_extend)
     
-    def get_additional_data_length(self):
-        return 2
+    def get_immediates(self):
+        # literal data field is not immediate but is instead a field of the op itself
+        return []
+
+    def set_immediates(self):
+        pass
 
 class OpCodeAsl(OpCodeArithmeticShiftBase):
     def __init__(self):

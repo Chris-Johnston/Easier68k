@@ -3,13 +3,8 @@ from abc import ABC, abstractmethod, abstractproperty
 # from .opcode_base import OpCodeBase
 
 class OpCodeAssembler():
-    def __init__(self, opcode, immediates: Optional[list] = None):
+    def __init__(self, opcode: str):
         self._opcode = opcode
-
-        # going to assume that these are word values, hopefully this doesn't come back to
-        # haunt me?
-        # if it does, could change this into MemoryValue
-        self.immediate = immediates or list()
 
     @abstractproperty
     def literal_prefix(self) -> int:
@@ -63,13 +58,18 @@ class OpCodeAssembler():
             print(f"word: {word:8b}")
         return word
     
-    def assemble_immediate(self, values: list) -> list:
+    def assemble_immediate(self, values: list, immediate_values: list):
         # assembles all of the values including the immediates
         op = self.assemble(values)
-        l = [op]
-        if self.immediate:
-            l.append(self.immediate)
-        return l
+        yield op
+        if immediate_values is not None:
+            for word in immediate_values:
+                yield word
+        # return op, immediate_values
+        # immediates_len
+        # if self.immediate:
+        #     l.append(self.immediate)
+        # return l
 
     def disassemble_values(self, word) -> list:
         # gets the values in the order of the instruction

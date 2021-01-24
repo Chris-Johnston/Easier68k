@@ -41,10 +41,22 @@ class OpCodeBase():
     @abstractmethod
     def execute(self, cpu: M68K):
         pass
+    
+    @abstractmethod
+    def get_immediate_data_length(self):
+        # gets the number of bytes of immediate data, used when incrementing the PC
+        return len(self.get_immediates() * 2)
 
-    def get_additional_data_length(self):
+    @abstractmethod
+    def get_immediates(self) -> list:
         """
-        If the opcode has immediate data, gets the additional number of
-        bytes to increment the PC by.
+        Gets the values of the immediate data as WORD values.
         """
-        return 0
+        return None
+
+    @abstractmethod
+    def set_immediates(self, immediates: list):
+        """
+        Sets the immediate data.
+        """
+        pass

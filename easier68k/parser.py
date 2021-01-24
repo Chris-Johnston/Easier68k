@@ -28,6 +28,9 @@ def assemble(result: list):
     }
     equates = {
     }
+    parsed_opcodes = []
+
+
     for label, op in result:
         op_name = op.name.lower()
         if label is not None and op_name != "equ":
@@ -103,8 +106,6 @@ def assemble(result: list):
                             v = symbols[sym_name]
                             op.arg_list[i] = Literal(v)
 
-            opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
-
             from .assemblers import assemblers
             a = assemblers[op_name.lower()]
 
@@ -129,18 +130,27 @@ def assemble(result: list):
                                 v = equates[sym_name]
                                 assembler_immediates = v
                             else:
+
+                                # insert the symbol name, look it up later
                                 assembler_immediates = sym_name.lower()
                         else:
                             assembler_immediates = arg.value
 
-            a.immediate = assembler_immediates
+            # include the immediates in this as well
+            opcode = get_opcode_parsed(op.name.lower(), op.size, op.arg_list)
 
-            print("Assembler Immediates:", a.immediate)
-
+            # this is where the opcodes are stuck into the list file, should instead
+            # save all of these and do this at the end after the symbols are determined
             # there is a gap here
-            for word in a.assemble_immediate(opcode.to_asm_values()):
-                list_file[address] = word
-                address += 2
+
+            # save the opcode assembler and the opcode itself, this is so that the
+            # assembly for it can be generated later
+            # because the assemblers are re-used, there should not be any state that
+            # is tracked by the assembler objects themselves
+            parsed_opcodes.append((a, opcode))
+            # for word in a.assemble_immediate(opcode.to_asm_values()):
+            #     list_file[address] = word
+            #     address += 2
             
             # list_file[address] = a.assemble(opcode.to_asm_values())
             # address += 2 # this is not correct
@@ -148,14 +158,11 @@ def assemble(result: list):
             # TODO 1/3: this is outdated, will be extended to opcode_assembler so that data doesn't have to be inserted
             # manually
 
-    # might have to bring this back for symbol lookup
-    # # gone through a whole pass
-    # for k in list_file.keys():
-    #     v = list_file[k]
-    #     if isinstance(v, str):
-    #         if v in symbols.keys():
-    #             print("inserted key", k, "for symbol", v)
-    #             list_file[k] = symbols[v]
+    # check that all referenced symbols have been defined
+    for assembler, op in parsed_opcodes:
+        for word in assembler.assemble_immediate(op.to_asm_values(), op.get_immediates()):
+            list_file[address] = word
+            address += 2
 
     from .new_list_file import ListFile
     lf = ListFile()

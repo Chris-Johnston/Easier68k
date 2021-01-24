@@ -67,5 +67,5 @@ class OpCodeTrap(OpCodeBase):
         if self.vector == 15:
             trap_code_handler(self.vector, cpu)
     
-    def get_additional_data_length(self):
-        return 2
+    def get_immediate_data_length(self):
+        return 0

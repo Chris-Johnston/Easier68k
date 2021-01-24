@@ -267,8 +267,9 @@ class M68K:
                 print(f"--- $0x{pc_val}: {pc_op_val.get_value_unsigned():04x} --- {opcode_name}", file=sys.stderr)
                 op.execute(self)
                 pc_val = self.get_program_counter_value()
-                # pc_val += 2 + op.get_additional_data_length()
-                pc_val = 2 + op.get_additional_data_length() + self.get_program_counter_value()
+                # increment PC by the lenght of the opcode itself, and the amount of bytes
+                # of immediate data
+                pc_val = 2 + op.get_immediate_data_length() + self.get_program_counter_value()
                 self.set_program_counter_value(pc_val)
             except AssertionError as e:
                 print(f"--- $0x{pc_val}: {pc_op_val} --- {opcode_name} NOT IMPLEMENTED")

@@ -73,7 +73,16 @@ class OpCodeLea(OpCodeBase):
         pc = cpu.get_program_counter_value()
         cpu.set_program_counter_value(pc + 2)
 
-    def get_additional_data_length(self):
+    def get_immediate_data_length(self):
         if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
-            return 0
+            return 1
         return 0
+
+    def get_immediates(self):
+        if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            # will need to handle the case of ala and awa different sizes
+            return self.src_register
+    
+    def set_immediates(self, immediates):
+        if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
+            self.src_register = immediates[0]

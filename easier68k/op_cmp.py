@@ -19,6 +19,7 @@ class OpCodeCmp(OpCodeBase):
         self.src_ea_mode = None
         self.dest_reg = None
         self.dest_ea_mode = None
+        self.src_imm = None
 
 
     def from_param_list(self, size: OpSize, param_list: list):
@@ -33,15 +34,13 @@ class OpCodeCmp(OpCodeBase):
         if isinstance(src, Literal):
             self.src_ea_mode = EAMode.IMM
             self.src_reg = None
+            self.src_imm = src.value
         elif isinstance(src, tuple):
             self.src_reg, self.src_ea_mode = src
         else:
             print("src from param list", src)
 
-        if isinstance(dest, Literal):
-            self.dest_ea_mode = EAMode.IMM
-            self.dest_reg = None
-        elif isinstance(dest, tuple):
+        if isinstance(dest, tuple):
             self.dest_reg, self.dest_ea_mode = dest
         else:
             print("dest from param list", dest)
@@ -88,6 +87,16 @@ class OpCodeCmp(OpCodeBase):
         # V - if overflow occurs
         # C - if carry occurs
         cpu.set_ccr_reg(None, result.get_negative(), result.get_zero(), overflow, carry)
-
-    def get_additional_data_length(self):
+    
+    def get_immediates(self):
+        if self.src_imm is not None:
+            yield self.src_imm
+    
+    def get_immediate_data_length(self):
+        if self.src_ea_mode in [EAMode.IMM, EAMode.AWA, EAMode.ALA]:
+            return 1
         return 0
+    
+    def set_immediates(self, immediates):
+        if self.src_ea_mode in [EAMode.IMM, EAMode.AWA, EAMode.ALA]:
+            self.src_imm = immediates[0]
