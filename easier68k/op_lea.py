@@ -81,7 +81,7 @@ class OpCodeLea(OpCodeBase):
     def get_immediates(self):
         if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:
             # will need to handle the case of ala and awa different sizes
-            return self.src_register
+            return [self.src_register]
     
     def set_immediates(self, immediates):
         if self.src_mode in [EAMode.IMM, EAMode.ALA, EAMode.AWA]:

@@ -65,11 +65,6 @@ class OpCodeAssembler():
         if immediate_values is not None:
             for word in immediate_values:
                 yield word
-        # return op, immediate_values
-        # immediates_len
-        # if self.immediate:
-        #     l.append(self.immediate)
-        # return l
 
     def disassemble_values(self, word) -> list:
         # gets the values in the order of the instruction
