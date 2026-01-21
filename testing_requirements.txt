@@ -1,7 +1,10 @@
 # These requirements are only used for the tests, and are not required
 # for the library to function
+pytest>=3.6
+pytest-cov
 
 # linting
 pylint
 # documentation
 sphinx
+recommonmark
